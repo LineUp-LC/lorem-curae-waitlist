@@ -455,6 +455,13 @@ const WaitlistLandingPage = () => {
                   
                   <div className="optionalParent">
                     <div className="clear foot">
+                   {/* Hidden field for segmentation */}
+                   <input
+                     type="hidden"
+                    name="MERGE7"
+                    value="regular"
+                       />
+
                       <button
                         type="submit"
                         name="subscribe"
