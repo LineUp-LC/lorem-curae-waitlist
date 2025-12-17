@@ -345,6 +345,11 @@ const MarketplaceWaitlistPage = () => {
                   
                   <div className="optionalParent">
                     <div className="clear foot">
+                     <input
+                      type="hidden"
+                     name="MERGE7"
+                     value="creator"
+                      />  
                       <button
                         type="submit"
                         name="subscribe"
