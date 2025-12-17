@@ -347,7 +347,7 @@ const MarketplaceWaitlistPage = () => {
                     <div className="clear foot">
                      <input
                       type="hidden"
-                     name="MERGE7"
+                     name="MMERGE7"
                      value="creator"
                       />  
                       <button
