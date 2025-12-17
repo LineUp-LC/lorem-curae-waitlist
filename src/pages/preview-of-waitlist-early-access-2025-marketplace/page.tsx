@@ -309,7 +309,7 @@ const MarketplaceWaitlistPage = () => {
             {/* Mailchimp Form */}
             <div id="mc_embed_signup" className="max-w-xl mx-auto">
              <form
-  action="https://link.us8.list-manage.com/subscribe/post?u=b3a22b6bbe3475a62a1f21ced&id=1ed344bdf9&f_id=0063b9e1f0"
+action="https://link.us8.list-manage.com/subscribe/post?u=b3a22b6bbe3475a62a1f21ced&id=1ed344bdf9&f_id=0063b9e1f0"
   method="post"
   id="mc-embedded-subscribe-form"
   name="mc-embedded-subscribe-form"
