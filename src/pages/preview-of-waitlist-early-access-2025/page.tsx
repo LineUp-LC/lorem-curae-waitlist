@@ -424,7 +424,7 @@ action="https://link.us8.list-manage.com/subscribe/post?u=b3a22b6bbe3475a62a1f21
   id="mc-embedded-subscribe-form"
   name="mc-embedded-subscribe-form"
   className="validate"
-  target="_blank"
+  
 >
   <div id="mc_embed_signup_scroll">
     <div className="mc-field-group mb-4">
