@@ -47,6 +47,7 @@ const AIChatPage = lazy(() => import('../pages/ai-chat/page'));
 const AboutPage = lazy(() => import('../pages/about/page'));
 const WaitlistLandingPage = lazy(() => import('../pages/preview-of-waitlist-early-access-2025/page'));
 const MarketplaceWaitlistPage = lazy(() => import('../pages/preview-of-waitlist-early-access-2025-marketplace/page'));
+const Waitlist = lazy(() => import('../pages/preview-of-waitlist-early-access-2025/page'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 const SkinSurveyPage = lazy(() => import('../pages/skin-survey/page'));
 const SkinSurveyAccountPage = lazy(() => import('../pages/skin-survey-account/page'));
@@ -61,7 +62,7 @@ const CommunityGuidelinesPage = lazy(() => import('../pages/community-guidelines
 const routes: RouteObject[] = [
   {
     path: '/',
-    element: <HomePage />,
+    element: <Waitlist />,
   },
   {
     path: '/discover',
