@@ -458,7 +458,7 @@ const WaitlistLandingPage = () => {
                    {/* Hidden field for segmentation */}
                    <input
                      type="hidden"
-                    name="MERGE7"
+                    name="MMERGE7"
                     value="regular"
                        />
 
