@@ -331,7 +331,7 @@ action="https://link.us8.list-manage.com/subscribe/post?u=b3a22b6bbe3475a62a1f21
     {/* ✅ Hidden segmentation field — correct placement */}
     <input
       type="hidden"
-      name="WSEGMENT"
+      name="MERGE9"
       value="creator"
     />
 
