@@ -1,10 +1,13 @@
-  import { useState, ReactNode, useEffect } from "react";
+   import { useState, ReactNode, useEffect } from "react";
 
 interface PasswordGateProps {
   children: ReactNode;
 }
 
 export default function PasswordGate({ children }: PasswordGateProps) {
+
+  // ✅ ADD BOTH LOGS RIGHT HERE — at the top of the component
+  console.log("PasswordGate loaded");
   console.log("Password from env:", import.meta.env.VITE_SITE_PASSWORD);
 
   const [input, setInput] = useState("");
@@ -44,5 +47,7 @@ export default function PasswordGate({ children }: PasswordGateProps) {
         <button type="submit">Enter</button>
       </form>
     </div>
+  );
+}
   );
 }
