@@ -5,6 +5,8 @@ interface PasswordGateProps {
 }
 
 export default function PasswordGate({ children }: PasswordGateProps) {
+  console.log("Password from env:", import.meta.env.VITE_SITE_PASSWORD);
+
   const [input, setInput] = useState("");
   const [authed, setAuthed] = useState(false);
 
