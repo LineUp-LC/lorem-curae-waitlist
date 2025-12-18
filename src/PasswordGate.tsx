@@ -1,4 +1,4 @@
-import { useState, ReactNode, useEffect } from "react";
+  import { useState, ReactNode, useEffect } from "react";
 
 interface PasswordGateProps {
   children: ReactNode;
