@@ -441,7 +441,7 @@ action="https://link.us8.list-manage.com/subscribe/post?u=b3a22b6bbe3475a62a1f21
     {/* ✅ Hidden segmentation field */}
     <input
       type="hidden"
-      name="MERGE7"
+      name="MMERGE7"
       value="regular"
     />
 
