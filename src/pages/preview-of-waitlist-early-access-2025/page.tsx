@@ -126,7 +126,7 @@ const WaitlistLandingPage = () => {
 
             <div className="bg-cream-50 rounded-2xl p-8">
               <div className="w-14 h-14 bg-cream-100 rounded-full flex items-center justify-center mb-6">
-                <i className="ri-robot-2-line text-2xl text-sage-600"></i>
+                <i className="ri-sparkling-2-line text-2xl text-sage-600"></i>
               </div>
               <h3 className="text-2xl font-serif text-slate-900 mb-4">
                 Personalized AI guidance
@@ -175,7 +175,7 @@ const WaitlistLandingPage = () => {
                 Our Smart Product Finder searches across multiple retailers to find the exact configuration you need—size, formulation, packaging, and more.
               </p>
               <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                When you purchase through our link, you earn rewards that can be redeemed for perks like early access, beta features, and future discounts — bringing transparency, convenience, and trust together in one place.
+                When you purchase through our link, you earn rewards that can be redeemed for perks like beta features and future discounts — bringing convenience and trust together in one place.
               </p>
               <a 
                 href="#waitlist" 
@@ -336,7 +336,7 @@ const WaitlistLandingPage = () => {
                 Earn rewards for smart shopping
               </h2>
               <p className="text-lg text-slate-600 mb-6 leading-relaxed">
-                Find the exact product you need across verified retailers — and earn rewards when you buy through us.
+                Find the exact product you need across retailers — and earn rewards when you buy through us.
               </p>
               <p className="text-lg text-slate-600 mb-8 leading-relaxed">
                 Shop through our Smart Product Finder and we’ll share a portion of what we earn from our retail partners as rewards — and with cashback coming soon, you’ll get even more value for your informed choices.
