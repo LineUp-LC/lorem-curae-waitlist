@@ -1,3 +1,74 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================
+   WAITLIST FORM ANIMATIONS
+   Premium skincare brand aesthetic
+   ============================================ */
+
+/* Soft fade-in with subtle vertical lift */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+/* Elegant slide-up entrance */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+/* ============================================
+   REDUCED MOTION ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  .transition-all,
+  .transition-colors,
+  [class*="transition-"] {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   ADDITIONAL UI POLISH
+   ============================================ */
+
+/* Smooth text selection with sage accent */
+::selection {
+  background-color: rgba(95, 122, 95, 0.2);
+  color: inherit;
+}
+
+/* Better focus visible styles */
+:focus-visible {
+  outline: 2px solid #5f7a5f;
+  outline-offset: 2px;
+}

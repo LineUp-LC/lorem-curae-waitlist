@@ -1,35 +1,7 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import SupabaseWaitlistForm from '../../components/SupabaseWaitlistForm';
 
 const MarketplaceWaitlistPage = () => {
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    // Load Mailchimp validation script
-    const script = document.createElement('script');
-    script.src = '//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      // Initialize Mailchimp validation
-      if (window.jQuery) {
-        (window as any).fnames = new Array();
-        (window as any).ftypes = new Array();
-        (window as any).fnames[0] = 'EMAIL';
-        (window as any).ftypes[0] = 'email';
-        (window as any).fnames[1] = 'FNAME';
-        (window as any).ftypes[1] = 'text';
-        (window as any).fnames[2] = 'LNAME';
-        (window as any).ftypes[2] = 'text';
-      }
-    };
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-white">
       {/* Minimal Header */}
@@ -299,71 +271,10 @@ const MarketplaceWaitlistPage = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-sage-100 rounded-full mb-8">
               <i className="ri-hand-heart-line text-4xl text-sage-600"></i>
             </div>
-            <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-              Join the Creator Waitlist
-            </h2>
-            <p className="text-xl text-slate-600 mb-10 leading-relaxed">
-              Get early access and priority onboarding when we launch. Be among the first creators to join our marketplace.
-            </p>
 
-            {/* Mailchimp Form */}
-            <div id="mc_embed_signup" className="max-w-xl mx-auto">
-             <form
-action="https://link.us8.list-manage.com/subscribe/post?u=b3a22b6bbe3475a62a1f21ced&id=1ed344bdf9&f_id=0063b9e1f0"
-  method="post"
-  id="mc-embedded-subscribe-form"
-  name="mc-embedded-subscribe-form"
-  className="validate"
-  
->
-  <div id="mc_embed_signup_scroll">
-    <div className="mc-field-group mb-4">
-      <input
-        type="email"
-        name="EMAIL"
-        className="required email w-full px-6 py-4 border-2 border-slate-200 rounded-full focus:border-sage-600 focus:outline-none text-lg"
-        id="mce-EMAIL"
-        required
-        placeholder="Your email address *"
-      />
-    </div>
-
-    {/* ✅ Hidden segmentation field — correct placement */}
-    <input
-      type="hidden"
-      name="MMERGE7"
-      value="creator"
-    />
-
-    <div id="mce-responses" className="clear foot">
-      <div className="response" id="mce-error-response" style={{ display: 'none' }}></div>
-      <div className="response" id="mce-success-response" style={{ display: 'none' }}></div>
-    </div>
-
-    {/* Bot prevention field */}
-    <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
-      <input
-        type="text"
-        name="b_b3a22b6bbe3475a62a1f21ced_1ed344bdf9"
-        tabIndex={-1}
-        defaultValue=""
-      />
-    </div>
-
-    <div className="optionalParent">
-      <div className="clear foot">
-        <button
-          type="submit"
-          name="subscribe"
-          id="mc-embedded-subscribe"
-          className="w-full px-8 py-4 bg-sage-600 text-white rounded-full hover:bg-sage-700 transition-colors text-lg font-medium whitespace-nowrap"
-        >
-          Join the Creator Waitlist
-        </button>
-      </div>
-    </div>
-  </div>
-</form>
+            {/* Supabase Waitlist Form with creator segment */}
+            <div className="max-w-xl mx-auto">
+              <SupabaseWaitlistForm segment="creator" />
             </div>
 
             <p className="text-sm text-slate-500 mt-6">
