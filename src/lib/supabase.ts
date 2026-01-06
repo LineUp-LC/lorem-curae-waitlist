@@ -1,10 +1,29 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
+// Environment variables from Vite
+// In development, these come from .env file
+// In production, these should be set in your hosting platform (Vercel, Netlify, etc.)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Debug logging (remove in production)
+if (import.meta.env.DEV) {
+  console.log('Supabase URL defined:', !!supabaseUrl);
+  console.log('Supabase Anon Key defined:', !!supabaseAnonKey);
+}
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  console.error('Missing Supabase environment variables');
+  console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'defined' : 'undefined');
+  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'defined' : 'undefined');
+  console.error('');
+  console.error('Please ensure:');
+  console.error('1. You have a .env file in the project root');
+  console.error('2. The .env file contains:');
+  console.error('   VITE_SUPABASE_URL=your_supabase_url');
+  console.error('   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key');
+  console.error('3. You have restarted the Vite dev server after adding/modifying .env');
+  throw new Error('Missing Supabase environment variables. Check console for details.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
