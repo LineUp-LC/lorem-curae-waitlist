@@ -4,347 +4,1230 @@ import SupabaseWaitlistForm from '../../components/SupabaseWaitlistForm';
 import WaitlistStatus from '../../components/WaitlistStatus';
 import MagicLinkLogin from '../../components/MagicLinkLogin';
 
+/**
+ * WaitlistLandingPage Component
+ * 
+ * Brand Voice: Calm, confident, science-backed, human
+ * Color Mood: Warm cream, soft coral accents, grounded earth tones
+ * Narrative Arc: Problem → Ecosystem → Transformation → Community → Action
+ */
+
 const WaitlistLandingPage = () => {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Minimal Header */}
-      <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-slate-200 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-serif text-slate-900">
+    <div className="lc-waitlist-page">
+      <style>{`
+        .lc-waitlist-page {
+          min-height: 100vh;
+          background: linear-gradient(180deg, #FDF8F5 0%, #FFF9F5 50%, #FFFBF8 100%);
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          color: #2D2A26;
+        }
+        
+        /* Header */
+        .lc-header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: rgba(253, 248, 245, 0.95);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid rgba(196, 112, 77, 0.08);
+          z-index: 50;
+        }
+        
+        .lc-header-inner {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 1rem 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        
+        .lc-logo {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #2D2A26;
+          text-decoration: none;
+        }
+        
+        .lc-header-cta {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.875rem;
+          font-weight: 600;
+          padding: 0.625rem 1.5rem;
+          background: #C4704D;
+          color: white;
+          border-radius: 100px;
+          text-decoration: none;
+          transition: background 0.3s ease;
+        }
+        
+        .lc-header-cta:hover {
+          background: #8B4D35;
+        }
+        
+        /* Creator Banner */
+        .lc-creator-banner {
+          background: rgba(196, 112, 77, 0.06);
+          border-bottom: 1px solid rgba(196, 112, 77, 0.1);
+          padding: 0.75rem 1.5rem;
+          text-align: center;
+          margin-top: 60px;
+        }
+        
+        .lc-creator-link {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #C4704D;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: color 0.3s ease;
+        }
+        
+        .lc-creator-link:hover {
+          color: #8B4D35;
+        }
+        
+        /* Hero Section */
+        .lc-hero {
+          padding: 6rem 1.5rem 5rem;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .lc-hero-bg {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            135deg,
+            #FDF8F5 0%,
+            #F8F4F0 20%,
+            #FDF8F5 40%,
+            #E8D4CC 60%,
+            #FDF8F5 80%,
+            #FFFBF8 100%
+          );
+          background-size: 400% 400%;
+          animation: gradientShift 20s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        
+        .lc-hero-content {
+          position: relative;
+          z-index: 1;
+          max-width: 900px;
+          margin: 0 auto;
+        }
+        
+        .lc-badge {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: #C4704D;
+          background: rgba(196, 112, 77, 0.08);
+          padding: 0.5rem 1.25rem;
+          border-radius: 100px;
+          margin-bottom: 2rem;
+          display: inline-block;
+          border: 1px solid rgba(196, 112, 77, 0.15);
+        }
+        
+        .lc-headline {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: clamp(2.5rem, 6vw, 4rem);
+          font-weight: 500;
+          line-height: 1.15;
+          margin-bottom: 1.5rem;
+          letter-spacing: -0.01em;
+          color: #2D2A26;
+        }
+        
+        .lc-headline em {
+          font-style: italic;
+          color: #C4704D;
+        }
+        
+        .lc-subhead {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1.125rem;
+          color: #6B635A;
+          max-width: 650px;
+          margin: 0 auto 2.5rem;
+          line-height: 1.7;
+        }
+        
+        .lc-problem-box {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.9375rem;
+          color: #6B635A;
+          max-width: 650px;
+          margin: 0 auto 3rem;
+          line-height: 1.8;
+          padding: 1.5rem 2rem;
+          background: rgba(255, 255, 255, 0.7);
+          border-radius: 16px;
+          border: 1px solid rgba(196, 112, 77, 0.08);
+          backdrop-filter: blur(10px);
+        }
+        
+        .lc-problem-box strong {
+          color: #2D2A26;
+        }
+        
+        .lc-cta-group {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+          .lc-cta-group {
+            flex-direction: row;
+            justify-content: center;
+          }
+        }
+        
+        .lc-btn-primary {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1rem;
+          font-weight: 600;
+          padding: 1rem 2rem;
+          background: #C4704D;
+          color: white;
+          border: none;
+          border-radius: 100px;
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-block;
+          transition: all 0.3s ease;
+          width: 100%;
+        }
+        
+        @media (min-width: 640px) {
+          .lc-btn-primary {
+            width: auto;
+          }
+        }
+        
+        .lc-btn-primary:hover {
+          background: #8B4D35;
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(196, 112, 77, 0.2);
+        }
+        
+        .lc-btn-secondary {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1rem;
+          font-weight: 600;
+          padding: 1rem 2rem;
+          background: white;
+          color: #2D2A26;
+          border: 1.5px solid rgba(45, 42, 38, 0.2);
+          border-radius: 100px;
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-block;
+          transition: all 0.3s ease;
+          width: 100%;
+        }
+        
+        @media (min-width: 640px) {
+          .lc-btn-secondary {
+            width: auto;
+          }
+        }
+        
+        .lc-btn-secondary:hover {
+          border-color: #C4704D;
+          color: #C4704D;
+        }
+        
+        /* Ecosystem Section */
+        .lc-ecosystem {
+          padding: 5rem 1.5rem;
+          background: linear-gradient(180deg, #FFFBF8 0%, #F8F4F0 100%);
+          position: relative;
+        }
+        
+        .lc-ecosystem::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(196, 112, 77, 0.2), transparent);
+        }
+        
+        .lc-section-intro {
+          text-align: center;
+          max-width: 800px;
+          margin: 0 auto 4rem;
+        }
+        
+        .lc-section-label {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: #C4704D;
+          margin-bottom: 1rem;
+          display: block;
+        }
+        
+        .lc-section-title {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: clamp(1.75rem, 4vw, 2.5rem);
+          font-weight: 500;
+          margin-bottom: 1.25rem;
+          color: #2D2A26;
+        }
+        
+        .lc-section-description {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1.0625rem;
+          color: #6B635A;
+          line-height: 1.7;
+        }
+        
+        .lc-section-description em {
+          font-style: italic;
+          color: #C4704D;
+        }
+        
+        .lc-tools-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 1.5rem;
+          max-width: 1100px;
+          margin: 0 auto;
+        }
+        
+        .lc-tool-card {
+          background: white;
+          padding: 2rem;
+          border-radius: 20px;
+          border: 1px solid rgba(196, 112, 77, 0.08);
+          transition: all 0.3s ease;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+        
+        .lc-tool-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 15px 40px rgba(196, 112, 77, 0.08);
+          border-color: rgba(196, 112, 77, 0.15);
+        }
+        
+        .lc-tool-icon {
+          width: 48px;
+          height: 48px;
+          background: rgba(196, 112, 77, 0.08);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.25rem;
+          color: #C4704D;
+          font-size: 1.5rem;
+        }
+        
+        .lc-tool-title {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.375rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: #2D2A26;
+        }
+        
+        .lc-tool-pain {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.8125rem;
+          color: #8B4D35;
+          font-weight: 500;
+          margin-bottom: 0.75rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid rgba(196, 112, 77, 0.1);
+        }
+        
+        .lc-tool-description {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.9375rem;
+          color: #6B635A;
+          line-height: 1.6;
+          margin-bottom: 1rem;
+          flex-grow: 1;
+        }
+        
+        .lc-tool-outcome {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.8125rem;
+          color: #7A8B7A;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: auto;
+        }
+        
+        .lc-tool-outcome i {
+          color: #C4704D;
+        }
+        
+        /* Differentiation Section */
+        .lc-differentiation {
+          padding: 5rem 1.5rem;
+          background: #2D2A26;
+          color: white;
+        }
+        
+        .lc-diff-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 3rem;
+          max-width: 1000px;
+          margin: 0 auto;
+          align-items: center;
+        }
+        
+        @media (min-width: 768px) {
+          .lc-diff-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+          }
+        }
+        
+        .lc-diff-title {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+          font-weight: 500;
+          margin-bottom: 1.5rem;
+          line-height: 1.2;
+        }
+        
+        .lc-diff-title em {
+          font-style: italic;
+          color: #E8A888;
+        }
+        
+        .lc-diff-text {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1rem;
+          color: rgba(255, 255, 255, 0.7);
+          line-height: 1.8;
+          margin-bottom: 2rem;
+        }
+        
+        .lc-comparison-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        
+        .lc-comparison-item {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.9375rem;
+          padding: 1rem 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+        
+        .lc-comparison-item:last-child {
+          border-bottom: none;
+        }
+        
+        .lc-comparison-item strong {
+          color: white;
+          font-weight: 600;
+        }
+        
+        .lc-comparison-item span {
+          color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .lc-comparison-item.lc-us span {
+          color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .lc-icon-x {
+          color: rgba(255, 255, 255, 0.3);
+          font-size: 1.25rem;
+          flex-shrink: 0;
+        }
+        
+        .lc-icon-check {
+          color: #E8A888;
+          font-size: 1.25rem;
+          flex-shrink: 0;
+        }
+        
+        .lc-diff-visual {
+          background: linear-gradient(135deg, rgba(196, 112, 77, 0.3), rgba(122, 139, 122, 0.2));
+          border-radius: 24px;
+          height: 300px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        @media (min-width: 768px) {
+          .lc-diff-visual {
+            height: 400px;
+          }
+        }
+        
+        .lc-diff-visual::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 30% 30%, rgba(232, 168, 136, 0.2), transparent 50%);
+        }
+        
+        .lc-diff-quote {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.5rem;
+          font-style: italic;
+          color: rgba(255, 255, 255, 0.6);
+          text-align: center;
+          line-height: 1.6;
+          position: relative;
+          z-index: 1;
+        }
+        
+        /* Rewards Section */
+        .lc-rewards {
+          padding: 5rem 1.5rem;
+          background: linear-gradient(180deg, #F8F4F0 0%, #FFFBF8 100%);
+        }
+        
+        .lc-rewards-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 3rem;
+          max-width: 1000px;
+          margin: 0 auto;
+          align-items: center;
+        }
+        
+        @media (min-width: 768px) {
+          .lc-rewards-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+        
+        .lc-rewards-content h2 {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+          font-weight: 500;
+          margin-bottom: 1.5rem;
+          color: #2D2A26;
+        }
+        
+        .lc-rewards-content p {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1rem;
+          color: #6B635A;
+          line-height: 1.7;
+          margin-bottom: 1.5rem;
+        }
+        
+        .lc-rewards-list {
+          list-style: none;
+          padding: 0;
+          margin: 0 0 2rem 0;
+        }
+        
+        .lc-rewards-list li {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.9375rem;
+          color: #6B635A;
+          padding: 0.5rem 0;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        
+        .lc-rewards-list li i {
+          color: #C4704D;
+        }
+        
+        .lc-rewards-visual {
+          background: white;
+          border-radius: 20px;
+          padding: 2rem;
+          box-shadow: 0 20px 60px rgba(45, 42, 38, 0.06);
+          border: 1px solid rgba(196, 112, 77, 0.08);
+        }
+        
+        .lc-reward-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 1rem;
+          background: rgba(196, 112, 77, 0.04);
+          border-radius: 12px;
+          margin-bottom: 1rem;
+        }
+        
+        .lc-reward-item:last-child {
+          margin-bottom: 0;
+        }
+        
+        .lc-reward-left {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        
+        .lc-reward-icon {
+          width: 40px;
+          height: 40px;
+          background: rgba(196, 112, 77, 0.1);
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #C4704D;
+        }
+        
+        .lc-reward-label {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.9375rem;
+          font-weight: 500;
+          color: #2D2A26;
+        }
+        
+        .lc-reward-value {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #C4704D;
+        }
+        
+        .lc-reward-badge {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #7A8B7A;
+          background: rgba(122, 139, 122, 0.1);
+          padding: 0.25rem 0.75rem;
+          border-radius: 100px;
+        }
+        
+        /* Early Access Section */
+        .lc-early-access {
+          padding: 5rem 1.5rem;
+          background: white;
+        }
+        
+        .lc-early-access-inner {
+          max-width: 800px;
+          margin: 0 auto;
+          text-align: center;
+        }
+        
+        .lc-early-access h2 {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+          font-weight: 500;
+          margin-bottom: 1.5rem;
+          color: #2D2A26;
+        }
+        
+        .lc-early-access > p {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1.0625rem;
+          color: #6B635A;
+          line-height: 1.7;
+          margin-bottom: 3rem;
+        }
+        
+        .lc-benefits-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+          margin-bottom: 3rem;
+        }
+        
+        .lc-benefit-card {
+          background: rgba(196, 112, 77, 0.04);
+          padding: 1.5rem;
+          border-radius: 16px;
+          text-align: center;
+        }
+        
+        .lc-benefit-icon {
+          width: 48px;
+          height: 48px;
+          background: white;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1rem;
+          color: #C4704D;
+          font-size: 1.5rem;
+          box-shadow: 0 4px 12px rgba(196, 112, 77, 0.1);
+        }
+        
+        .lc-benefit-title {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.125rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: #2D2A26;
+        }
+        
+        .lc-benefit-text {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.8125rem;
+          color: #6B635A;
+          line-height: 1.5;
+        }
+        
+        /* Final CTA Section */
+        .lc-final-cta {
+          padding: 6rem 1.5rem;
+          background: #FDF8F5;
+        }
+        
+        .lc-cta-box {
+          max-width: 700px;
+          margin: 0 auto;
+          padding: 3rem 2rem;
+          background: white;
+          border-radius: 24px;
+          border: 1px solid rgba(196, 112, 77, 0.1);
+          box-shadow: 0 20px 60px rgba(45, 42, 38, 0.06);
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        @media (min-width: 640px) {
+          .lc-cta-box {
+            padding: 4rem;
+          }
+        }
+        
+        .lc-cta-box::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #C4704D, #E8A888, #7A8B7A);
+        }
+        
+        .lc-cta-icon {
+          width: 64px;
+          height: 64px;
+          background: rgba(196, 112, 77, 0.08);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1.5rem;
+          color: #C4704D;
+          font-size: 2rem;
+        }
+        
+        .lc-cta-box h2 {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: clamp(1.75rem, 3vw, 2.25rem);
+          font-weight: 500;
+          margin-bottom: 1rem;
+          color: #2D2A26;
+        }
+        
+        .lc-cta-box > p {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1rem;
+          color: #6B635A;
+          line-height: 1.7;
+          margin-bottom: 2rem;
+        }
+        
+        .lc-form-wrapper {
+          max-width: 480px;
+          margin: 0 auto;
+        }
+        
+        .lc-status-wrapper {
+          margin-top: 2rem;
+        }
+        
+        .lc-magic-link-section {
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 1px solid rgba(196, 112, 77, 0.1);
+        }
+        
+        .lc-magic-link-section h3 {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.5rem;
+          font-weight: 500;
+          margin-bottom: 1rem;
+          color: #2D2A26;
+        }
+        
+        /* Footer */
+        .lc-footer {
+          padding: 3rem 1.5rem;
+          background: #2D2A26;
+          color: white;
+          text-align: center;
+        }
+        
+        .lc-footer-logo {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.75rem;
+          font-weight: 600;
+          color: white;
+          text-decoration: none;
+          display: inline-block;
+          margin-bottom: 0.5rem;
+        }
+        
+        .lc-footer-tagline {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.9375rem;
+          color: rgba(255, 255, 255, 0.6);
+          margin-bottom: 1.5rem;
+        }
+        
+        .lc-footer-links {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.875rem;
+          color: rgba(255, 255, 255, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+        
+        .lc-footer-links a {
+          color: rgba(255, 255, 255, 0.5);
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+        
+        .lc-footer-links a:hover {
+          color: white;
+        }
+      `}</style>
+
+      {/* Header */}
+      <header className="lc-header">
+        <div className="lc-header-inner">
+          <Link to="/" className="lc-logo">
             Lorem Curae
           </Link>
-          <a 
-            href="#waitlist" 
-            className="px-6 py-2.5 bg-sage-600 text-white rounded-full hover:bg-sage-700 transition-colors text-sm font-medium whitespace-nowrap"
-          >
+          <a href="#waitlist" className="lc-header-cta">
             Join Waitlist
           </a>
         </div>
       </header>
 
+      {/* Creator Banner - REQUIRED: Must appear exactly as specified */}
+      <div className="lc-creator-banner">
+        <Link 
+          to="/preview-of-waitlist-early-access-2025-marketplace"
+          className="lc-creator-link"
+        >
+          <span>Are you a creator? Join the Marketplace waitlist</span>
+          <i className="ri-arrow-right-line"></i>
+        </Link>
+      </div>
+
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 bg-gradient-to-br from-sage-50 via-white to-cream-50">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Creator Waitlist Link */}
-          <div className="mb-8">
-            <Link
-              to="/preview-of-waitlist-early-access-2025-marketplace"
-              className="inline-flex items-center space-x-2 text-sage-600 hover:text-sage-700 font-medium transition-colors"
-            >
-              <span>Are you a creator? Join the Marketplace waitlist</span>
-              <i className="ri-arrow-right-line"></i>
-            </Link>
+      <section className="lc-hero">
+        <div className="lc-hero-bg" />
+        <div className="lc-hero-content">
+          <div className="lc-badge">
+            Founding Member Waitlist Now Open
           </div>
-
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-sage-100 rounded-full mb-8">
-            <i className="ri-sparkling-2-line text-3xl text-sage-600"></i>
-          </div>
-          <h1 className="text-5xl lg:text-6xl font-serif text-slate-900 mb-6 leading-tight">
-            Skincare clarity, powered by science and personalization
+          
+          <h1 className="lc-headline">
+            Stop guessing.<br />
+            Start <em>understanding</em> your skin.
           </h1>
-          <p className="text-xl text-slate-600 mb-10 leading-relaxed max-w-2xl mx-auto">
-            Discover products with confidence, understand ingredients, and get guidance tailored to your skin.
+          
+          <p className="lc-subhead">
+            The first platform that connects your skin profile to personalized product recommendations, trusted retailers, ingredient science, and a community that actually gets it.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a 
-              href="#waitlist" 
-              className="px-8 py-4 bg-sage-600 text-white rounded-full hover:bg-sage-700 transition-colors text-lg font-medium whitespace-nowrap w-full sm:w-auto"
-            >
-              Join the waitlist
+          
+          <div className="lc-problem-box">
+            <strong>The skincare industry has a problem:</strong> You're drowning in influencer picks, algorithm-driven ads, and ingredient lists that read like chemistry exams. You've tried the "holy grail" products that worked for everyone but you. It's not your fault—you've never had the right tools.
+          </div>
+          
+          <div className="lc-cta-group">
+            <a href="#waitlist" className="lc-btn-primary">
+              Join the Founding Member Waitlist
             </a>
-            <a 
-              href="#how-it-works" 
-              className="px-8 py-4 bg-white text-sage-600 border-2 border-sage-600 rounded-full hover:bg-sage-50 transition-colors text-lg font-medium whitespace-nowrap w-full sm:w-auto"
-            >
-              See how it works
+            <a href="#ecosystem" className="lc-btn-secondary">
+              See How It Works
             </a>
           </div>
         </div>
       </section>
 
-      {/* Core Value Proposition */}
-      <section id="how-it-works" className="py-20 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-              Finally, skincare that makes sense
-            </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              Lorem Curae helps you cut through confusion with science-backed clarity and personalized guidance. Built for real people, not perfection.
+      {/* Ecosystem Section */}
+      <section id="ecosystem" className="lc-ecosystem">
+        <div className="lc-section-intro">
+          <span className="lc-section-label">One Ecosystem, Infinite Clarity</span>
+          <h2 className="lc-section-title">
+            Six tools that work together—so you don't have to
+          </h2>
+          <p className="lc-section-description">
+            Each feature feeds into the next. Your skin survey informs your product recommendations and builds the foundation for your personalized experience. Your ingredient knowledge shapes your comparisons. This isn't a collection of tools—it's a connected system built around <em>your</em> skin.
+          </p>
+        </div>
+        
+        <div className="lc-tools-grid">
+          {/* Smart Product Finder */}
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-search-line"></i>
+            </div>
+            <h3 className="lc-tool-title">Smart Product Finder</h3>
+            <p className="lc-tool-pain">
+              The pain: Endless scrolling through products that weren't made for your skin—and finding retailers that sell faulty products, never knowing if the product actually works.
             </p>
+            <p className="lc-tool-description">
+              Search for products and reputable retailers the way you actually think about skincare—by concern, ingredient, price, or skin type.
+            </p>
+            <span className="lc-tool-outcome">
+              <i className="ri-check-line"></i>
+              Find trusted retailers that sell your recommended product
+            </span>
           </div>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-sage-50 rounded-2xl p-8">
-              <div className="w-14 h-14 bg-sage-100 rounded-full flex items-center justify-center mb-6">
-                <i className="ri-search-line text-2xl text-sage-600"></i>
-              </div>
-              <h3 className="text-2xl font-serif text-slate-900 mb-4">
-                Trusted product discovery
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                Find verified products from trusted retailers with transparent pricing and availability.
-              </p>
+          
+          {/* Curae AI */}
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-robot-2-line"></i>
             </div>
-
-            <div className="bg-cream-50 rounded-2xl p-8">
-              <div className="w-14 h-14 bg-cream-100 rounded-full flex items-center justify-center mb-6">
-                <i className="ri-flask-line text-2xl text-sage-600"></i>
-              </div>
-              <h3 className="text-2xl font-serif text-slate-900 mb-4">
-                Ingredient transparency
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                Understand what's inside your products with science-backed explanations.
-              </p>
-            </div>
-
-            <div className="bg-cream-50 rounded-2xl p-8">
-              <div className="w-14 h-14 bg-cream-100 rounded-full flex items-center justify-center mb-6">
-                <i className="ri-robot-2-line text-2xl text-sage-600"></i>
-              </div>
-              <h3 className="text-2xl font-serif text-slate-900 mb-4">
-                Personalized AI guidance
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                Get tailored recommendations that adapt to your unique skin concerns and goals.
-              </p>
-            </div>
-
-            <div className="bg-sage-50 rounded-2xl p-8">
-              <div className="w-14 h-14 bg-sage-100 rounded-full flex items-center justify-center mb-6">
-                <i className="ri-scales-3-line text-2xl text-sage-600"></i>
-              </div>
-              <h3 className="text-2xl font-serif text-slate-900 mb-4">
-                Product Comparison
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                Make informed decisions by comparing products side-by-side to see ingredients, pricing, reviews, and compatibility with your skin type.
-              </p>
-            </div>
+            <h3 className="lc-tool-title">Curae AI</h3>
+            <p className="lc-tool-pain">
+              The pain: Conflicting advice from the internet, influencers, and even derms.
+            </p>
+            <p className="lc-tool-description">
+              Ask anything and get answers grounded in peer-reviewed research, not sponsored content—and answers based on your interactions and overall journey within the site.
+            </p>
+            <span className="lc-tool-outcome">
+              <i className="ri-check-line"></i>
+              Trusted answers, tailored to you
+            </span>
           </div>
-
-          <div className="text-center">
-            <a 
-              href="#waitlist" 
-              className="inline-block px-8 py-4 bg-sage-600 text-white rounded-full hover:bg-sage-700 transition-colors text-lg font-medium whitespace-nowrap"
-            >
-              Join the waitlist
-            </a>
+          
+          {/* Product Comparison */}
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-scales-3-line"></i>
+            </div>
+            <h3 className="lc-tool-title">Product Comparison</h3>
+            <p className="lc-tool-pain">
+              The pain: Wondering if the $68 serum is actually better than the $19 one.
+            </p>
+            <p className="lc-tool-description">
+              Compare up to three products side-by-side: ingredients, concentration, price-per-ml, and compatibility with your skin.
+            </p>
+            <span className="lc-tool-outcome">
+              <i className="ri-check-line"></i>
+              Spend smarter, not more
+            </span>
+          </div>
+          
+          {/* Ingredient Library */}
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-flask-line"></i>
+            </div>
+            <h3 className="lc-tool-title">Ingredient Library</h3>
+            <p className="lc-tool-pain">
+              The pain: Reading ingredient lists like they're written in another language.
+            </p>
+            <p className="lc-tool-description">
+              Every ingredient decoded: what it does, who it's for, what to pair it with (and what to avoid).
+            </p>
+            <span className="lc-tool-outcome">
+              <i className="ri-check-line"></i>
+              Finally understand what you're putting on your face
+            </span>
+          </div>
+          
+          {/* Routine Tracking */}
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-calendar-check-line"></i>
+            </div>
+            <h3 className="lc-tool-title">Routine Tracking</h3>
+            <p className="lc-tool-pain">
+              The pain: Forgetting what you used when, never knowing what's working, and not having someone to guide you throughout your process.
+            </p>
+            <p className="lc-tool-description">
+              Build AM/PM routines with smart conflict detection. Track your progress over time—further enhancing your personalization.
+            </p>
+            <span className="lc-tool-outcome">
+              <i className="ri-check-line"></i>
+              Build consistency, see results
+            </span>
+          </div>
+          
+          {/* Progress Assessment */}
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-line-chart-line"></i>
+            </div>
+            <h3 className="lc-tool-title">Progress Assessment</h3>
+            <p className="lc-tool-pain">
+              The pain: Trying new routines without any way to measure if they're actually working—or knowing when it's time to adjust.
+            </p>
+            <p className="lc-tool-description">
+              Curae analyzes your tracked routines and skin progress over time, providing personalized feedback and actionable insights.
+            </p>
+            <span className="lc-tool-outcome">
+              <i className="ri-check-line"></i>
+              Data-driven insights that evolve with your skin
+            </span>
           </div>
         </div>
       </section>
 
-      {/* Smart Product Search */}
-      <section className="py-20 px-6 bg-gradient-to-br from-sage-50 to-cream-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-sage-100 rounded-full mb-6">
-                <i className="ri-shopping-bag-3-line text-2xl text-sage-600"></i>
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-                Find the right product — and the best place to buy it
-              </h2>
-              <p className="text-lg text-slate-600 mb-6 leading-relaxed">
-                Our Smart Product Finder searches across multiple retailers to find the exact configuration you need—size, formulation, packaging, and more.
-              </p>
-              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                When you purchase through our link, you earn rewards that can be redeemed for perks like early access, beta features, and future discounts — bringing transparency, convenience, and trust together in one place.
-              </p>
-              <a 
-                href="#waitlist" 
-                className="inline-block px-8 py-4 bg-sage-600 text-white rounded-full hover:bg-sage-700 transition-colors text-lg font-medium whitespace-nowrap"
-              >
-                Join the waitlist
-              </a>
-            </div>
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-4 bg-sage-50 rounded-xl">
-                  <i className="ri-search-line text-sage-600"></i>
-                  <span className="text-slate-600">Search any product...</span>
+      {/* Differentiation Section */}
+      <section className="lc-differentiation">
+        <div className="lc-diff-grid">
+          <div>
+            <h2 className="lc-diff-title">
+              We're not Sephora. We're not Amazon.<br />
+              We're <em>on your side.</em>
+            </h2>
+            <p className="lc-diff-text">
+              Big retailers want you to buy. Search engines want you to click. Ingredient databases give you data without direction. We built Lorem Curae because we were tired of navigating a system designed to sell, not to serve.
+            </p>
+            
+            <ul className="lc-comparison-list">
+              <li className="lc-comparison-item">
+                <span className="lc-icon-x">✕</span>
+                <div>
+                  <strong>Sephora & Ulta:</strong>{' '}
+                  <span>Sell inventory first, fit second. Reviews aren't filtered by skin type.</span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 border border-slate-200 rounded-xl">
-                    <div className="text-sm text-slate-500 mb-1">Retailer A</div>
-                    <div className="font-semibold text-slate-900">$24.99</div>
-                    <div className="text-xs text-green-600">In Stock</div>
-                  </div>
-                  <div className="p-4 border border-slate-200 rounded-xl">
-                    <div className="text-sm text-slate-500 mb-1">Retailer B</div>
-                    <div className="font-semibold text-slate-900">$22.50</div>
-                    <div className="text-xs text-green-600">In Stock</div>
-                  </div>
+              </li>
+              <li className="lc-comparison-item">
+                <span className="lc-icon-x">✕</span>
+                <div>
+                  <strong>Amazon:</strong>{' '}
+                  <span>Counterfeit risk. Zero personalization. Review manipulation.</span>
                 </div>
-              </div>
-            </div>
+              </li>
+              <li className="lc-comparison-item">
+                <span className="lc-icon-x">✕</span>
+                <div>
+                  <strong>Google:</strong>{' '}
+                  <span>SEO-gamed results. Sponsored content disguised as advice.</span>
+                </div>
+              </li>
+              <li className="lc-comparison-item">
+                <span className="lc-icon-x">✕</span>
+                <div>
+                  <strong>INCIdecoder:</strong>{' '}
+                  <span>Great for data, but no personalization or guidance.</span>
+                </div>
+              </li>
+              <li className="lc-comparison-item lc-us">
+                <span className="lc-icon-check">✓</span>
+                <div>
+                  <strong>Lorem Curae:</strong>{' '}
+                  <span>Personalized recommendations, community-reviewed retailers, verified marketplace products, science-backed guidance, and a supportive community where you can go for advice—sharing your skin story together.</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="lc-diff-visual">
+            <p className="lc-diff-quote">
+              Your skin is unique.<br />
+              Your tools should be too.
+            </p>
           </div>
         </div>
       </section>
 
       {/* Rewards Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="order-2 lg:order-1 bg-gradient-to-br from-sage-50 to-cream-50 rounded-2xl p-8">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-sage-100 rounded-full flex items-center justify-center">
-                      <i className="ri-gift-line text-sage-600"></i>
-                    </div>
-                    <span className="font-medium text-slate-900">Points Earned</span>
-                  </div>
-                  <span className="text-xl font-bold text-sage-600">+250</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-cream-100 rounded-full flex items-center justify-center">
-                      <i className="ri-star-line text-sage-600"></i>
-                    </div>
-                    <span className="font-medium text-slate-900">Early Access</span>
-                  </div>
-                  <span className="text-sm text-green-600 font-medium">Unlocked</span>
-                </div>
-              </div>
-            </div>
-            <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-cream-100 rounded-full mb-6">
-                <i className="ri-gift-2-line text-2xl text-sage-600"></i>
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-                Earn rewards for making informed choices
-              </h2>
-              <p className="text-lg text-slate-600 mb-6 leading-relaxed">
-                Find the exact product you need across verified retailers — and earn rewards when you buy through us.
-              </p>
-              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                Shop through our Smart Product Finder and we'll share a portion of what we earn from our retail partners as rewards — and with cashback coming soon, you'll get even more value for your informed choices.
-              </p>
-              <a 
-                href="#waitlist" 
-                className="inline-block px-8 py-4 bg-sage-600 text-white rounded-full hover:bg-sage-700 transition-colors text-lg font-medium whitespace-nowrap"
-              >
-                Join the waitlist
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof / Credibility */}
-      <section className="py-20 px-6 bg-gradient-to-br from-sage-50 to-cream-50">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-            Built with science. Designed for real skin.
-          </h2>
-          <p className="text-xl text-slate-600 mb-12 leading-relaxed max-w-3xl mx-auto">
-            Lorem Curae is founded on evidence-based skincare principles, transparent ingredient explanations, and user-centric design. We're here to help you make confident decisions—not sell you perfection.
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="w-14 h-14 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-test-tube-line text-2xl text-sage-600"></i>
-              </div>
-              <h3 className="text-xl font-serif text-slate-900 mb-3">
-                Science-backed approach
-              </h3>
-              <p className="text-slate-600">
-                Every recommendation is grounded in dermatological research and evidence-based practices.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="w-14 h-14 bg-cream-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-eye-line text-2xl text-sage-600"></i>
-              </div>
-              <h3 className="text-xl font-serif text-slate-900 mb-3">
-                Transparent ingredients
-              </h3>
-              <p className="text-slate-600">
-                No hidden formulas, no marketing fluff—just honest, clear explanations of what's in your products.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="w-14 h-14 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-heart-3-line text-2xl text-sage-600"></i>
-              </div>
-              <h3 className="text-xl font-serif text-slate-900 mb-3">
-                User-centric design
-              </h3>
-              <p className="text-slate-600">
-                Built for real people with real skin concerns—not influencers or perfection seekers.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Final Waitlist CTA */}
-      <section id="waitlist" className="py-24 px-6 bg-white">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-sage-100 rounded-full mb-8">
-              <i className="ri-seedling-line text-4xl text-sage-600"></i>
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-              Be part of the future of skincare
-            </h2>
-            <p className="text-xl text-slate-600 mb-10 leading-relaxed">
-              Join early and help shape Lorem Curae. Be part of a community that values transparency, science, and individual care. Your journey starts here.
+      <section className="lc-rewards">
+        <div className="lc-rewards-grid">
+          <div className="lc-rewards-content">
+            <h2>Earn rewards for making informed choices</h2>
+            <p>
+              When you find a product through Lorem Curae and purchase from one of our verified retail partners, we share a portion of what we earn back with you.
             </p>
+            <ul className="lc-rewards-list">
+              <li>
+                <i className="ri-check-line"></i>
+                Early access to new features
+              </li>
+              <li>
+                <i className="ri-check-line"></i>
+                Beta testing invitations
+              </li>
+              <li>
+                <i className="ri-check-line"></i>
+                Future discounts and perks
+              </li>
+              <li>
+                <i className="ri-check-line"></i>
+                Exclusive community benefits
+              </li>
+            </ul>
+            <a href="#waitlist" className="lc-btn-primary">
+              Join the Waitlist
+            </a>
+          </div>
+          
+          <div className="lc-rewards-visual">
+            <div className="lc-reward-item">
+              <div className="lc-reward-left">
+                <div className="lc-reward-icon">
+                  <i className="ri-gift-line"></i>
+                </div>
+                <span className="lc-reward-label">Points Earned</span>
+              </div>
+              <span className="lc-reward-value">+250</span>
+            </div>
+            <div className="lc-reward-item">
+              <div className="lc-reward-left">
+                <div className="lc-reward-icon">
+                  <i className="ri-star-line"></i>
+                </div>
+                <span className="lc-reward-label">Early Access</span>
+              </div>
+              <span className="lc-reward-badge">Unlocked</span>
+            </div>
+            <div className="lc-reward-item">
+              <div className="lc-reward-left">
+                <div className="lc-reward-icon">
+                  <i className="ri-vip-crown-line"></i>
+                </div>
+                <span className="lc-reward-label">Founding Member</span>
+              </div>
+              <span className="lc-reward-badge">Permanent</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
- {/* Supabase Waitlist Form */}
-<div className="max-w-xl mx-auto">
-  <SupabaseWaitlistForm segment="regular" />
+      {/* Early Access Benefits Section */}
+      <section className="lc-early-access">
+        <div className="lc-early-access-inner">
+          <span className="lc-section-label">Founding Members</span>
+          <h2>Why join early?</h2>
+          <p className="lc-section-description">
+            Great tools aren't built in isolation—they're shaped by the people who use them. As a founding member, you don't just get early access. You help build what Lorem Curae becomes.
+          </p>
+          
+          <div className="lc-benefits-grid">
+            <div className="lc-benefit-card">
+              <div className="lc-benefit-icon">
+                <i className="ri-rocket-line"></i>
+              </div>
+              <h3 className="lc-benefit-title">First Access</h3>
+              <p className="lc-benefit-text">Be among the first to experience Lorem Curae before public launch</p>
+            </div>
+            <div className="lc-benefit-card">
+              <div className="lc-benefit-icon">
+                <i className="ri-voice-recognition-line"></i>
+              </div>
+              <h3 className="lc-benefit-title">Shape the Platform</h3>
+              <p className="lc-benefit-text">Your feedback directly influences features, design, and priorities</p>
+            </div>
+            <div className="lc-benefit-card">
+              <div className="lc-benefit-icon">
+                <i className="ri-group-line"></i>
+              </div>
+              <h3 className="lc-benefit-title">Join the Community</h3>
+              <p className="lc-benefit-text">Connect with others who value transparency, science, and real results</p>
+            </div>
+            <div className="lc-benefit-card">
+              <div className="lc-benefit-icon">
+                <i className="ri-medal-line"></i>
+              </div>
+              <h3 className="lc-benefit-title">Permanent Status</h3>
+              <p className="lc-benefit-text">Founding member recognition and exclusive perks for life</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <div className="mt-10">
-    <WaitlistStatus />
-  </div>
-</div>
-
-{/* Check My Wave (Magic Link Login) */}
-<div className="max-w-xl mx-auto mt-16">
-  <h3 className="text-2xl font-serif text-slate-900 mb-4">
-    Already joined the waitlist?
-  </h3>
-  <MagicLinkLogin />
-</div>
-
+      {/* Final CTA Section */}
+      <section id="waitlist" className="lc-final-cta">
+        <div className="lc-cta-box">
+          <div className="lc-cta-icon">
+            <i className="ri-seedling-line"></i>
+          </div>
+          <h2>Your skin journey starts here</h2>
+          <p>
+            No more guessing. No more wasted money on products that weren't made for you. Join early and help shape the future of skincare—built on science, personalization, and a community that actually gets it.
+          </p>
+          
+          <div className="lc-form-wrapper">
+            <SupabaseWaitlistForm segment="regular" />
+            
+            <div className="lc-status-wrapper">
+              <WaitlistStatus />
+            </div>
+          </div>
+          
+          <div className="lc-magic-link-section">
+            <h3>Already on the waitlist?</h3>
+            <MagicLinkLogin />
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <Link to="/" className="text-3xl font-serif mb-4 inline-block">
-            Lorem Curae
-          </Link>
-          <p className="text-slate-400 mb-6">
-            Skincare clarity, powered by science and personalization
-          </p>
-          <div className="flex items-center justify-center gap-6 text-sm text-slate-400">
-            <Link to="/privacy" className="hover:text-white transition-colors">
-              Privacy
-            </Link>
-            <span>•</span>
-            <Link to="/contact" className="hover:text-white transition-colors">
-              Contact
-            </Link>
-            <span>•</span>
-            <a 
-              href="https://readdy.ai/?origin=logo" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="hover:text-white transition-colors"
-            >
-              Powered by Readdy
-            </a>
-          </div>
+      <footer className="lc-footer">
+        <Link to="/" className="lc-footer-logo">
+          Lorem Curae
+        </Link>
+        <p className="lc-footer-tagline">
+          Skincare, finally decoded.
+        </p>
+        <div className="lc-footer-links">
+          <Link to="/privacy">Privacy</Link>
+          <span>•</span>
+          <Link to="/contact">Contact</Link>
+          <span>•</span>
+          <a 
+            href="https://readdy.ai/?origin=logo" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            Powered by Readdy
+          </a>
         </div>
       </footer>
     </div>
