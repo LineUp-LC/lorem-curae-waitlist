@@ -871,16 +871,16 @@ const WaitlistLandingPage = () => {
           </div>
           
           <h1 className="lc-headline">
-            Stop guessing.<br />
-            Start <em>understanding</em> your skin.
+            Your skin deserves more than guesswork.<br />
+            It deserves <em>understanding</em>.
           </h1>
-          
+
           <p className="lc-subhead">
-            The first platform that connects your skin profile to personalized product recommendations, trusted retailers, ingredient science, and a community that actually gets it.
+            Lorem Curae is the first platform that connects your unique skin profile to personalized recommendations, trusted retailers, ingredient science, and a community that truly gets it. Everything works together—because your skin journey shouldn't feel like you're navigating it alone.
           </p>
-          
+
           <div className="lc-problem-box">
-            <strong>The skincare industry has a problem:</strong> You're drowning in influencer picks, algorithm-driven ads, and ingredient lists that read like chemistry exams. You've tried the "holy grail" products that worked for everyone but you. It's not your fault—you've never had the right tools.
+            <strong>Here's what no one tells you:</strong> skincare confusion isn't your fault. You've been handed influencer picks, algorithm-driven ads, and ingredient lists that read like chemistry exams. You've tried the "holy grail" products that worked for everyone except you. The problem isn't that you haven't tried hard enough—it's that you've never had tools designed around <strong>your</strong> skin.
           </div>
           
           <div className="lc-cta-group">
@@ -897,12 +897,12 @@ const WaitlistLandingPage = () => {
       {/* Ecosystem Section */}
       <section id="ecosystem" className="lc-ecosystem">
         <div className="lc-section-intro">
-          <span className="lc-section-label">One Ecosystem, Infinite Clarity</span>
+          <span className="lc-section-label">One Ecosystem, Built Around You</span>
           <h2 className="lc-section-title">
-            Six tools that work together—so you don't have to
+            Six tools that finally work together—so you don't have to figure it out alone
           </h2>
           <p className="lc-section-description">
-            Each feature feeds into the next. Your skin survey informs your product recommendations and builds the foundation for your personalized experience. Your ingredient knowledge shapes your comparisons. This isn't a collection of tools—it's a connected system built around <em>your</em> skin.
+            Each feature strengthens the next. Your skin survey shapes your recommendations. Your ingredient knowledge deepens your comparisons. Your routine tracking refines your results over time. This isn't a collection of disconnected tools—it's a guided system built around <em>your</em> skin, designed to grow with you.
           </p>
         </div>
         
@@ -914,14 +914,14 @@ const WaitlistLandingPage = () => {
             </div>
             <h3 className="lc-tool-title">Smart Product Finder</h3>
             <p className="lc-tool-pain">
-              The pain: Endless scrolling through products that weren't made for your skin—and finding retailers that sell faulty products, never knowing if the product actually works.
+              You've scrolled through endless products that weren't made for your skin—without knowing which retailers you can actually trust.
             </p>
             <p className="lc-tool-description">
-              Search for products and reputable retailers the way you actually think about skincare—by concern, ingredient, price, or skin type.
+              Search the way you actually think about skincare—by concern, ingredient, price, or skin type. Find products from reputable retailers with community-verified reviews.
             </p>
             <span className="lc-tool-outcome">
               <i className="ri-check-line"></i>
-              Find trusted retailers that sell your recommended product
+              Discover products that fit your skin from sources you can trust
             </span>
           </div>
           
@@ -932,10 +932,10 @@ const WaitlistLandingPage = () => {
             </div>
             <h3 className="lc-tool-title">Curae AI</h3>
             <p className="lc-tool-pain">
-              The pain: Conflicting advice from the internet, influencers, and even derms.
+              You've gotten conflicting advice from influencers, the internet, and even dermatologists—and you're more confused than when you started.
             </p>
             <p className="lc-tool-description">
-              Ask anything and get answers grounded in peer-reviewed research, not sponsored content—and answers based on your interactions and overall journey within the site.
+              Ask anything and receive answers grounded in peer-reviewed research, not sponsored content. Curae learns from your journey and tailors its guidance to your unique profile.
             </p>
             <span className="lc-tool-outcome">
               <i className="ri-check-line"></i>
@@ -950,14 +950,14 @@ const WaitlistLandingPage = () => {
             </div>
             <h3 className="lc-tool-title">Product Comparison</h3>
             <p className="lc-tool-pain">
-              The pain: Wondering if the $68 serum is actually better than the $19 one.
+              You've wondered whether the $68 serum is truly better than the $19 one—or just better at marketing.
             </p>
             <p className="lc-tool-description">
-              Compare up to three products side-by-side: ingredients, concentration, price-per-ml, and compatibility with your skin.
+              Compare up to three products side-by-side: ingredients, concentrations, price-per-ml, and how each one fits your skin profile.
             </p>
             <span className="lc-tool-outcome">
               <i className="ri-check-line"></i>
-              Spend smarter, not more
+              Make confident decisions, spend smarter
             </span>
           </div>
           
@@ -968,14 +968,14 @@ const WaitlistLandingPage = () => {
             </div>
             <h3 className="lc-tool-title">Ingredient Library</h3>
             <p className="lc-tool-pain">
-              The pain: Reading ingredient lists like they're written in another language.
+              You've stared at ingredient lists that feel like another language—with no way to know what any of it means for you.
             </p>
             <p className="lc-tool-description">
-              Every ingredient decoded: what it does, who it's for, what to pair it with (and what to avoid).
+              Every ingredient decoded: what it does, who it's for, what to pair it with, and what to avoid. Science-backed explanations written for real people—not chemists.
             </p>
             <span className="lc-tool-outcome">
               <i className="ri-check-line"></i>
-              Finally understand what you're putting on your face
+              Finally understand what you're putting on your skin
             </span>
           </div>
           
@@ -986,14 +986,14 @@ const WaitlistLandingPage = () => {
             </div>
             <h3 className="lc-tool-title">Routine Tracking</h3>
             <p className="lc-tool-pain">
-              The pain: Forgetting what you used when, never knowing what's working, and not having someone to guide you throughout your process.
+              You've lost track of what you used and when—never quite knowing what's working, with no one guiding you through the process.
             </p>
             <p className="lc-tool-description">
-              Build AM/PM routines with smart conflict detection. Track your progress over time—further enhancing your personalization.
+              Build AM/PM routines with smart conflict detection. Track your progress over time, and let your journey strengthen your personalization.
             </p>
             <span className="lc-tool-outcome">
               <i className="ri-check-line"></i>
-              Build consistency, see results
+              Build consistency, see what actually works
             </span>
           </div>
           
@@ -1004,10 +1004,10 @@ const WaitlistLandingPage = () => {
             </div>
             <h3 className="lc-tool-title">Progress Assessment</h3>
             <p className="lc-tool-pain">
-              The pain: Trying new routines without any way to measure if they're actually working—or knowing when it's time to adjust.
+              You've tried new routines without any way to measure results—or know when something needs to change.
             </p>
             <p className="lc-tool-description">
-              Curae analyzes your tracked routines and skin progress over time, providing personalized feedback and actionable insights.
+              Curae analyzes your tracked routines and skin progress over time, giving you personalized feedback and clear, actionable next steps.
             </p>
             <span className="lc-tool-outcome">
               <i className="ri-check-line"></i>
@@ -1026,7 +1026,7 @@ const WaitlistLandingPage = () => {
               We're <em>on your side.</em>
             </h2>
             <p className="lc-diff-text">
-              Big retailers want you to buy. Search engines want you to click. Ingredient databases give you data without direction. We built Lorem Curae because we were tired of navigating a system designed to sell, not to serve.
+              Big retailers want you to buy. Search engines want you to click. Ingredient databases give you data without direction. We built Lorem Curae because we were tired of navigating a system that was designed to sell—not to support. You deserve tools that actually work for you.
             </p>
             
             <ul className="lc-comparison-list">
@@ -1062,7 +1062,7 @@ const WaitlistLandingPage = () => {
                 <span className="lc-icon-check">✓</span>
                 <div>
                   <strong>Lorem Curae:</strong>{' '}
-                  <span>Personalized recommendations, community-reviewed retailers, verified marketplace products, science-backed guidance, and a supportive community where you can go for advice—sharing your skin story together.</span>
+                  <span>Personalized recommendations, community-reviewed retailers, verified marketplace products, science-backed guidance, and a supportive community where you're never figuring it out alone.</span>
                 </div>
               </li>
             </ul>
@@ -1083,7 +1083,7 @@ const WaitlistLandingPage = () => {
           <div className="lc-rewards-content">
             <h2>Earn rewards for making informed choices</h2>
             <p>
-              When you find a product through Lorem Curae and purchase from one of our verified retail partners, we share a portion of what we earn back with you.
+              When you discover a product through Lorem Curae and purchase from one of our verified retail partners, we share a portion of what we earn back with you. Your trust matters—and we believe in rewarding it.
             </p>
             <ul className="lc-rewards-list">
               <li>
@@ -1146,7 +1146,7 @@ const WaitlistLandingPage = () => {
           <span className="lc-section-label">Founding Members</span>
           <h2>Why join early?</h2>
           <p className="lc-section-description">
-            Great tools aren't built in isolation—they're shaped by the people who use them. As a founding member, you don't just get early access. You help build what Lorem Curae becomes.
+            Great tools aren't built in isolation—they're shaped by the people who need them most. As a founding member, you're not just getting early access. You're helping us build what Lorem Curae becomes. Your feedback, your frustrations, your wins—they matter here. This is your platform too.
           </p>
           
           <div className="lc-benefits-grid">
@@ -1190,7 +1190,7 @@ const WaitlistLandingPage = () => {
           </div>
           <h2>Your skin journey starts here</h2>
           <p>
-            No more guessing. No more wasted money on products that weren't made for you. Join early and help shape the future of skincare—built on science, personalization, and a community that actually gets it.
+            No more guessing. No more wasted money on products that weren't made for you. Join early and help shape the future of skincare—built on science, personalization, and a community where you finally feel understood.
           </p>
           
           <div className="lc-form-wrapper">
