@@ -876,7 +876,7 @@ const WaitlistLandingPage = () => {
           </h1>
 
           <p className="lc-subhead">
-            Lorem Curae is the first platform that connects your unique skin profile to personalized recommendations, trusted retailers, ingredient science, and a community that truly gets it. Everything works together—because your skin journey shouldn't feel like you're navigating it alone.
+            Lorem Curae is one of the only platforms built to connect your unique skin profile with personalized guidance, trusted retailers, ingredient clarity, and community support into one connected experience. Everything works together so you never have to navigate skincare alone — and finally see clarity where there used to be confusion.
           </p>
 
           <div className="lc-problem-box">
