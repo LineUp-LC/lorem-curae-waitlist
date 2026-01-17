@@ -158,6 +158,11 @@ const WaitlistLandingPage = () => {
           font-style: italic;
           color: #C4704D;
         }
+
+        .lc-subhead em {
+          font-style: italic;
+          color: #C4704D;
+        }
         
         .lc-subhead {
           font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
@@ -876,7 +881,7 @@ const WaitlistLandingPage = () => {
           </h1>
 
           <p className="lc-subhead">
-            Lorem Curae is one of the only platforms built to connect your unique skin profile with personalized guidance, trusted retailers, ingredient clarity, and community support into one connected experience. Everything works together so you never have to navigate skincare alone — and finally see clarity where there used to be confusion.
+            Lorem Curae is one of the only platforms thoughtfully designed to bring together everything you need for your skincare journey in one place. We connect your <em>unique skin profile</em> with <em>personalized guidance</em> tailored specifically to you, access to <em>trusted retailers</em> that have been vetted by our community, complete <em>ingredient transparency</em> so you always know what you're putting on your skin, and a <em>supportive community</em> of real people who understand what you're going through. Every feature we build is designed to work seamlessly with the others, creating a connected experience where your skin profile informs your recommendations, your ingredient knowledge deepens your product choices, and your routine tracking refines your results over time. You'll never have to navigate the overwhelming world of skincare alone again — and you'll finally find <em>clarity</em> where there used to be confusion, <em>confidence</em> where there used to be doubt, and <em>real results</em> where there used to be frustration.
           </p>
 
           <div className="lc-problem-box">
