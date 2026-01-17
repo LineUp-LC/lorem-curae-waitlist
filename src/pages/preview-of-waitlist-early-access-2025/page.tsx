@@ -168,23 +168,29 @@ const WaitlistLandingPage = () => {
           font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
           font-size: 1.125rem;
           color: #6B635A;
-          max-width: 650px;
+          max-width: 900px;
           margin: 0 auto 2.5rem;
           line-height: 1.7;
         }
         
+        .lc-problem-section {
+          padding: 4rem 1.5rem;
+          background: linear-gradient(180deg, #FFFBF8 0%, #F8F4F0 100%);
+        }
+
         .lc-problem-box {
           font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
-          font-size: 0.9375rem;
+          font-size: 1.0625rem;
           color: #6B635A;
-          max-width: 650px;
-          margin: 0 auto 3rem;
+          max-width: 800px;
+          margin: 0 auto;
           line-height: 1.8;
-          padding: 1.5rem 2rem;
-          background: rgba(255, 255, 255, 0.7);
-          border-radius: 16px;
-          border: 1px solid rgba(196, 112, 77, 0.08);
-          backdrop-filter: blur(10px);
+          padding: 2.5rem 3rem;
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 20px;
+          border: 1px solid rgba(196, 112, 77, 0.12);
+          box-shadow: 0 10px 40px rgba(45, 42, 38, 0.06);
+          text-align: center;
         }
         
         .lc-problem-box strong {
@@ -884,10 +890,6 @@ const WaitlistLandingPage = () => {
             Lorem Curae is one of the only platforms thoughtfully designed to bring together everything you need for your skincare journey in one place. We connect your <em>unique skin profile</em> with <em>personalized guidance</em> tailored specifically to you, access to <em>trusted retailers</em> that have been vetted by our community, complete <em>ingredient transparency</em> so you always know what you're putting on your skin, and a <em>supportive community</em> of real people who understand what you're going through. Every feature we build is designed to work seamlessly with the others, creating a connected experience where your skin profile informs your recommendations, your ingredient knowledge deepens your product choices, and your routine tracking refines your results over time. You'll never have to navigate the overwhelming world of skincare alone again — and you'll finally find <em>clarity</em> where there used to be confusion, <em>confidence</em> where there used to be doubt, and <em>real results</em> where there used to be frustration.
           </p>
 
-          <div className="lc-problem-box">
-            <strong>Here's what no one tells you:</strong> skincare confusion isn't your fault. You've been handed influencer picks, algorithm-driven ads, and ingredient lists that read like chemistry exams. You've tried the "holy grail" products that worked for everyone except you. The problem isn't that you haven't tried hard enough—it's that you've never had tools designed around <strong>your</strong> skin.
-          </div>
-          
           <div className="lc-cta-group">
             <a href="#waitlist" className="lc-btn-primary">
               Join the Founding Member Waitlist
@@ -896,6 +898,13 @@ const WaitlistLandingPage = () => {
               See How It Works
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* Problem Section */}
+      <section className="lc-problem-section">
+        <div className="lc-problem-box">
+          <strong>Here's what no one tells you:</strong> skincare confusion isn't your fault. You've been handed influencer picks, algorithm-driven ads, and ingredient lists that read like chemistry exams. You've tried the "holy grail" products that worked for everyone except you. The problem isn't that you haven't tried hard enough—it's that you've never had tools designed around <strong>your</strong> skin.
         </div>
       </section>
 
