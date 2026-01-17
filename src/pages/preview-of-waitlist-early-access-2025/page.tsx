@@ -872,8 +872,7 @@ const WaitlistLandingPage = () => {
           </div>
           
           <h1 className="lc-headline">
-            Your skin deserves more than guesswork.<br />
-            It deserves <em>understanding</em>.
+            Your skin deserves more than guesswork. It deserves <em>understanding</em>.
           </h1>
 
           <p className="lc-subhead">
