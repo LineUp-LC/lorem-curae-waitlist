@@ -17,11 +17,11 @@ export default function AuthCallback() {
 
       const { data: waitlistEntry } = await supabase
         .from('waitlist')
-        .select('wants_beta')
+        .select('wants_tester_access')
         .eq('email', email)
         .maybeSingle();
 
-      if (waitlistEntry?.wants_beta) {
+      if (waitlistEntry?.wants_tester_access) {
         window.location.href = 'https://tester-access-page.vercel.app';
       } else {
         navigate('/waitlist');
