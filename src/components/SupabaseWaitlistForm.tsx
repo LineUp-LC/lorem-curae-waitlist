@@ -73,7 +73,7 @@ export default function SupabaseWaitlistForm({
         .insert([{
           email: trimmedEmail,
           segment,
-          betaTesterInterest: formState.betaTesterInterest,
+          wants_beta: formState.betaTesterInterest,
           status: 'pending',
           wave_number: 1
         }]);

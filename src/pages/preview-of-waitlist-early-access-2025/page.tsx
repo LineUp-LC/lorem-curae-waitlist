@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SupabaseWaitlistForm from '../../components/SupabaseWaitlistForm';
 import WaitlistStatus from '../../components/WaitlistStatus';
 import MagicLinkLogin from '../../components/MagicLinkLogin';
+import AuthCallback from '../../components/AuthCallback';
 
 /**
  * WaitlistLandingPage Component
@@ -15,6 +15,9 @@ import MagicLinkLogin from '../../components/MagicLinkLogin';
 const WaitlistLandingPage = () => {
   return (
     <div className="lc-waitlist-page">
+      {/* Handle auth callback redirect after magic link */}
+      <AuthCallback />
+
       <style>{`
         .lc-waitlist-page {
           min-height: 100vh;
