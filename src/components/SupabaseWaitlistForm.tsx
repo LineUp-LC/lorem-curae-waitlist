@@ -180,34 +180,6 @@ export default function SupabaseWaitlistForm({
               )}
             </div>
 
-            {/* Beta Tester Interest */}
-            <div className="px-2">
-              <p className="text-sage-700 text-sm font-medium mb-2">
-                Would you like to join the early beta testing group?
-              </p>
-              <label
-                htmlFor="betaTesterInterest"
-                className="flex items-start gap-3 cursor-pointer group"
-              >
-                <input
-                  type="checkbox"
-                  id="betaTesterInterest"
-                  checked={betaTesterInterest}
-                  onChange={handleBetaTesterChange}
-                  disabled={isSubmitting}
-                  className="
-                    mt-0.5 h-5 w-5 rounded border-slate-300
-                    text-sage-600 focus:ring-sage-500 focus:ring-offset-0
-                    transition-colors duration-200
-                    disabled:opacity-60 disabled:cursor-not-allowed
-                  "
-                />
-                <span className="text-sage-600 text-sm leading-snug group-hover:text-sage-700 transition-colors">
-                  Yes, I want early access and I'm open to giving feedback.
-                </span>
-              </label>
-            </div>
-
             {/* Error Message */}
             {errorMessage && (
               <p
@@ -241,6 +213,34 @@ export default function SupabaseWaitlistForm({
           <p className="text-center text-sage-500 text-sm font-light">
             We respect your privacy. Unsubscribe at any time.
           </p>
+
+          {/* Beta Tester Interest */}
+          <div className="pt-6 mt-2 border-t border-slate-200/60">
+            <p className="text-sage-700 text-sm font-medium mb-3 text-center">
+              Would you like to join the early beta testing group?
+            </p>
+            <label
+              htmlFor="betaTesterInterest"
+              className="flex items-center justify-center gap-3 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                id="betaTesterInterest"
+                checked={betaTesterInterest}
+                onChange={handleBetaTesterChange}
+                disabled={isSubmitting}
+                className="
+                  h-5 w-5 rounded border-slate-300
+                  text-sage-600 focus:ring-sage-500 focus:ring-offset-0
+                  transition-colors duration-200
+                  disabled:opacity-60 disabled:cursor-not-allowed
+                "
+              />
+              <span className="text-sage-600 text-sm leading-snug group-hover:text-sage-700 transition-colors">
+                Yes, I want early access and I'm open to giving feedback.
+              </span>
+            </label>
+          </div>
         </form>
       ) : (
         /* Success State */
