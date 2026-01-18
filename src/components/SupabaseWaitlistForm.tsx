@@ -152,6 +152,9 @@ export default function SupabaseWaitlistForm({
             <div className="relative">
               <input
                 type="email"
+                id="email"
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={handleEmailChange}
                 placeholder="Enter your email"
@@ -226,6 +229,7 @@ export default function SupabaseWaitlistForm({
               <input
                 type="checkbox"
                 id="betaTesterInterest"
+                name="betaTesterInterest"
                 checked={betaTesterInterest}
                 onChange={handleBetaTesterChange}
                 disabled={isSubmitting}
