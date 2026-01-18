@@ -10,7 +10,7 @@ interface SupabaseWaitlistFormProps {
 interface WaitlistFormState {
   email: string;
   betaTesterInterest: boolean;
-  status: 'idle' | 'submitting' | 'success' | 'error';
+  status: 'idle' | 'submitting' | 'success' | 'duplicate' | 'error';
   errorMessage: string;
 }
 
@@ -65,7 +65,7 @@ export default function SupabaseWaitlistForm({
       return;
     }
 
-    setFormState((prev) => ({ ...prev, status: 'submitting' }));
+    setFormState((prev) => ({ ...prev, status: 'submitting', errorMessage: '' }));
 
     try {
       const { error } = await supabase
@@ -74,35 +74,46 @@ export default function SupabaseWaitlistForm({
           email: trimmedEmail,
           segment,
           betaTesterInterest: formState.betaTesterInterest,
-          status: 'waiting',
-          wave_number: null
+          status: 'pending',
+          wave_number: 1
         }]);
 
       if (error) {
         // Handle duplicate email (unique constraint violation)
-        if (error.code === '23505') {
+        const isDuplicate =
+          error.code === '23505' ||
+          error.message?.includes('duplicate') ||
+          (error as { status?: number }).status === 409;
+
+        if (isDuplicate) {
           setFormState((prev) => ({
             ...prev,
-            status: 'success',
+            status: 'duplicate',
           }));
           return;
         }
-        throw error;
+
+        console.error('Waitlist submission error:', error);
+        setFormState((prev) => ({
+          ...prev,
+          status: 'error',
+          errorMessage: 'Something went wrong. Please try again.',
+        }));
+        return;
       }
 
-      setFormState((prev) => ({
-        ...prev,
-        status: 'success',
+      setFormState({
         email: '',
         betaTesterInterest: false,
-      }));
-    } catch (err) {
-      console.error('Waitlist submission error:', err);
-      setFormState((prev) => ({
-        ...prev,
-        status: 'error',
-        errorMessage: 'Something went wrong. Please try again.',
-      }));
+        status: 'success',
+        errorMessage: '',
+      });
+    } finally {
+      setFormState((prev) =>
+        prev.status === 'submitting'
+          ? { ...prev, status: 'idle' }
+          : prev
+      );
     }
   };
 
@@ -131,7 +142,7 @@ export default function SupabaseWaitlistForm({
 
   return (
     <div className="max-w-xl mx-auto px-4">
-      {status !== 'success' ? (
+      {status !== 'success' && status !== 'duplicate' ? (
         <form
           onSubmit={handleSubmit}
           className="animate-fade-in space-y-6"
@@ -247,7 +258,7 @@ export default function SupabaseWaitlistForm({
           </div>
         </form>
       ) : (
-        /* Success State */
+        /* Success/Duplicate State */
         <div className="text-center space-y-4 animate-slide-up">
           {/* Success Icon */}
           <div className="mx-auto w-16 h-16 rounded-full bg-sage-100 flex items-center justify-center">
@@ -266,13 +277,15 @@ export default function SupabaseWaitlistForm({
             </svg>
           </div>
 
-          {/* Success Message */}
+          {/* Success/Duplicate Message */}
           <div className="space-y-2">
             <h3 className="font-serif text-2xl md:text-3xl text-sage-800">
-              {successHeading}
+              {status === 'duplicate' ? "You're already on the waitlist" : successHeading}
             </h3>
             <p className="text-sage-600 text-lg font-light">
-              {successMessage}
+              {status === 'duplicate'
+                ? "You're already on the waitlist."
+                : "You're on the waitlist — we release access in waves."}
             </p>
           </div>
 
