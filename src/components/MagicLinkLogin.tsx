@@ -37,6 +37,7 @@ export default function MagicLinkLogin() {
     e.preventDefault();
 
     const trimmedEmail = email.trim().toLowerCase();
+    console.log("trimmedEmail:", trimmedEmail, JSON.stringify(trimmedEmail));
 
     // Frontend validation
     if (!trimmedEmail) {
@@ -61,9 +62,11 @@ export default function MagicLinkLogin() {
       // Check if email is on the waitlist first
       const { data: waitlistEntry, error: lookupError } = await supabase
         .from("waitlist")
-        .select("email")
+        .select("id")
         .eq("email", trimmedEmail)
         .maybeSingle();
+      console.log("waitlistEntry:", waitlistEntry);
+      console.log("lookupError:", lookupError);
 
       if (lookupError) {
         throw lookupError;
