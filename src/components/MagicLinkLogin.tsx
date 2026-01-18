@@ -256,7 +256,7 @@ export default function MagicLinkLogin() {
 
         {/* Explanation */}
         <p className="text-center text-sage-500 text-sm font-light px-4">
-          We'll email you a secure one-time link to access your account. No password needed.
+          A magic link is a secure one‑time login sent to your email. Click it to confirm your identity and access your account.
         </p>
       </div>
 

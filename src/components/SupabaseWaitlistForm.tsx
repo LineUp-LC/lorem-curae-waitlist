@@ -102,6 +102,22 @@ export default function SupabaseWaitlistForm({
         return;
       }
 
+      // Fire-and-forget: send waitlist signup email
+      fetch('/api/send-status-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, type: 'waitlist_signup' }),
+      });
+
+      // If interested in beta, also send early access email
+      if (formState.betaTesterInterest) {
+        fetch('/api/send-status-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, type: 'early_access_interest' }),
+        });
+      }
+
       setFormState({
         email: '',
         betaTesterInterest: false,
