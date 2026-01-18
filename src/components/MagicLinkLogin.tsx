@@ -92,7 +92,7 @@ export default function MagicLinkLogin() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: trimmedEmail,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: 'https://loremcurae.com/auth/callback',
         },
       });
 
