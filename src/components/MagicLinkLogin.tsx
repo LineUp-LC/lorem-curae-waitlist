@@ -10,6 +10,12 @@ interface MagicLinkState {
 }
 
 export default function MagicLinkLogin() {
+  console.log("MagicLinkLogin component rendered");
+  console.log("ENV_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+  console.log(
+    "ENV_SUPABASE_ANON_KEY:",
+    import.meta.env.VITE_SUPABASE_ANON_KEY?.slice(0, 6) + "...(masked)"
+  );
   const [formState, setFormState] = useState<MagicLinkState>({
     email: "",
     status: "idle",
