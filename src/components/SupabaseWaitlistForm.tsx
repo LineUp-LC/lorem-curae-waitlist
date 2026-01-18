@@ -9,6 +9,7 @@ interface SupabaseWaitlistFormProps {
 
 interface WaitlistFormState {
   email: string;
+  betaTesterInterest: boolean;
   status: 'idle' | 'submitting' | 'success' | 'error';
   errorMessage: string;
 }
@@ -18,6 +19,7 @@ export default function SupabaseWaitlistForm({
 }: SupabaseWaitlistFormProps) {
   const [formState, setFormState] = useState<WaitlistFormState>({
     email: '',
+    betaTesterInterest: false,
     status: 'idle',
     errorMessage: '',
   });
@@ -32,6 +34,13 @@ export default function SupabaseWaitlistForm({
       ...prev,
       email: e.target.value,
       errorMessage: '',
+    }));
+  };
+
+  const handleBetaTesterChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setFormState((prev) => ({
+      ...prev,
+      betaTesterInterest: e.target.checked,
     }));
   };
 
@@ -61,11 +70,12 @@ export default function SupabaseWaitlistForm({
     try {
       const { error } = await supabase
         .from('waitlist')
-        .insert([{ 
-          email: trimmedEmail, 
+        .insert([{
+          email: trimmedEmail,
           segment,
-          status: 'waiting', 
-          wave_number: null 
+          betaTesterInterest: formState.betaTesterInterest,
+          status: 'waiting',
+          wave_number: null
         }]);
 
       if (error) {
@@ -84,6 +94,7 @@ export default function SupabaseWaitlistForm({
         ...prev,
         status: 'success',
         email: '',
+        betaTesterInterest: false,
       }));
     } catch (err) {
       console.error('Waitlist submission error:', err);
@@ -95,7 +106,7 @@ export default function SupabaseWaitlistForm({
     }
   };
 
-  const { email, status, errorMessage } = formState;
+  const { email, betaTesterInterest, status, errorMessage } = formState;
   const isSubmitting = status === 'submitting';
 
   // Segment-specific content
@@ -167,6 +178,34 @@ export default function SupabaseWaitlistForm({
                   <div className="h-5 w-5 border-2 border-sage-300 border-t-sage-600 rounded-full animate-spin" />
                 </div>
               )}
+            </div>
+
+            {/* Beta Tester Interest */}
+            <div className="px-2">
+              <p className="text-sage-700 text-sm font-medium mb-2">
+                Would you like to join the early beta testing group?
+              </p>
+              <label
+                htmlFor="betaTesterInterest"
+                className="flex items-start gap-3 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  id="betaTesterInterest"
+                  checked={betaTesterInterest}
+                  onChange={handleBetaTesterChange}
+                  disabled={isSubmitting}
+                  className="
+                    mt-0.5 h-5 w-5 rounded border-slate-300
+                    text-sage-600 focus:ring-sage-500 focus:ring-offset-0
+                    transition-colors duration-200
+                    disabled:opacity-60 disabled:cursor-not-allowed
+                  "
+                />
+                <span className="text-sage-600 text-sm leading-snug group-hover:text-sage-700 transition-colors">
+                  Yes, I want early access and I'm open to giving feedback.
+                </span>
+              </label>
             </div>
 
             {/* Error Message */}
