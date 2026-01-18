@@ -13,10 +13,10 @@ const templates = {
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
   },
   early_access_interest: {
-    subject: "You're on the early access list",
+    subject: "You're on the tester access list",
     html: `<p>Hi there,</p>
-<p>You're officially on the early access list for Lorem Curae.</p>
-<p>When early access opens, you'll be able to sign in by requesting a secure magic link from the waitlist page. That link will take you directly to the tester experience where you can test features and share feedback.</p>
+<p>You're officially on the tester access list for Lorem Curae.</p>
+<p>When tester access opens, you'll be able to sign in by requesting a secure magic link from the waitlist page. That link will take you directly to the tester experience where you can test features and share feedback.</p>
 <p>We'll notify you as soon as your access is ready.</p>
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
   },
@@ -24,15 +24,23 @@ const templates = {
     subject: "You're signed in — here's what that means",
     html: `<p>Hi there,</p>
 <p>You just signed in using your secure magic link. This confirms your email and gives you access to your account.</p>
-<p>Right now, your account is still on the waitlist, so you'll continue to see the waitlist page when you sign in. We'll notify you as soon as early access opens for your account.</p>
+<p>Right now, your account is still on the waitlist, so you'll continue to see the waitlist page when you sign in. We'll notify you as soon as tester access opens for your account.</p>
 <p>Thanks for your patience — we're building something special.</p>
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
   },
   early_access_open: {
-    subject: "Great news — your early access is now open",
+    subject: "Great news — your tester access is now open",
     html: `<p>Hi there,</p>
-<p>Great news — your early access to Lorem Curae is now open.</p>
+<p>Great news — your tester access to Lorem Curae is now open.</p>
 <p>You can sign in using your email to access the tester experience and explore new features.</p>
+<p>Thanks for being part of this journey.</p>
+<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+  },
+  tester_access_open: {
+    subject: "Great news — your tester access is now open",
+    html: `<p>Hi there,</p>
+<p>Great news — your tester access to Lorem Curae is now open.</p>
+<p>You can sign in using your email to access the tester experience and test features.</p>
 <p>Thanks for being part of this journey.</p>
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
   },

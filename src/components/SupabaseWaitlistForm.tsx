@@ -73,7 +73,7 @@ export default function SupabaseWaitlistForm({
         .insert([{
           email: trimmedEmail,
           segment,
-          wants_beta: formState.betaTesterInterest,
+          wants_tester_access: formState.betaTesterInterest,
           status: 'pending',
           wave_number: 1
         }]);
@@ -247,7 +247,7 @@ export default function SupabaseWaitlistForm({
           {/* Beta Tester Interest */}
           <div className="pt-6 mt-2 border-t border-slate-200/60">
             <p className="text-sage-700 text-sm font-medium mb-3 text-center">
-              Would you like to join the early beta testing group?
+              Are you interested in testing new features early?
             </p>
             <label
               htmlFor="betaTesterInterest"
@@ -268,7 +268,7 @@ export default function SupabaseWaitlistForm({
                 "
               />
               <span className="text-sage-600 text-sm leading-snug group-hover:text-sage-700 transition-colors">
-                Yes, I want early access and I'm open to giving feedback.
+                Yes, I want tester access and I'm open to giving feedback.
               </span>
             </label>
           </div>
