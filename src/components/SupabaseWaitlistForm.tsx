@@ -140,7 +140,7 @@ export default function SupabaseWaitlistForm({
   const content = {
     regular: {
       heading: 'Be the first to know',
-      subheading: 'Join our exclusive waitlist for early access.',
+      subheading: 'Join the waitlist for phased access.',
       buttonText: 'Join the waitlist',
       successHeading: "You're on the waitlist",
       successMessage: 'Welcome to the Lorem Curae community.',

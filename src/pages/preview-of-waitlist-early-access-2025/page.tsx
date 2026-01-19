@@ -528,124 +528,61 @@ const WaitlistLandingPage = () => {
           z-index: 1;
         }
         
-        /* Rewards Section */
-        .lc-rewards {
+        /* Limited Spots Section */
+        .lc-limited-spots {
           padding: 5rem 1.5rem;
           background: linear-gradient(180deg, #F8F4F0 0%, #FFFBF8 100%);
         }
-        
-        .lc-rewards-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 3rem;
-          max-width: 1000px;
+
+        .lc-limited-inner {
+          max-width: 800px;
           margin: 0 auto;
-          align-items: center;
+          text-align: center;
         }
-        
-        @media (min-width: 768px) {
-          .lc-rewards-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-        
-        .lc-rewards-content h2 {
+
+        .lc-limited-inner h2 {
           font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
           font-size: clamp(1.75rem, 3.5vw, 2.25rem);
           font-weight: 500;
           margin-bottom: 1.5rem;
           color: #2D2A26;
         }
-        
-        .lc-rewards-content p {
+
+        .lc-limited-inner > p {
           font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
-          font-size: 1rem;
+          font-size: 1.0625rem;
           color: #6B635A;
-          line-height: 1.7;
+          line-height: 1.8;
           margin-bottom: 1.5rem;
         }
-        
-        .lc-rewards-list {
-          list-style: none;
-          padding: 0;
-          margin: 0 0 2rem 0;
+
+        .lc-limited-inner > p em {
+          font-style: italic;
+          color: #C4704D;
         }
-        
-        .lc-rewards-list li {
+
+        .lc-waves-box {
+          background: white;
+          border-radius: 20px;
+          padding: 2rem 2.5rem;
+          border: 1px solid rgba(196, 112, 77, 0.12);
+          box-shadow: 0 10px 40px rgba(45, 42, 38, 0.06);
+          margin-top: 2rem;
+        }
+
+        .lc-waves-box h3 {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: 1.375rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+          color: #2D2A26;
+        }
+
+        .lc-waves-box p {
           font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
           font-size: 0.9375rem;
           color: #6B635A;
-          padding: 0.5rem 0;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-        
-        .lc-rewards-list li i {
-          color: #C4704D;
-        }
-        
-        .lc-rewards-visual {
-          background: white;
-          border-radius: 20px;
-          padding: 2rem;
-          box-shadow: 0 20px 60px rgba(45, 42, 38, 0.06);
-          border: 1px solid rgba(196, 112, 77, 0.08);
-        }
-        
-        .lc-reward-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 1rem;
-          background: rgba(196, 112, 77, 0.04);
-          border-radius: 12px;
-          margin-bottom: 1rem;
-        }
-        
-        .lc-reward-item:last-child {
-          margin-bottom: 0;
-        }
-        
-        .lc-reward-left {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-        }
-        
-        .lc-reward-icon {
-          width: 40px;
-          height: 40px;
-          background: rgba(196, 112, 77, 0.1);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #C4704D;
-        }
-        
-        .lc-reward-label {
-          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
-          font-size: 0.9375rem;
-          font-weight: 500;
-          color: #2D2A26;
-        }
-        
-        .lc-reward-value {
-          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #C4704D;
-        }
-        
-        .lc-reward-badge {
-          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: #7A8B7A;
-          background: rgba(122, 139, 122, 0.1);
-          padding: 0.25rem 0.75rem;
-          border-radius: 100px;
+          line-height: 1.7;
         }
         
         /* Early Access Section */
@@ -676,48 +613,84 @@ const WaitlistLandingPage = () => {
           margin-bottom: 3rem;
         }
         
-        .lc-benefits-grid {
+        .lc-perks-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 1.5rem;
-          margin-top: 5rem;
+          grid-template-columns: 1fr;
+          gap: 1rem;
+          margin-top: 3rem;
           margin-bottom: 3rem;
+          max-width: 600px;
+          margin-left: auto;
+          margin-right: auto;
         }
-        
-        .lc-benefit-card {
-          background: rgba(196, 112, 77, 0.04);
+
+        @media (min-width: 640px) {
+          .lc-perks-grid {
+            grid-template-columns: 1fr 1fr;
+            max-width: 800px;
+          }
+        }
+
+        @media (min-width: 900px) {
+          .lc-perks-grid {
+            grid-template-columns: 1fr 1fr 1fr;
+            max-width: 1000px;
+          }
+        }
+
+        .lc-perk-card {
+          background: linear-gradient(135deg, rgba(196, 112, 77, 0.08) 0%, rgba(196, 112, 77, 0.04) 100%);
           padding: 1.5rem;
           border-radius: 16px;
-          text-align: center;
+          text-align: left;
+          border: 1px solid rgba(196, 112, 77, 0.12);
+          transition: all 0.3s ease;
         }
-        
-        .lc-benefit-icon {
-          width: 48px;
-          height: 48px;
-          background: white;
-          border-radius: 12px;
+
+        .lc-perk-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(196, 112, 77, 0.08);
+          border-color: rgba(196, 112, 77, 0.2);
+        }
+
+        .lc-perk-icon {
+          width: 40px;
+          height: 40px;
+          background: rgba(196, 112, 77, 0.08);
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 auto 1rem;
+          margin-bottom: 1rem;
           color: #C4704D;
-          font-size: 1.5rem;
-          box-shadow: 0 4px 12px rgba(196, 112, 77, 0.1);
+          font-size: 1.25rem;
         }
-        
-        .lc-benefit-title {
+
+        .lc-perk-title {
           font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
-          font-size: 1.125rem;
+          font-size: 1.0625rem;
           font-weight: 600;
           margin-bottom: 0.5rem;
           color: #2D2A26;
         }
-        
-        .lc-benefit-text {
+
+        .lc-perk-text {
           font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
           font-size: 0.8125rem;
           color: #6B635A;
           line-height: 1.5;
+        }
+
+        .lc-perk-badge {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 0.6875rem;
+          font-weight: 600;
+          color: #7A8B7A;
+          background: rgba(122, 139, 122, 0.1);
+          padding: 0.25rem 0.5rem;
+          border-radius: 100px;
+          display: inline-block;
+          margin-bottom: 0.75rem;
         }
         
         /* Final CTA Section */
@@ -1094,106 +1067,107 @@ const WaitlistLandingPage = () => {
         </div>
       </section>
 
-      {/* Rewards Section */}
-      <section className="lc-rewards">
-        <div className="lc-rewards-grid">
-          <div className="lc-rewards-content">
-            <h2>Earn rewards for making informed choices</h2>
+      {/* Founding Member Spots Are Limited Section */}
+      <section className="lc-limited-spots">
+        <div className="lc-limited-inner">
+          <span className="lc-section-label">Founding Member Spots Are Limited</span>
+          <h2>We're opening access in small, intentional waves</h2>
+          <p>
+            Lorem Curae isn't rushing to scale. We're building something <em>personal</em>—and that means growing thoughtfully. Founding member spots are limited because we want to onboard people who will shape the platform alongside us, not just use it.
+          </p>
+          <p>
+            Each wave lets us learn, iterate, and improve before welcoming more members. When you join the waitlist, you're reserving your place in line. As spots open, we'll invite you in—and once you're a founding member, that status is <em>yours for life</em>.
+          </p>
+          <div className="lc-waves-box">
+            <h3>No pressure. Just priority.</h3>
             <p>
-              When you discover a product through Lorem Curae and purchase from one of our verified retail partners, we share a portion of what we earn back with you. Your trust matters—and we believe in rewarding it.
+              We're not creating false urgency. But we are being honest: founding member perks won't last forever. If early access, exclusive community spaces, and lifetime benefits matter to you—this is your moment.
             </p>
-            <ul className="lc-rewards-list">
-              <li>
-                <i className="ri-check-line"></i>
-                Early access to new features
-              </li>
-              <li>
-                <i className="ri-check-line"></i>
-                Beta testing invitations
-              </li>
-              <li>
-                <i className="ri-check-line"></i>
-                Future discounts and perks
-              </li>
-              <li>
-                <i className="ri-check-line"></i>
-                Exclusive community benefits
-              </li>
-            </ul>
-            <a href="#waitlist" className="lc-btn-primary">
-              Join the Waitlist
-            </a>
-          </div>
-          
-          <div className="lc-rewards-visual">
-            <div className="lc-reward-item">
-              <div className="lc-reward-left">
-                <div className="lc-reward-icon">
-                  <i className="ri-gift-line"></i>
-                </div>
-                <span className="lc-reward-label">Points Earned</span>
-              </div>
-              <span className="lc-reward-value">+250</span>
-            </div>
-            <div className="lc-reward-item">
-              <div className="lc-reward-left">
-                <div className="lc-reward-icon">
-                  <i className="ri-star-line"></i>
-                </div>
-                <span className="lc-reward-label">Early Access</span>
-              </div>
-              <span className="lc-reward-badge">Unlocked</span>
-            </div>
-            <div className="lc-reward-item">
-              <div className="lc-reward-left">
-                <div className="lc-reward-icon">
-                  <i className="ri-vip-crown-line"></i>
-                </div>
-                <span className="lc-reward-label">Founding Member</span>
-              </div>
-              <span className="lc-reward-badge">Permanent</span>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Early Access Benefits Section */}
+      {/* Founding Member Perks Section */}
       <section className="lc-early-access">
         <div className="lc-early-access-inner">
-          <span className="lc-section-label">Founding Members</span>
+          <span className="lc-section-label">Founding Member Perks</span>
           <h2>Why join early?</h2>
           <p className="lc-section-description">
             Great tools aren't built in isolation—they're shaped by the people who need them most. As a founding member, you're not just getting early access. You're helping us build what Lorem Curae becomes. Your feedback, your frustrations, your wins—they matter here. This is your platform too.
           </p>
-          
-          <div className="lc-benefits-grid">
-            <div className="lc-benefit-card">
-              <div className="lc-benefit-icon">
+
+          <div className="lc-perks-grid">
+            {/* Early Access */}
+            <div className="lc-perk-card">
+              <div className="lc-perk-icon">
                 <i className="ri-rocket-line"></i>
               </div>
-              <h3 className="lc-benefit-title">First Access</h3>
-              <p className="lc-benefit-text">Be among the first to experience Lorem Curae before public launch</p>
+              <h3 className="lc-perk-title">Early Access</h3>
+              <p className="lc-perk-text">Be among the first to experience Lorem Curae—before the public waitlist even opens</p>
             </div>
-            <div className="lc-benefit-card">
-              <div className="lc-benefit-icon">
-                <i className="ri-voice-recognition-line"></i>
+
+            {/* Permanent Founding Member Badge */}
+            <div className="lc-perk-card">
+              <div className="lc-perk-icon">
+                <i className="ri-vip-crown-line"></i>
               </div>
-              <h3 className="lc-benefit-title">Shape the Platform</h3>
-              <p className="lc-benefit-text">Your feedback directly influences features, design, and priorities</p>
+              <h3 className="lc-perk-title">Permanent Founding Member Badge</h3>
+              <p className="lc-perk-text">A visible mark of trust and early support that stays with your profile forever</p>
             </div>
-            <div className="lc-benefit-card">
-              <div className="lc-benefit-icon">
+
+            {/* Priority Access to Marketplace Drops */}
+            <div className="lc-perk-card">
+              <div className="lc-perk-icon">
+                <i className="ri-shopping-bag-line"></i>
+              </div>
+              <h3 className="lc-perk-title">Priority Access to Marketplace Drops</h3>
+              <p className="lc-perk-text">First dibs on new products, limited releases, and exclusive marketplace listings</p>
+            </div>
+
+            {/* Exclusive Founding Member Updates */}
+            <div className="lc-perk-card">
+              <div className="lc-perk-icon">
+                <i className="ri-mail-star-line"></i>
+              </div>
+              <h3 className="lc-perk-title">Exclusive Founding Member Updates</h3>
+              <p className="lc-perk-text">Behind-the-scenes updates, roadmap previews, and direct communication from the team</p>
+            </div>
+
+            {/* Founding Member–Only Community Spaces */}
+            <div className="lc-perk-card">
+              <div className="lc-perk-icon">
                 <i className="ri-group-line"></i>
               </div>
-              <h3 className="lc-benefit-title">Join the Community</h3>
-              <p className="lc-benefit-text">Connect with others who value transparency, science, and real results</p>
+              <h3 className="lc-perk-title">Founding Member-Only Community Spaces</h3>
+              <p className="lc-perk-text">Private discussions, feedback channels, and direct access to the people building Lorem Curae</p>
             </div>
-            <div className="lc-benefit-card">
-              <div className="lc-benefit-icon">
-                <i className="ri-medal-line"></i>
+
+            {/* Priority Support */}
+            <div className="lc-perk-card">
+              <div className="lc-perk-icon">
+                <i className="ri-customer-service-2-line"></i>
               </div>
-              <h3 className="lc-benefit-title">Permanent Status</h3>
-              <p className="lc-benefit-text">Founding member recognition and exclusive perks for life</p>
+              <h3 className="lc-perk-title">Priority Support</h3>
+              <p className="lc-perk-text">Faster responses, dedicated attention, and a team that actually listens</p>
+            </div>
+
+            {/* Founding Member Spotlight */}
+            <div className="lc-perk-card">
+              <span className="lc-perk-badge">Optional</span>
+              <div className="lc-perk-icon">
+                <i className="ri-star-smile-line"></i>
+              </div>
+              <h3 className="lc-perk-title">Founding Member Spotlight</h3>
+              <p className="lc-perk-text">Opt-in opportunities to be featured across our community and content channels</p>
+            </div>
+
+            {/* Lifetime Access to Core Features */}
+            <div className="lc-perk-card">
+              <div className="lc-perk-icon">
+                <i className="ri-infinity-line"></i>
+              </div>
+              <h3 className="lc-perk-title">Lifetime Access to Core Features</h3>
+              <p className="lc-perk-text">As Lorem Curae grows, your founding member status ensures continued access to the tools you helped build</p>
             </div>
           </div>
         </div>
@@ -1207,7 +1181,7 @@ const WaitlistLandingPage = () => {
           </div>
           <h2>Your skin journey starts here</h2>
           <p>
-            No more guessing. No more wasted money on products that weren't made for you. Join early and help shape the future of skincare—built on science, personalization, and a community where you finally feel understood.
+            No more guessing. No more wasted money on products that weren't made for you. Join the founding member waitlist and help shape the future of skincare—built on science, personalization, and a community where you finally feel understood. We can't wait to welcome you.
           </p>
           
           <div className="lc-form-wrapper">
