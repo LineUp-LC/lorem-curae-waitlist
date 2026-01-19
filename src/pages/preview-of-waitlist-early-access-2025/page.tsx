@@ -1115,24 +1115,6 @@ const WaitlistLandingPage = () => {
               <p className="lc-perk-text">A visible mark of trust and early support that stays with your profile forever</p>
             </div>
 
-            {/* Priority Access to Marketplace Drops */}
-            <div className="lc-perk-card">
-              <div className="lc-perk-icon">
-                <i className="ri-shopping-bag-line"></i>
-              </div>
-              <h3 className="lc-perk-title">Priority Access to Marketplace Drops</h3>
-              <p className="lc-perk-text">First dibs on new products, limited releases, and exclusive marketplace listings</p>
-            </div>
-
-            {/* Exclusive Founding Member Updates */}
-            <div className="lc-perk-card">
-              <div className="lc-perk-icon">
-                <i className="ri-mail-star-line"></i>
-              </div>
-              <h3 className="lc-perk-title">Exclusive Founding Member Updates</h3>
-              <p className="lc-perk-text">Behind-the-scenes updates, roadmap previews, and direct communication from the team</p>
-            </div>
-
             {/* Founding Member–Only Community Spaces */}
             <div className="lc-perk-card">
               <div className="lc-perk-icon">
