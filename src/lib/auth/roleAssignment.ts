@@ -7,13 +7,12 @@
 //   2. tester_creator      - Creator who opted into testing
 //   3. tester_consumer     - Consumer who opted into testing
 //   4. creator_c1/c2/c3    - Creator waves (marketplace access)
-//   5. consumer_wave_1-8   - Consumer waves (phased rollout)
+//   5. consumer_wave_1-7   - Consumer waves (phased rollout)
 //   6. user                - Default role (no special access)
 //
 // ============================================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
-import { NextRouter } from "next/router";
 
 // ----------------------------------------------------------------------------
 // TYPE DEFINITIONS
@@ -27,7 +26,7 @@ export type UserRole =
   | "creator_c1"
   | "creator_c2"
   | "creator_c3"
-  | `consumer_wave_${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8}`
+  | `consumer_wave_${1 | 2 | 3 | 4 | 5 | 6 | 7}`
   | "user";
 
 /** Waitlist record from Supabase */
@@ -62,7 +61,7 @@ export interface FeatureFlags {
  *   1. Founding member status (overrides everything)
  *   2. Tester access preference (creator vs consumer)
  *   3. Creator wave assignment (C1, C2, C3)
- *   4. Consumer wave assignment (1-8)
+ *   4. Consumer wave assignment (1-7)
  *   5. Default to "user"
  */
 export function determineUserRole(waitlist: WaitlistRecord): UserRole {
@@ -88,7 +87,7 @@ export function determineUserRole(waitlist: WaitlistRecord): UserRole {
     }
   }
 
-  // Priority 4: Consumer waves (1-8)
+  // Priority 4: Consumer waves (1-7)
   if (waitlist.wave_number) {
     return `consumer_wave_${waitlist.wave_number}` as UserRole;
   }
@@ -113,7 +112,7 @@ export function determineUserRole(waitlist: WaitlistRecord): UserRole {
 export async function handleAuthCallback(
   supabase: SupabaseClient,
   user: { id: string; email: string },
-  router: NextRouter
+  redirect: (path: string) => void
 ): Promise<void> {
   // Fetch waitlist record with all segmentation fields
   const { data: waitlist } = await supabase
@@ -126,7 +125,7 @@ export async function handleAuthCallback(
 
   // No waitlist record → redirect to signup
   if (!waitlist) {
-    router.push("/waitlist");
+    redirect("/waitlist");
     return;
   }
 
