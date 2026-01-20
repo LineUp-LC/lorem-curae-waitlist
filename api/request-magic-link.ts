@@ -1,18 +1,29 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // ----------------------------------------------------------------------------
 // CONFIGURATION
 // ----------------------------------------------------------------------------
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = 'Lorem Curae <hello@loremcurae.com>';
 const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy-initialized Supabase client (created in handler after env validation)
+let supabase: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient {
+  if (!supabase) {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+
+    supabase = createClient(supabaseUrl, serviceRoleKey);
+  }
+  return supabase;
+}
 
 // ----------------------------------------------------------------------------
 // TYPES
@@ -444,18 +455,28 @@ function getTemplateKey(
 }
 
 async function fetchWaitlistRecord(email: string): Promise<WaitlistRecord | null> {
-  const { data } = await supabase
+  console.log(`[MagicLink] Fetching waitlist record for: ${email}`);
+  const client = getSupabaseClient();
+  const { data, error } = await client
     .from('waitlist')
     .select('wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member')
     .eq('email', email)
     .maybeSingle();
+
+  if (error) {
+    console.error(`[MagicLink] Error fetching waitlist record:`, error);
+    throw error;
+  }
+
+  console.log(`[MagicLink] Waitlist record:`, data);
   return data;
 }
 
 async function generateMagicLink(email: string): Promise<string> {
   console.log(`[MagicLink] Generating link for: ${email}`);
+  const client = getSupabaseClient();
 
-  const { data, error } = await supabase.auth.admin.generateLink({
+  const { data, error } = await client.auth.admin.generateLink({
     type: 'magiclink',
     email,
     options: {
@@ -465,7 +486,12 @@ async function generateMagicLink(email: string): Promise<string> {
 
   if (error) {
     console.error(`[MagicLink] Error generating link:`, error);
-    throw error;
+    throw new Error(`Magic link generation failed: ${error.message}`);
+  }
+
+  if (!data?.properties?.action_link) {
+    console.error(`[MagicLink] No action_link in response:`, data);
+    throw new Error('Magic link generation failed: No action_link returned');
   }
 
   const magicLink = data.properties.action_link;
@@ -480,8 +506,14 @@ async function sendEmailWithMagicLink(
   magicLink: string,
   role: UserRole
 ): Promise<void> {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    throw new Error('RESEND_API_KEY environment variable is missing');
+  }
+
   const template = templates[templateKey];
   if (!template) {
+    console.error(`[MagicLink] Unknown template: ${templateKey}`);
     throw new Error(`Unknown template: ${templateKey}`);
   }
 
@@ -492,7 +524,7 @@ async function sendEmailWithMagicLink(
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
+      Authorization: `Bearer ${resendApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -506,10 +538,11 @@ async function sendEmailWithMagicLink(
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`[MagicLink] Failed to send email: ${response.statusText}`, errorText);
-    throw new Error(`Failed to send email: ${response.statusText}`);
+    throw new Error(`Failed to send email: ${response.statusText} - ${errorText}`);
   }
 
-  console.log(`[MagicLink] Email sent successfully to ${to}`);
+  const result = await response.json();
+  console.log(`[MagicLink] Email sent successfully to ${to}`, result);
 }
 
 // ----------------------------------------------------------------------------
@@ -517,54 +550,105 @@ async function sendEmailWithMagicLink(
 // ----------------------------------------------------------------------------
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  console.log(`[request-magic-link] Received ${req.method} request`);
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { email, type } = req.body;
-  console.log(`[request-magic-link] Request body:`, { email, type });
-
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
-  }
-
-  if (!type || !['signup', 'login'].includes(type)) {
-    return res.status(400).json({ error: 'Type must be "signup" or "login"' });
-  }
-
-  const trimmedEmail = email.trim().toLowerCase();
-
+  // Wrap EVERYTHING in try/catch to ensure JSON response
   try {
+    console.log(`[request-magic-link] ========== REQUEST START ==========`);
+    console.log(`[request-magic-link] Method: ${req.method}`);
+
+    // Log environment variable status (not values for security)
+    console.log(`[request-magic-link] ENV CHECK:`);
+    console.log(`  - SUPABASE_URL: ${process.env.SUPABASE_URL ? 'SET' : 'MISSING'}`);
+    console.log(`  - NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'MISSING'}`);
+    console.log(`  - SUPABASE_SERVICE_ROLE_KEY: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'MISSING'}`);
+    console.log(`  - RESEND_API_KEY: ${process.env.RESEND_API_KEY ? 'SET' : 'MISSING'}`);
+
+    // Validate environment variables early
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+      console.error(`[request-magic-link] ERROR: Neither SUPABASE_URL nor NEXT_PUBLIC_SUPABASE_URL is set`);
+      return res.status(500).json({ error: 'Server configuration error: Missing SUPABASE_URL' });
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error(`[request-magic-link] ERROR: SUPABASE_SERVICE_ROLE_KEY is not set`);
+      return res.status(500).json({ error: 'Server configuration error: Missing SUPABASE_SERVICE_ROLE_KEY' });
+    }
+    if (!process.env.RESEND_API_KEY) {
+      console.error(`[request-magic-link] ERROR: RESEND_API_KEY is not set`);
+      return res.status(500).json({ error: 'Server configuration error: Missing RESEND_API_KEY' });
+    }
+
+    if (req.method !== 'POST') {
+      console.log(`[request-magic-link] Rejecting non-POST request`);
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const { email, type } = req.body || {};
+    console.log(`[request-magic-link] Request body:`, { email: email || 'MISSING', type: type || 'MISSING' });
+
+    if (!email) {
+      console.log(`[request-magic-link] Missing email in request body`);
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    if (!type || !['signup', 'login'].includes(type)) {
+      console.log(`[request-magic-link] Invalid type: ${type}`);
+      return res.status(400).json({ error: 'Type must be "signup" or "login"' });
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    console.log(`[request-magic-link] Processing ${type} for: ${trimmedEmail}`);
+
     // For login, check if user is on waitlist first
     if (type === 'login') {
+      console.log(`[request-magic-link] Checking waitlist for login...`);
       const waitlist = await fetchWaitlistRecord(trimmedEmail);
       if (!waitlist) {
         console.log(`[request-magic-link] Email not on waitlist: ${trimmedEmail}`);
         return res.status(404).json({ error: 'not-on-waitlist' });
       }
+      console.log(`[request-magic-link] User found on waitlist`);
     }
 
     // Generate magic link
+    console.log(`[request-magic-link] Generating magic link...`);
     const magicLink = await generateMagicLink(trimmedEmail);
+    console.log(`[request-magic-link] Magic link generated successfully`);
 
     // Fetch waitlist record for role determination
+    console.log(`[request-magic-link] Fetching waitlist for role determination...`);
     const waitlist = await fetchWaitlistRecord(trimmedEmail);
     const role = waitlist ? determineUserRole(waitlist) : 'user';
     console.log(`[request-magic-link] Determined role: ${role}`);
 
     // Get appropriate template
-    const templateKey = getTemplateKey(role, type, waitlist);
+    const templateKey = getTemplateKey(role, type as 'signup' | 'login', waitlist);
     console.log(`[request-magic-link] Using template: ${templateKey}`);
 
     // Send email with magic link
+    console.log(`[request-magic-link] Sending email...`);
     await sendEmailWithMagicLink(trimmedEmail, templateKey, magicLink, role);
+    console.log(`[request-magic-link] Email sent successfully`);
 
-    console.log(`[request-magic-link] Successfully processed ${type} request for ${trimmedEmail}`);
+    console.log(`[request-magic-link] ========== REQUEST SUCCESS ==========`);
     return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('[request-magic-link] Error:', error);
-    return res.status(500).json({ error: 'Failed to process request' });
+
+  } catch (error: unknown) {
+    console.error(`[request-magic-link] ========== REQUEST FAILED ==========`);
+    console.error(`[request-magic-link] Error type:`, typeof error);
+    console.error(`[request-magic-link] Error:`, error);
+
+    if (error instanceof Error) {
+      console.error(`[request-magic-link] Error message:`, error.message);
+      console.error(`[request-magic-link] Error stack:`, error.stack);
+      return res.status(500).json({
+        error: 'Failed to process request',
+        details: error.message
+      });
+    }
+
+    return res.status(500).json({
+      error: 'Failed to process request',
+      details: String(error)
+    });
   }
 }
