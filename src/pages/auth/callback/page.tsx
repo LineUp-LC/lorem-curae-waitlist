@@ -24,16 +24,22 @@ export default function AuthCallbackPage() {
           .eq('email', email)
           .maybeSingle();
 
+        // Fire-and-forget: send role-based login confirmation email
+        // This sends the appropriate template based on user's role (tester, creator, wave, etc.)
+        fetch('/api/send-role-based-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, type: 'login' }),
+        })
+          .then((res) => {
+            if (!res.ok) console.error('[AuthCallback] Failed to send login email');
+            else console.log('[AuthCallback] Login email sent successfully');
+          })
+          .catch((err) => console.error('[AuthCallback] Email send error:', err));
+
         if (waitlistEntry?.wants_tester_access) {
           window.location.href = 'https://tester-access-page.vercel.app';
         } else {
-          // Fire-and-forget: send non-tester login confirmation
-          fetch('/api/send-status-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, type: 'non_tester_login' }),
-          });
-
           navigate('/waitlist');
         }
       } catch (err) {
