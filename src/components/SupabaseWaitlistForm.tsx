@@ -102,16 +102,16 @@ export default function SupabaseWaitlistForm({
         return;
       }
 
-      // Fire-and-forget: send role-based waitlist signup email
-      // The role-based system automatically handles tester interest based on wants_tester_access field
-      fetch('/api/send-role-based-email', {
+      // Send role-based signup email with magic link included
+      // Uses manual magic link generation to bypass Supabase's built-in emails
+      fetch('/api/request-magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, type: 'signup' }),
       })
         .then((res) => {
-          if (!res.ok) console.error('[WaitlistForm] Failed to send signup email');
-          else console.log('[WaitlistForm] Signup email sent successfully');
+          if (!res.ok) console.error('[WaitlistForm] Failed to send signup email with magic link');
+          else console.log('[WaitlistForm] Signup email with magic link sent successfully');
         })
         .catch((err) => console.error('[WaitlistForm] Email send error:', err));
 

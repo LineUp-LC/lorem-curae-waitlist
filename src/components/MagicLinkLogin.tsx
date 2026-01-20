@@ -88,17 +88,20 @@ export default function MagicLinkLogin() {
         return;
       }
 
-      // Email is on waitlist, send magic link
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: trimmedEmail,
-        options: {
-          emailRedirectTo: 'https://lorem-curae-waitlist.vercel.app/auth/callback',
-        },
+      // Email is on waitlist, request magic link via our custom API
+      // This bypasses Supabase's built-in emails and uses our role-based templates
+      const response = await fetch('/api/request-magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, type: 'login' }),
       });
 
-      if (otpError) {
-        throw otpError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send magic link');
       }
+
+      console.log('[MagicLinkLogin] Magic link email sent successfully');
 
       setFormState((prev) => ({
         ...prev,
