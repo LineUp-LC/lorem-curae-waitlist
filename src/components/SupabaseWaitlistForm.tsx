@@ -102,21 +102,18 @@ export default function SupabaseWaitlistForm({
         return;
       }
 
-      // Fire-and-forget: send waitlist signup email
-      fetch('/api/send-status-email', {
+      // Fire-and-forget: send role-based waitlist signup email
+      // The role-based system automatically handles tester interest based on wants_tester_access field
+      fetch('/api/send-role-based-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmedEmail, type: 'waitlist_signup' }),
-      });
-
-      // If interested in beta, also send early access email
-      if (formState.betaTesterInterest) {
-        fetch('/api/send-status-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: trimmedEmail, type: 'early_access_interest' }),
-        });
-      }
+        body: JSON.stringify({ email: trimmedEmail, type: 'signup' }),
+      })
+        .then((res) => {
+          if (!res.ok) console.error('[WaitlistForm] Failed to send signup email');
+          else console.log('[WaitlistForm] Signup email sent successfully');
+        })
+        .catch((err) => console.error('[WaitlistForm] Email send error:', err));
 
       setFormState({
         email: '',
