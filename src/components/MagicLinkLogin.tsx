@@ -90,15 +90,28 @@ export default function MagicLinkLogin() {
 
       // Email is on waitlist, request magic link via our custom API
       // This bypasses Supabase's built-in emails and uses our role-based templates
+      console.log('[MagicLinkLogin] Sending request to /api/request-magic-link');
+      console.log('[MagicLinkLogin] Request body:', JSON.stringify({ email: trimmedEmail, type: 'login' }));
+
       const response = await fetch('/api/request-magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, type: 'login' }),
       });
 
+      console.log('[MagicLinkLogin] Response status:', response.status);
+
+      let responseData;
+      try {
+        responseData = await response.json();
+        console.log('[MagicLinkLogin] Response body:', JSON.stringify(responseData));
+      } catch {
+        console.error('[MagicLinkLogin] Failed to parse response as JSON');
+        responseData = {};
+      }
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send magic link');
+        throw new Error(responseData.error || 'Failed to send magic link');
       }
 
       console.log('[MagicLinkLogin] Magic link email sent successfully');

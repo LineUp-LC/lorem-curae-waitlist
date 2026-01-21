@@ -104,14 +104,25 @@ export default function SupabaseWaitlistForm({
 
       // Send role-based signup email with magic link included
       // Uses manual magic link generation to bypass Supabase's built-in emails
+      console.log('[WaitlistForm] Sending request to /api/request-magic-link');
+      console.log('[WaitlistForm] Request body:', JSON.stringify({ email: trimmedEmail, type: 'signup' }));
+
       fetch('/api/request-magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, type: 'signup' }),
       })
-        .then((res) => {
-          if (!res.ok) console.error('[WaitlistForm] Failed to send signup email with magic link');
-          else console.log('[WaitlistForm] Signup email with magic link sent successfully');
+        .then(async (res) => {
+          console.log('[WaitlistForm] Response status:', res.status);
+          try {
+            const data = await res.json();
+            console.log('[WaitlistForm] Response body:', JSON.stringify(data));
+            if (!res.ok) console.error('[WaitlistForm] Failed to send email:', data.error);
+          } catch {
+            console.log('[WaitlistForm] Response body: (not JSON)');
+            if (!res.ok) console.error('[WaitlistForm] Failed to send email');
+          }
+          if (res.ok) console.log('[WaitlistForm] Email sent successfully');
         })
         .catch((err) => console.error('[WaitlistForm] Email send error:', err));
 
