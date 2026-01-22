@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { onTesterAccessOpenedBatch } from '../../src/lib/email/followupTriggers';
+import { onTesterAccessOpenedBatch } from '../../src/lib/email/followupTriggers.js';
 
 // ============================================================================
 // POST /api/admin/open-tester-access
