@@ -13,6 +13,8 @@
 // ============================================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
+import { onRoleChangedSafe } from "../email/followupTriggers";
+import type { UserRole as FollowupUserRole } from "../email/followupTemplates";
 
 // ----------------------------------------------------------------------------
 // TYPE DEFINITIONS
@@ -106,8 +108,10 @@ export function determineUserRole(waitlist: WaitlistRecord): UserRole {
  * Flow:
  *   1. Fetch waitlist record by email
  *   2. Redirect to /waitlist if no record exists
- *   3. Determine appropriate role
- *   4. Update user profile with assigned role
+ *   3. Fetch current role from profiles (if exists)
+ *   4. Determine appropriate role
+ *   5. Update user profile with assigned role
+ *   6. Send follow-up email if role changed (non-founding only)
  */
 export async function handleAuthCallback(
   supabase: SupabaseClient,
@@ -129,11 +133,36 @@ export async function handleAuthCallback(
     return;
   }
 
+  // Fetch current profile to check for role changes
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const oldRole = currentProfile?.role as UserRole | undefined;
+
   // Determine and assign role
   const role = determineUserRole(waitlist);
 
   // Persist role to profiles table
   await supabase.from("profiles").update({ role }).eq("id", user.id);
+
+  // Send follow-up email if role changed (and user had a previous role)
+  // Note: onRoleChangedSafe will silently skip founding roles
+  if (oldRole && oldRole !== role) {
+    try {
+      await onRoleChangedSafe(
+        { email: user.email },
+        oldRole as FollowupUserRole,
+        role as FollowupUserRole
+      );
+      console.log(`[roleAssignment] Follow-up email sent: ${oldRole} → ${role}`);
+    } catch (err) {
+      // Log but don't block auth flow
+      console.error("[roleAssignment] Failed to send role change email:", err);
+    }
+  }
 }
 
 // ----------------------------------------------------------------------------

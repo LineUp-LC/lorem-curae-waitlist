@@ -1,11 +1,13 @@
 {
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node",
+      "includeFiles": "src/lib/email/**"
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api(?:/|$)).*)",
       "destination": "/"
     }
   ]
