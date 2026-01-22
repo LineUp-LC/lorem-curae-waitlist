@@ -26,7 +26,7 @@ import {
   UserRole,
   FOUNDING_ROLES,
   FollowupEventType,
-} from './followupTemplates';
+} from './followupTemplates.js';
 
 // ----------------------------------------------------------------------------
 // ENVIRONMENT HELPERS

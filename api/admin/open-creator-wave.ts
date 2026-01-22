@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { onCreatorWaveOpenedBatch } from '../../src/lib/email/followupTriggers';
+import { onCreatorWaveOpenedBatch } from '../../src/lib/email/followupTriggers.js';
 
 // ============================================================================
 // POST /api/admin/open-creator-wave

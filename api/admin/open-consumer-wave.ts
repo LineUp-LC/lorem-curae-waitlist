@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { onConsumerWaveOpenedBatch } from '../../src/lib/email/followupTriggers';
+import { onConsumerWaveOpenedBatch } from '../../src/lib/email/followupTriggers.js';
 
 // ============================================================================
 // POST /api/admin/open-consumer-wave
