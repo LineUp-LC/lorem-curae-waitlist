@@ -1,5 +1,4 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { supabase } from '../lib/supabase';
 
 type WaitlistSegment = 'regular' | 'creator';
 
@@ -68,24 +67,22 @@ export default function SupabaseWaitlistForm({
     setFormState((prev) => ({ ...prev, status: 'submitting', errorMessage: '' }));
 
     try {
-      const { error } = await supabase
-        .from('waitlist')
-        .insert([{
+      // Sign up via API (handles founding member auto-assignment, wave assignment, cap checks)
+      const signupRes = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           email: trimmedEmail,
           segment,
           wants_tester_access: formState.betaTesterInterest,
-          status: 'pending',
-          wave_number: 1
-        }]);
+          is_creator: segment === 'creator',
+        }),
+      });
 
-      if (error) {
-        // Handle duplicate email (unique constraint violation)
-        const isDuplicate =
-          error.code === '23505' ||
-          error.message?.includes('duplicate') ||
-          (error as { status?: number }).status === 409;
+      const signupData = await signupRes.json();
 
-        if (isDuplicate) {
+      if (!signupRes.ok) {
+        if (signupData.error === 'duplicate') {
           setFormState((prev) => ({
             ...prev,
             status: 'duplicate',
@@ -93,7 +90,7 @@ export default function SupabaseWaitlistForm({
           return;
         }
 
-        console.error('Waitlist submission error:', error);
+        console.error('Waitlist submission error:', signupData.error);
         setFormState((prev) => ({
           ...prev,
           status: 'error',
@@ -103,9 +100,7 @@ export default function SupabaseWaitlistForm({
       }
 
       // Send role-based signup email with magic link included
-      // Uses manual magic link generation to bypass Supabase's built-in emails
       console.log('[WaitlistForm] Sending request to /api/request-magic-link');
-      console.log('[WaitlistForm] Request body:', JSON.stringify({ email: trimmedEmail, type: 'signup' }));
 
       fetch('/api/request-magic-link', {
         method: 'POST',

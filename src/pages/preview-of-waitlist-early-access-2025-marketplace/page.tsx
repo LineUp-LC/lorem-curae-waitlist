@@ -624,6 +624,30 @@ const MarketplaceWaitlistPage = () => {
           line-height: 1.5;
         }
         
+        /* Founding Members Section */
+        .lc-founding-section {
+          padding: 5rem 1.5rem;
+          background: white;
+        }
+
+        .lc-founding-description-extended {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1.0625rem;
+          color: #6B635A;
+          line-height: 1.7;
+          text-align: center;
+          max-width: 800px;
+          margin: -2.5rem auto 3rem;
+        }
+
+        .lc-founding-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 1.5rem;
+          max-width: 1100px;
+          margin: 0 auto;
+        }
+
         /* Pricing Section */
         .lc-pricing-section {
           padding: 5rem 1.5rem;
@@ -1044,7 +1068,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Premium Placement</h3>
-              <p>Get featured at the top of search results and category pages</p>
+              <p>Gain enhanced visibility within your compatible audience. Get featured in top search results and curated collections—filtered through skin-compatibility, safety, and creator integrity. Be highlighted for the people your products are genuinely right for</p>
             </div>
           </div>
           <div className="lc-tool-card">
@@ -1062,7 +1086,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Promotional Tools</h3>
-              <p>Run campaigns and promotions to boost visibility and drive sales</p>
+              <p>Run compatibility-first campaigns that reach only users whose skin profiles match your products—transparent, ethical, and built to grow your brand responsibly</p>
             </div>
           </div>
           <div className="lc-tool-card">
@@ -1148,20 +1172,91 @@ const MarketplaceWaitlistPage = () => {
           <div className="lc-pricing-card">
             <div className="lc-pricing-rate">12%</div>
             <div className="lc-pricing-label">Transaction Fee</div>
-            <div className="lc-pricing-tier">$10K+ Monthly GMV</div>
+            <div className="lc-pricing-tier">Up to $10K Monthly GMV</div>
             <p className="lc-pricing-note">Growing creators</p>
           </div>
           <div className="lc-pricing-card">
             <div className="lc-pricing-rate">10%</div>
             <div className="lc-pricing-label">Transaction Fee</div>
-            <div className="lc-pricing-tier">$25K+ Monthly GMV</div>
+            <div className="lc-pricing-tier">$10K–$25K Monthly GMV</div>
             <p className="lc-pricing-note">Scaling brands</p>
           </div>
           <div className="lc-pricing-card">
             <div className="lc-pricing-rate">8%</div>
             <div className="lc-pricing-label">Transaction Fee</div>
-            <div className="lc-pricing-tier">$50K+ Monthly GMV</div>
+            <div className="lc-pricing-tier">$25K+ Monthly GMV</div>
             <p className="lc-pricing-note">Established creators</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Founding Members Section */}
+      <section className="lc-founding-section">
+        <div className="lc-section-intro">
+          <span className="lc-section-label">Founding Members Get More</span>
+          <h2 className="lc-section-title">
+            A rare opportunity to unlock every creator benefit from day one
+          </h2>
+        </div>
+
+        <p className="lc-founding-description-extended">
+          Founding Members aren't just early adopters — they're the creators shaping the future of Lorem Curae. As part of this limited group, you gain full access to the entire creator ecosystem the moment it launches, along with exclusive perks designed to support your growth from the very beginning.
+        </p>
+
+        <div className="lc-founding-grid">
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-lock-unlock-line"></i>
+            </div>
+            <div className="lc-tool-content">
+              <h3>All Growth Tools, Unlocked</h3>
+              <p>Enjoy full access to all tools — no waiting, no restrictions.</p>
+            </div>
+          </div>
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-rocket-line"></i>
+            </div>
+            <div className="lc-tool-content">
+              <h3>Priority Access to New Features</h3>
+              <p>Be the first to test new tools, creator workflows, and marketplace capabilities. Your feedback directly influences how the platform evolves.</p>
+            </div>
+          </div>
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-eye-line"></i>
+            </div>
+            <div className="lc-tool-content">
+              <h3>Early Marketplace Visibility</h3>
+              <p>Founding Members are introduced to customers before the broader creator community joins, giving you a head start in building your audience and establishing trust.</p>
+            </div>
+          </div>
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-award-line"></i>
+            </div>
+            <div className="lc-tool-content">
+              <h3>Founding Member Badge</h3>
+              <p>Stand out with a permanent badge that signals credibility, early support, and commitment to intentional, transparent creation.</p>
+            </div>
+          </div>
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-chat-voice-line"></i>
+            </div>
+            <div className="lc-tool-content">
+              <h3>Direct Line to the Team</h3>
+              <p>Founding Members receive priority support, early access to creator roundtables, and opportunities to share feedback directly with the team shaping the platform.</p>
+            </div>
+          </div>
+          <div className="lc-tool-card">
+            <div className="lc-tool-icon">
+              <i className="ri-vip-diamond-line"></i>
+            </div>
+            <div className="lc-tool-content">
+              <h3>Limited Spots, Lasting Impact</h3>
+              <p>This is a capped group — once the Founding Member slots are filled, they're gone. Joining now means securing a place in the foundation of a marketplace built to elevate indie creators for years to come.</p>
+            </div>
           </div>
         </div>
       </section>

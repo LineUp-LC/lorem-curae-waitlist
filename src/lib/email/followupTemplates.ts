@@ -221,26 +221,29 @@ export const followupTemplates: Record<string, EmailTemplate> = {
   role_upgraded_to_tester_creator: {
     subject: "You've been upgraded to Creator Tester",
     html: `<p>Hi there,</p>
-<p>Great news — your account has been upgraded to Creator Tester.</p>
+<p>Your access has been upgraded to Creator Tester.</p>
 <p>You now have access to test our creator tools: the creator dashboard, product listings, and early marketplace features. Your feedback will help shape what we build for creators.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to access your new tools</a></strong></p>
+<p>Thanks for being part of this early group — your feedback helps us build something better.</p>
+<p><strong><a href="{{MAGIC_LINK}}">Click here to access your creator tools</a></strong></p>
 <p>Thanks for being part of this journey.</p>
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
   },
   role_upgraded_to_tester_consumer: {
     subject: "You've been upgraded to Tester",
     html: `<p>Hi there,</p>
-<p>Great news — your account has been upgraded to Tester access.</p>
+<p>Your access has been upgraded to Tester.</p>
 <p>You now have access to test new features before they roll out to everyone. Your feedback will help us build something great.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to start testing</a></strong></p>
+<p>Thanks for being part of this early group — your feedback helps us build something better.</p>
+<p><strong><a href="{{MAGIC_LINK}}">Click here to start your testing</a></strong></p>
 <p>Thanks for being part of this journey.</p>
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
   },
   role_upgraded_generic: {
     subject: "Your Lorem Curae access has been upgraded",
     html: `<p>Hi there,</p>
-<p>Great news — your Lorem Curae access has been upgraded.</p>
+<p>Your access has been upgraded.</p>
 <p>You now have access to new features and tools. Sign in to explore what's available.</p>
+<p>Thanks for being part of this early group — your feedback helps us build something better.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to explore your new access</a></strong></p>
 <p>Thanks for being part of this journey.</p>
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
@@ -252,7 +255,8 @@ export const followupTemplates: Record<string, EmailTemplate> = {
     html: `<p>Hi there,</p>
 <p>We wanted to let you know that your Lorem Curae access level has changed.</p>
 <p>You can still sign in and use the features available to your current access level.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
+<p>Thanks for being part of this early group — your feedback helps us build something better.</p>
+<p><strong><a href="{{MAGIC_LINK}}">Click here to access your account</a></strong></p>
 <p>If you have questions about this change, please reach out to us.</p>
 <p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
   },
