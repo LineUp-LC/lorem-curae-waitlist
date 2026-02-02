@@ -548,17 +548,37 @@ const WaitlistLandingPage = () => {
           color: #2D2A26;
         }
 
-        .lc-limited-inner > p {
+        .fml-col > p {
           font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
           font-size: 1.0625rem;
           color: #6B635A;
           line-height: 1.8;
           margin-bottom: 1.5rem;
+          text-align: left;
         }
 
-        .lc-limited-inner > p em {
+        .fml-col > p em {
           font-style: italic;
           color: #C4704D;
+        }
+
+        .founding-member-limited {
+          display: flex;
+          gap: 2rem;
+        }
+
+        .fml-col {
+          flex: 1;
+          max-width: 50%;
+        }
+
+        @media (max-width: 768px) {
+          .founding-member-limited {
+            flex-direction: column;
+          }
+          .fml-col {
+            max-width: 100%;
+          }
         }
 
         .lc-waves-box {
@@ -692,7 +712,32 @@ const WaitlistLandingPage = () => {
           display: inline-block;
           margin-bottom: 0.75rem;
         }
-        
+
+        /* Perks Subsections */
+        .lc-perks-subsection {
+          margin-top: 3rem;
+        }
+
+        .lc-perks-subsection-title {
+          font-family: var(--lc-font-serif, 'Cormorant Garamond', Georgia, serif);
+          font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+          font-weight: 500;
+          color: #2D2A26;
+          margin-bottom: 1.5rem;
+          text-align: center;
+        }
+
+        .lc-perks-placeholder {
+          font-family: var(--lc-font-sans, 'DM Sans', sans-serif);
+          font-size: 1rem;
+          color: #6B635A;
+          text-align: center;
+          padding: 2rem;
+          background: rgba(196, 112, 77, 0.04);
+          border: 1px dashed rgba(196, 112, 77, 0.2);
+          border-radius: 16px;
+        }
+
         /* Final CTA Section */
         .lc-final-cta {
           padding: 6rem 1.5rem;
@@ -892,7 +937,7 @@ const WaitlistLandingPage = () => {
             Six tools that finally work together—so you don't have to figure it out alone
           </h2>
           <p className="lc-section-description">
-            Each feature strengthens the next. Your skin survey shapes your recommendations. Your ingredient knowledge deepens your comparisons. Your routine tracking refines your results over time. This isn't a collection of disconnected tools—it's a guided system built around <em>your</em> skin, designed to grow with you.
+            Each feature strengthens the next. Your skin survey shapes your recommendations. Your ingredient knowledge deepens your comparisons. Your routines and progress help Curae learn with you. This isn't a collection of disconnected tools—it's a guided system built around <em>your</em> skin, designed to grow with you.
           </p>
         </div>
         
@@ -1072,86 +1117,92 @@ const WaitlistLandingPage = () => {
         <div className="lc-limited-inner">
           <span className="lc-section-label">Founding Member Spots Are Limited</span>
           <h2>We're opening access in small, intentional waves</h2>
-          <p>
-            Lorem Curae isn't rushing to scale. We're building something <em>personal</em>—and that means growing thoughtfully. Founding member spots are limited because we want to onboard people who will shape the platform alongside us, not just use it.
-          </p>
-          <p>
-            Each wave lets us learn, iterate, and improve before welcoming more members. When you join the waitlist, you're reserving your place in line. As spots open, we'll invite you in—and once you're a founding member, that status is <em>yours for life</em>.
-          </p>
+          <div className="founding-member-limited">
+            <div className="fml-col">
+              <p>
+                Lorem Curae isn't rushing to scale. We're building something <em>personal</em>—and that means growing thoughtfully. Founding member spots are limited because we want to onboard people who will shape the platform alongside us, not just use it.
+              </p>
+            </div>
+            <div className="fml-col">
+              <p>
+                Each wave lets us learn, iterate, and improve before welcoming more members. When you join the waitlist, you're reserving your place in line. As spots open, we'll invite you in—and once you're a founding member, that status is <em>yours for life</em>.
+              </p>
+            </div>
+          </div>
           <div className="lc-waves-box">
             <h3>No pressure. Just priority.</h3>
             <p>
-              We're not creating false urgency. But we are being honest: founding member perks won't last forever. If early access, exclusive community spaces, and lifetime benefits matter to you—this is your moment.
+              We're not creating false urgency. But we are being honest: founding member perks won't be available forever, with only a total of 50 spots. If early access and lifetime benefits matter to you—this is your moment.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Founding Member Perks Section */}
+      {/* Perks Section */}
       <section className="lc-early-access">
         <div className="lc-early-access-inner">
-          <span className="lc-section-label">Founding Member Perks</span>
+          <span className="lc-section-label">PERKS</span>
           <h2>Why join early?</h2>
           <p className="lc-section-description">
-            Great tools aren't built in isolation—they're shaped by the people who need them most. As a founding member, you're not just getting early access. You're helping us build what Lorem Curae becomes. Your feedback, your frustrations, your wins—they matter here. This is your platform too.
+            Great tools aren't built in isolation—they're shaped by the people who need them most. As a waitlist member, you're not just getting early access. You're helping us build what Lorem Curae becomes. Your feedback, your frustrations, your wins—they matter here. This is your platform too.
           </p>
 
-          <div className="lc-perks-grid">
-            {/* Early Access */}
-            <div className="lc-perk-card">
-              <div className="lc-perk-icon">
-                <i className="ri-rocket-line"></i>
+          {/* Founding Member Perks */}
+          <section className="lc-perks-subsection founding-member-perks">
+            <h3 className="lc-perks-subsection-title">Founding Member Perks</h3>
+            <div className="lc-perks-grid">
+              {/* Early Access */}
+              <div className="lc-perk-card">
+                <div className="lc-perk-icon">
+                  <i className="ri-rocket-line"></i>
+                </div>
+                <h3 className="lc-perk-title">Early Access</h3>
+                <p className="lc-perk-text">Be among the first to experience Lorem Curae—before the public waitlist even opens</p>
               </div>
-              <h3 className="lc-perk-title">Early Access</h3>
-              <p className="lc-perk-text">Be among the first to experience Lorem Curae—before the public waitlist even opens</p>
-            </div>
 
-            {/* Permanent Founding Member Badge */}
-            <div className="lc-perk-card">
-              <div className="lc-perk-icon">
-                <i className="ri-vip-crown-line"></i>
+              {/* Permanent Founding Member Badge */}
+              <div className="lc-perk-card">
+                <div className="lc-perk-icon">
+                  <i className="ri-vip-crown-line"></i>
+                </div>
+                <h3 className="lc-perk-title">Permanent Founding Member Badge</h3>
+                <p className="lc-perk-text">A visible mark of trust and early support that stays with your profile forever</p>
               </div>
-              <h3 className="lc-perk-title">Permanent Founding Member Badge</h3>
-              <p className="lc-perk-text">A visible mark of trust and early support that stays with your profile forever</p>
-            </div>
 
-            {/* Founding Member–Only Community Spaces */}
-            <div className="lc-perk-card">
-              <div className="lc-perk-icon">
-                <i className="ri-group-line"></i>
+              {/* Priority Support */}
+              <div className="lc-perk-card">
+                <div className="lc-perk-icon">
+                  <i className="ri-customer-service-2-line"></i>
+                </div>
+                <h3 className="lc-perk-title">Priority Support</h3>
+                <p className="lc-perk-text">Faster responses and dedicated attention</p>
               </div>
-              <h3 className="lc-perk-title">Founding Member-Only Community Spaces</h3>
-              <p className="lc-perk-text">Private discussions, feedback channels, and direct access to the people building Lorem Curae</p>
-            </div>
 
-            {/* Priority Support */}
-            <div className="lc-perk-card">
-              <div className="lc-perk-icon">
-                <i className="ri-customer-service-2-line"></i>
+              {/* Lifetime Access to Core Features */}
+              <div className="lc-perk-card">
+                <div className="lc-perk-icon">
+                  <i className="ri-infinity-line"></i>
+                </div>
+                <h3 className="lc-perk-title">Lifetime Access to Core Features</h3>
+                <p className="lc-perk-text">As Lorem Curae grows, your founding member status ensures continued access to the tools you helped build</p>
               </div>
-              <h3 className="lc-perk-title">Priority Support</h3>
-              <p className="lc-perk-text">Faster responses, dedicated attention, and a team that actually listens</p>
             </div>
+          </section>
 
-            {/* Founding Member Spotlight */}
-            <div className="lc-perk-card">
-              <span className="lc-perk-badge">Optional</span>
-              <div className="lc-perk-icon">
-                <i className="ri-star-smile-line"></i>
+          {/* Waitlist Member Perks */}
+          <section className="lc-perks-subsection waitlist-user-perks">
+            <h3 className="lc-perks-subsection-title">Waitlist Member Perks</h3>
+            <div className="lc-perks-grid">
+              {/* Early Access */}
+              <div className="lc-perk-card">
+                <div className="lc-perk-icon">
+                  <i className="ri-rocket-line"></i>
+                </div>
+                <h3 className="lc-perk-title">Early Access</h3>
+                <p className="lc-perk-text">Be among the first to experience Lorem Curae—before the public waitlist even opens</p>
               </div>
-              <h3 className="lc-perk-title">Founding Member Spotlight</h3>
-              <p className="lc-perk-text">Opt-in opportunities to be featured across our community and content channels</p>
             </div>
-
-            {/* Lifetime Access to Core Features */}
-            <div className="lc-perk-card">
-              <div className="lc-perk-icon">
-                <i className="ri-infinity-line"></i>
-              </div>
-              <h3 className="lc-perk-title">Lifetime Access to Core Features</h3>
-              <p className="lc-perk-text">As Lorem Curae grows, your founding member status ensures continued access to the tools you helped build</p>
-            </div>
-          </div>
+          </section>
         </div>
       </section>
 
@@ -1163,7 +1214,7 @@ const WaitlistLandingPage = () => {
           </div>
           <h2>Your skin journey starts here</h2>
           <p>
-            No more guessing. No more wasted money on products that weren't made for you. Join the founding member waitlist and help shape the future of skincare—built on science, personalization, and a community where you finally feel understood. We can't wait to welcome you.
+            No more guessing. No more wasted money on products that weren't made for you. Join the waitlist and help shape the future of skincare—built on science, personalization, and a community where you will never be alone. We can't wait to welcome you.
           </p>
           
           <div className="lc-form-wrapper">
