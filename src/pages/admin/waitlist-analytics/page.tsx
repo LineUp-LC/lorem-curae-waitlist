@@ -63,7 +63,7 @@ export default function WaitlistAnalyticsPage() {
         throw new Error('Admin credentials not configured');
       }
 
-      const response = await fetch('/api/admin/waitlist-analytics', {
+      const response = await fetch('/api/admin?action=waitlistAnalytics', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${adminSecret}`,

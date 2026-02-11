@@ -31,8 +31,8 @@ export function DeleteUserPanel({ email }: DeleteUserPanelProps) {
         throw new Error('Admin credentials not configured');
       }
 
-      const response = await fetch('/api/admin/delete-waitlist-user', {
-        method: 'DELETE',
+      const response = await fetch('/api/admin?action=deleteUser', {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${adminSecret}`,
           'Content-Type': 'application/json',

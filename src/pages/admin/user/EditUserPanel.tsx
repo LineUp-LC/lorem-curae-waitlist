@@ -111,8 +111,8 @@ export function EditUserPanel({ user, onUserUpdated }: EditUserPanelProps) {
 
       const payload = buildUpdatePayload();
 
-      const response = await fetch('/api/admin/update-waitlist-user', {
-        method: 'PATCH',
+      const response = await fetch('/api/admin?action=updateUser', {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${adminSecret}`,
           'Content-Type': 'application/json',
