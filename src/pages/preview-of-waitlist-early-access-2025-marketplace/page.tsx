@@ -859,7 +859,7 @@ const MarketplaceWaitlistPage = () => {
         <div className="lc-hero-bg" />
         <div className="lc-hero-content">
           <div className="lc-badge">
-            Creator Marketplace — Coming Soon
+            Creator Marketplace: Coming Soon
           </div>
           
           <h1 className="lc-headline">
@@ -872,7 +872,7 @@ const MarketplaceWaitlistPage = () => {
           </p>
           
           <div className="lc-problem-box">
-            <strong>The beauty world is shifting:</strong> Customers want transparency, authenticity, and products made with intention. Indie creators are leading that movement—but the platforms available today weren't built for you. We're changing that.
+            <strong>The beauty world is shifting:</strong> Customers want transparency, authenticity, and products made with intention. Indie creators are leading that movement, but the platforms available today weren't built for you. We're changing that.
           </div>
           
           <div className="lc-cta-group">
@@ -904,7 +904,7 @@ const MarketplaceWaitlistPage = () => {
               <i className="ri-eye-off-line"></i>
             </div>
             <p className="lc-pain-text">
-              <strong>Hidden behind algorithms</strong> — Indie creators get buried while big brands dominate the spotlight.
+              <strong>Hidden behind algorithms</strong>: Indie creators get buried while big brands dominate the spotlight.
             </p>
           </div>
           <div className="lc-pain-card">
@@ -912,7 +912,7 @@ const MarketplaceWaitlistPage = () => {
               <i className="ri-money-dollar-circle-line"></i>
             </div>
             <p className="lc-pain-text">
-              <strong>High fees, low support</strong> — Platforms take a cut without offering real tools or guidance for growth.
+              <strong>High fees, low support</strong>: Platforms take a cut without offering real tools or guidance for growth.
             </p>
           </div>
           <div className="lc-pain-card">
@@ -920,7 +920,7 @@ const MarketplaceWaitlistPage = () => {
               <i className="ri-spam-2-line"></i>
             </div>
             <p className="lc-pain-text">
-              <strong>Counterfeits and resellers</strong> — Your reputation suffers when marketplaces don't verify sellers.
+              <strong>Counterfeits and resellers</strong>: Your reputation suffers when marketplaces don't verify sellers.
             </p>
           </div>
           <div className="lc-pain-card">
@@ -928,7 +928,7 @@ const MarketplaceWaitlistPage = () => {
               <i className="ri-bar-chart-box-line"></i>
             </div>
             <p className="lc-pain-text">
-              <strong>No customer insight</strong> — You're selling blind without data on who's buying and why.
+              <strong>No customer insight</strong>: You're selling blind without data on who's buying and why.
             </p>
           </div>
           <div className="lc-pain-card">
@@ -936,7 +936,7 @@ const MarketplaceWaitlistPage = () => {
               <i className="ri-user-unfollow-line"></i>
             </div>
             <p className="lc-pain-text">
-              <strong>No loyal audience</strong> — Building a following is nearly impossible when platforms control the relationship.
+              <strong>No loyal audience</strong>: Building a following is nearly impossible when platforms control the relationship.
             </p>
           </div>
           <div className="lc-pain-card">
@@ -944,7 +944,7 @@ const MarketplaceWaitlistPage = () => {
               <i className="ri-store-line"></i>
             </div>
             <p className="lc-pain-text">
-              <strong>One-size-fits-all</strong> — Mass-market platforms weren't designed for creators who formulate with intention.
+              <strong>One-size-fits-all</strong>: Mass-market platforms weren't designed for creators who formulate with intention.
             </p>
           </div>
         </div>
@@ -958,32 +958,32 @@ const MarketplaceWaitlistPage = () => {
               What makes Lorem Curae <em>different</em>
             </h2>
             <p className="lc-diff-text">
-              We built a marketplace that puts creators first—because when you succeed, our community thrives. Every feature exists to help you grow sustainably while staying true to your craft.
+              We built a marketplace that puts creators first, because when you succeed, our community thrives. Every feature exists to help you grow sustainably while staying true to your craft.
             </p>
             
             <ul className="lc-diff-list">
               <li className="lc-diff-item">
                 <i className="ri-check-line"></i>
                 <div>
-                  <strong>Creator-First Economics</strong> — Fair fees that decrease as you grow, not arbitrary cuts that punish success.
+                  <strong>Creator-First Economics</strong>: Fair fees that decrease as you grow, not arbitrary cuts that punish success.
                 </div>
               </li>
               <li className="lc-diff-item">
                 <i className="ri-check-line"></i>
                 <div>
-                  <strong>Quality Over Quantity</strong> — A curated marketplace where indie creators aren't drowned out by mass-market noise.
+                  <strong>Quality Over Quantity</strong>: A curated marketplace where indie creators aren't drowned out by mass-market noise.
                 </div>
               </li>
               <li className="lc-diff-item">
                 <i className="ri-check-line"></i>
                 <div>
-                  <strong>Built-In Trust</strong> — Verification badges and customer reviews that establish credibility from day one.
+                  <strong>Built-In Trust</strong>: Verification badges and customer reviews that establish credibility from day one.
                 </div>
               </li>
               <li className="lc-diff-item">
                 <i className="ri-check-line"></i>
                 <div>
-                  <strong>Tools That Scale With You</strong> — From your first sale to your thousandth, we grow with you.
+                  <strong>Tools That Scale With You</strong>: From your first sale to your thousandth, we grow with you.
                 </div>
               </li>
             </ul>
@@ -1006,7 +1006,7 @@ const MarketplaceWaitlistPage = () => {
             Whether you're just starting or ready to scale
           </h2>
           <p className="lc-section-description">
-            Lorem Curae Marketplace welcomes creators at every stage of their journey—from testing your first formulation to building a recognized brand.
+            Lorem Curae Marketplace welcomes creators at every stage of their journey, from testing your first formulation to building a recognized brand.
           </p>
         </div>
         
@@ -1068,7 +1068,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Premium Placement</h3>
-              <p>Gain enhanced visibility within your compatible audience. Get featured in top search results and curated collections—filtered through skin-compatibility, safety, and creator integrity. Be highlighted for the people your products are genuinely right for</p>
+              <p>Gain enhanced visibility within your compatible audience. Get featured in top search results and curated collections, filtered through skin-compatibility, safety, and creator integrity. Be highlighted for the people your products are genuinely right for</p>
             </div>
           </div>
           <div className="lc-tool-card">
@@ -1086,7 +1086,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Promotional Tools</h3>
-              <p>Run compatibility-first campaigns that reach only users whose skin profiles match your products—transparent, ethical, and built to grow your brand responsibly</p>
+              <p>Run compatibility-first campaigns that reach only users whose skin profiles match your products, transparent, ethical, and built to grow your brand responsibly</p>
             </div>
           </div>
           <div className="lc-tool-card">
@@ -1127,7 +1127,7 @@ const MarketplaceWaitlistPage = () => {
             Analytics & Insights
           </h2>
           <p className="lc-section-description">
-            Track your performance with detailed analytics on views, engagement, and sales—so you can optimize your strategy with confidence.
+            Track your performance with detailed analytics on views, engagement, and sales, so you can optimize your strategy with confidence.
           </p>
         </div>
         
@@ -1200,7 +1200,7 @@ const MarketplaceWaitlistPage = () => {
         </div>
 
         <p className="lc-founding-description-extended">
-          Founding Members aren't just early adopters — they're the creators shaping the future of Lorem Curae. As part of this limited group, you gain full access to the entire creator ecosystem the moment it launches, along with exclusive perks designed to support your growth from the very beginning.
+          Founding Members aren't just early adopters. They're the creators shaping the future of Lorem Curae. As part of this limited group, you gain full access to the entire creator ecosystem the moment it launches, along with exclusive perks designed to support your growth from the very beginning.
         </p>
 
         <div className="lc-founding-grid">
@@ -1210,7 +1210,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>All Growth Tools, Unlocked</h3>
-              <p>Enjoy full access to all tools — no waiting, no restrictions.</p>
+              <p>Enjoy full access to all tools. No waiting, no restrictions.</p>
             </div>
           </div>
           <div className="lc-tool-card">
@@ -1255,7 +1255,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Limited Spots, Lasting Impact</h3>
-              <p>This is a capped group — once the Founding Member slots are filled, they're gone. Joining now means securing a place in the foundation of a marketplace built to elevate indie creators for years to come.</p>
+              <p>This is a capped group. Once the Founding Member slots are filled, they're gone. Joining now means securing a place in the foundation of a marketplace built to elevate indie creators for years to come.</p>
             </div>
           </div>
         </div>
@@ -1269,7 +1269,7 @@ const MarketplaceWaitlistPage = () => {
           </div>
           <h2>Indie beauty is the future</h2>
           <p>
-            Creators deserve a platform built to elevate their craft—not bury it. Join the waitlist and be among the first to sell on a marketplace designed with intention, transparency, and your success in mind.
+            Creators deserve a platform built to elevate their craft, not bury it. Join the waitlist and be among the first to sell on a marketplace designed with intention, transparency, and your success in mind.
           </p>
           
           <div className="lc-form-wrapper">

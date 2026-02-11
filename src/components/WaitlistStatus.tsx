@@ -26,7 +26,7 @@ export default function WaitlistStatus() {
 
   // UI states
   if (!user) {
-    return <p>You’re on the waitlist — we release access in waves.</p>;
+    return <p>You're on the waitlist. We release access in waves.</p>;
   }
 
   if (!entry || entry.wave_number === null) {
@@ -35,12 +35,12 @@ export default function WaitlistStatus() {
 
   if (entry.status === "waiting") {
     return (
-      <p>You’re in Wave {entry.wave_number} — we’ll notify you when your wave opens.</p>
+      <p>You're in Wave {entry.wave_number}. We'll notify you when your wave opens.</p>
     );
   }
 
   if (entry.status === "invited") {
-    return <p>Your wave is open — check your email for access.</p>;
+    return <p>Your wave is open. Check your email for access.</p>;
   }
 
   if (entry.status === "active") {

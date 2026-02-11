@@ -159,7 +159,7 @@ export default function MagicLinkLogin() {
           </svg>
         </div>
         <p className="text-sage-700 text-lg font-medium mb-2">
-          Check your email — your magic link is on the way.
+          Check your email. Your magic link is on the way.
         </p>
         <p className="text-sage-500 text-sm">
           Click the link in your email to sign in securely.
@@ -188,7 +188,7 @@ export default function MagicLinkLogin() {
           </svg>
         </div>
         <p className="text-sage-700 text-lg font-medium mb-2">
-          This email isn't on the waitlist yet — want to join?
+          This email isn't on the waitlist yet. Want to join?
         </p>
         <p className="text-sage-500 text-sm mb-4">
           Sign up above to get early access to Lorem Curae.

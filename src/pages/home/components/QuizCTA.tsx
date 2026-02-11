@@ -14,7 +14,7 @@ const QuizCTA = () => {
                 Not sure where to start?
               </h2>
               <p className="text-forest-700 leading-relaxed">
-                Start with our adaptive quiz — designed to help us understand your unique skin. Allowing you to receive personalized, science-driven recommendations aligned with your wellness journey.
+                Start with our adaptive quiz, designed to help us understand your unique skin. Allowing you to receive personalized, science-driven recommendations aligned with your wellness journey.
               </p>
             </div>
           </div>
