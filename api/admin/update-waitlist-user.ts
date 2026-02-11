@@ -28,11 +28,16 @@ import { createClient } from '@supabase/supabase-js';
 //     updated: true,
 //     user: {
 //       email: string,
+//       segment: string,
 //       wave_number: number | null,
+//       creator_wave_number: number | null,
 //       status: string,
+//       is_creator: boolean,
 //       is_founding_member: boolean,
 //       is_founding_member_creator: boolean,
-//       created_at: string
+//       wants_tester_access: boolean,
+//       created_at: string,
+//       updated_at: string | null
 //     }
 //   }
 //
@@ -55,22 +60,26 @@ type ValidStatus = (typeof VALID_STATUSES)[number];
 interface UpdateRequestBody {
   email: string;
   new_email?: string;
+  segment?: string;
   wave_number?: number | null;
+  creator_wave_number?: number | null;
   status?: ValidStatus;
+  is_creator?: boolean;
   is_founding_member?: boolean;
   is_founding_member_creator?: boolean;
   wants_tester_access?: boolean;
-  is_creator?: boolean;
 }
 
 interface UpdatePayload {
   email?: string;
+  segment?: string;
   wave_number?: number | null;
+  creator_wave_number?: number | null;
   status?: ValidStatus;
+  is_creator?: boolean;
   is_founding_member?: boolean;
   is_founding_member_creator?: boolean;
   wants_tester_access?: boolean;
-  is_creator?: boolean;
 }
 
 // Simple email validation regex
@@ -395,7 +404,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .from('waitlist')
       .update(updatePayload)
       .eq('email', trimmedEmail)
-      .select('email, wave_number, status, is_founding_member, is_founding_member_creator, created_at')
+      .select('email, segment, wave_number, creator_wave_number, status, is_creator, is_founding_member, is_founding_member_creator, wants_tester_access, created_at, updated_at')
       .single();
 
     if (error) {
@@ -429,11 +438,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       updated: true,
       user: {
         email: data.email,
+        segment: data.segment,
         wave_number: data.wave_number,
+        creator_wave_number: data.creator_wave_number,
         status: data.status,
+        is_creator: data.is_creator,
         is_founding_member: data.is_founding_member,
         is_founding_member_creator: data.is_founding_member_creator,
+        wants_tester_access: data.wants_tester_access,
         created_at: data.created_at,
+        updated_at: data.updated_at,
       },
     });
 

@@ -35,10 +35,16 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface WaitlistUser {
   email: string;
+  segment: string;
   wave_number: number | null;
+  creator_wave_number: number | null;
   status: string;
+  is_creator: boolean;
   is_founding_member: boolean;
+  is_founding_member_creator: boolean;
+  wants_tester_access: boolean;
   created_at: string;
+  updated_at: string | null;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -132,7 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     const { data: existingUser, error: fetchError } = await supabase
       .from('waitlist')
-      .select('email, wave_number, status, is_founding_member, created_at')
+      .select('email, segment, wave_number, creator_wave_number, status, is_creator, is_founding_member, is_founding_member_creator, wants_tester_access, created_at, updated_at')
       .eq('email', trimmedEmail)
       .maybeSingle();
 
@@ -148,10 +154,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Store user data for audit log before deletion
     const userSnapshot: WaitlistUser = {
       email: existingUser.email,
+      segment: existingUser.segment,
       wave_number: existingUser.wave_number,
+      creator_wave_number: existingUser.creator_wave_number,
       status: existingUser.status,
+      is_creator: existingUser.is_creator,
       is_founding_member: existingUser.is_founding_member,
+      is_founding_member_creator: existingUser.is_founding_member_creator,
+      wants_tester_access: existingUser.wants_tester_access,
       created_at: existingUser.created_at,
+      updated_at: existingUser.updated_at,
     };
 
     // -------------------------------------------------------------------------
@@ -178,10 +190,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         metadata: {
           action: 'delete',
           deleted_user_snapshot: {
+            segment: userSnapshot.segment,
             wave_number: userSnapshot.wave_number,
+            creator_wave_number: userSnapshot.creator_wave_number,
             status: userSnapshot.status,
+            is_creator: userSnapshot.is_creator,
             is_founding_member: userSnapshot.is_founding_member,
+            is_founding_member_creator: userSnapshot.is_founding_member_creator,
+            wants_tester_access: userSnapshot.wants_tester_access,
             original_created_at: userSnapshot.created_at,
+            original_updated_at: userSnapshot.updated_at,
           },
           deleted_at: new Date().toISOString(),
         },
@@ -200,9 +218,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       level: 'info',
       event: 'waitlist_user_deleted',
       email: trimmedEmail,
+      segment: userSnapshot.segment,
       wave_number: userSnapshot.wave_number,
+      creator_wave_number: userSnapshot.creator_wave_number,
       status: userSnapshot.status,
+      is_creator: userSnapshot.is_creator,
       is_founding_member: userSnapshot.is_founding_member,
+      is_founding_member_creator: userSnapshot.is_founding_member_creator,
+      wants_tester_access: userSnapshot.wants_tester_access,
       timestamp: new Date().toISOString(),
     }));
 

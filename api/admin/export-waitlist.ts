@@ -37,16 +37,21 @@ const MIN_LIMIT = 1;
 const VALID_WAVE_NUMBERS = [1, 2, 3];
 const VALID_STATUSES = ['active', 'waiting_for_next_wave'];
 
-// CSV column headers - exactly these fields, no more
-const CSV_HEADERS = ['email', 'wave_number', 'status', 'is_founding_member', 'is_founding_member_creator', 'created_at'];
+// CSV column headers - all waitlist fields
+const CSV_HEADERS = ['email', 'segment', 'wave_number', 'creator_wave_number', 'status', 'is_creator', 'is_founding_member', 'is_founding_member_creator', 'wants_tester_access', 'created_at', 'updated_at'];
 
 interface WaitlistRow {
   email: string;
+  segment: string;
   wave_number: number | null;
+  creator_wave_number: number | null;
   status: string;
+  is_creator: boolean;
   is_founding_member: boolean;
   is_founding_member_creator: boolean;
+  wants_tester_access: boolean;
   created_at: string;
+  updated_at: string | null;
 }
 
 /**
@@ -83,11 +88,16 @@ function toCSV(rows: WaitlistRow[]): string {
   for (const row of rows) {
     const fields = [
       escapeCSVField(row.email),
+      escapeCSVField(row.segment),
       escapeCSVField(row.wave_number),
+      escapeCSVField(row.creator_wave_number),
       escapeCSVField(row.status),
+      escapeCSVField(row.is_creator),
       escapeCSVField(row.is_founding_member),
       escapeCSVField(row.is_founding_member_creator),
+      escapeCSVField(row.wants_tester_access),
       escapeCSVField(row.created_at),
+      escapeCSVField(row.updated_at),
     ];
     lines.push(fields.join(','));
   }
@@ -280,7 +290,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     let query = supabase
       .from('waitlist')
-      .select('email, wave_number, status, is_founding_member, is_founding_member_creator, created_at')
+      .select('email, segment, wave_number, creator_wave_number, status, is_creator, is_founding_member, is_founding_member_creator, wants_tester_access, created_at, updated_at')
       .order('created_at', { ascending: true })
       .limit(limit);
 
@@ -341,11 +351,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     const rows: WaitlistRow[] = (data || []).map((row) => ({
       email: row.email,
+      segment: row.segment,
       wave_number: row.wave_number,
+      creator_wave_number: row.creator_wave_number,
       status: row.status,
+      is_creator: row.is_creator,
       is_founding_member: row.is_founding_member,
       is_founding_member_creator: row.is_founding_member_creator,
+      wants_tester_access: row.wants_tester_access,
       created_at: row.created_at,
+      updated_at: row.updated_at,
     }));
 
     const csv = toCSV(rows);

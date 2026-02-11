@@ -48,11 +48,16 @@ const VALID_STATUSES = ['active', 'waiting_for_next_wave'];
 
 interface WaitlistResult {
   email: string;
+  segment: string;
   wave_number: number | null;
+  creator_wave_number: number | null;
   status: string;
+  is_creator: boolean;
   is_founding_member: boolean;
   is_founding_member_creator: boolean;
+  wants_tester_access: boolean;
   created_at: string;
+  updated_at: string | null;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -253,7 +258,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     let query = supabase
       .from('waitlist')
-      .select('email, wave_number, status, is_founding_member, is_founding_member_creator, created_at')
+      .select('email, segment, wave_number, creator_wave_number, status, is_creator, is_founding_member, is_founding_member_creator, wants_tester_access, created_at, updated_at')
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -316,11 +321,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     const results: WaitlistResult[] = (data || []).map((row) => ({
       email: row.email,
+      segment: row.segment,
       wave_number: row.wave_number,
+      creator_wave_number: row.creator_wave_number,
       status: row.status,
+      is_creator: row.is_creator,
       is_founding_member: row.is_founding_member,
       is_founding_member_creator: row.is_founding_member_creator,
+      wants_tester_access: row.wants_tester_access,
       created_at: row.created_at,
+      updated_at: row.updated_at,
     }));
 
     return res.status(200).json({ results });
