@@ -31,13 +31,13 @@ export function BulkDeleteFallbackPanel() {
         throw new Error('Admin credentials not configured');
       }
 
-      const response = await fetch('/api/admin/bulk-delete-fallback-users', {
+      const response = await fetch('/api/admin?action=bulkDeleteFallback', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${adminSecret}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ limit }),
+        body: JSON.stringify({ limit, confirm: true }),
       });
 
       if (!response.ok) {

@@ -31,7 +31,7 @@ export function AnonymizeUserPanel({ email, onUserAnonymized }: AnonymizeUserPan
         throw new Error('Admin credentials not configured');
       }
 
-      const response = await fetch('/api/admin/anonymize-waitlist-user', {
+      const response = await fetch('/api/admin?action=anonymizeUser', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${adminSecret}`,

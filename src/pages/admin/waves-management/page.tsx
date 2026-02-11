@@ -79,15 +79,14 @@ function PromotionPanel({
         throw new Error('Admin credentials not configured');
       }
 
-      const response = await fetch('/api/admin/promote-wave', {
+      const response = await fetch('/api/admin?action=promoteWave', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${adminSecret}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from_wave: wave.wave_number,
-          to_wave: wave.wave_number + 1,
+          target_wave: wave.wave_number + 1,
           limit: state.limit,
         }),
       });

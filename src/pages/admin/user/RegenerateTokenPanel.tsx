@@ -22,7 +22,7 @@ export function RegenerateTokenPanel({ email }: RegenerateTokenPanelProps) {
         throw new Error('Admin credentials not configured');
       }
 
-      const response = await fetch('/api/admin/regenerate-magic-token', {
+      const response = await fetch('/api/admin?action=regenerateToken', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${adminSecret}`,
