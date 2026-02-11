@@ -60,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // STEP: Check founding member caps (separate pools)
     // -------------------------------------------------------------------------
     const MAX_FOUNDING_MEMBERS = 50;           // General founding members
-    const MAX_FOUNDING_MEMBER_CREATORS = 20;   // Founding member creators (separate pool)
+    const MAX_FOUNDING_MEMBER_CREATORS = 25;   // Founding member creators (separate pool)
     const MAX_TESTER_CREATORS = 10;
     const MAX_TESTER_CONSUMERS = 20;
 
