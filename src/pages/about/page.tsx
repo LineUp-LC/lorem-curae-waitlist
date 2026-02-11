@@ -16,7 +16,7 @@ const AboutPage = () => {
               We Are Lorem Curae
             </h1>
             <p className="text-xl text-sage-100 leading-relaxed">
-              Lorem Curae is a home built on honesty, authenticity, and customer care—values that are at the core of everything we do. Our name, Lorem Curae, derives from Latin, means "Customer Care," a philosophy we embrace wholeheartedly. Lorem Curae is more than just an experience; it's a promise—a commitment to put you, the user, first at every step of your skincare journey.
+              Lorem Curae is a home built on honesty, authenticity, and customer care, values that are at the core of everything we do. Our name, Lorem Curae, derives from Latin, means "Customer Care," a philosophy we embrace wholeheartedly. Lorem Curae is more than just an experience; it's a promise, a commitment to put you, the user, first at every step of your skincare journey.
             </p>
           </div>
         </section>
@@ -63,7 +63,7 @@ const AboutPage = () => {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Authenticity</h3>
                 <p className="text-gray-600">
-                  We celebrate real stories, real results, and real people. No filters, no false promises—just genuine care.
+                  We celebrate real stories, real results, and real people. No filters, no false promises, just genuine care.
                 </p>
               </div>
 

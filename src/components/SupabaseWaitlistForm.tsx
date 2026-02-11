@@ -304,7 +304,7 @@ export default function SupabaseWaitlistForm({
             <p className="text-sage-600 text-lg font-light">
               {status === 'duplicate'
                 ? "You're already on the waitlist."
-                : "You're on the waitlist — we release access in waves."}
+                : "You're on the waitlist. We release access in waves."}
             </p>
           </div>
 
