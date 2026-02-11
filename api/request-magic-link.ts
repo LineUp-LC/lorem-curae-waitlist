@@ -26,11 +26,17 @@ type UserRole =
   | 'user';
 
 interface WaitlistRecord {
-  wants_tester_access: boolean;
-  is_creator: boolean;
+  email?: string;
+  segment?: string;
   wave_number: number | null;
   creator_wave_number: number | null;
+  status?: string;
+  is_creator: boolean;
   is_founding_member: boolean;
+  is_founding_member_creator?: boolean;
+  wants_tester_access: boolean;
+  created_at?: string;
+  updated_at?: string | null;
 }
 
 interface EmailTemplate {
