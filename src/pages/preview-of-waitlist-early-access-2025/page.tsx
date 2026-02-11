@@ -1132,7 +1132,7 @@ const WaitlistLandingPage = () => {
           <div className="lc-waves-box">
             <h3>No pressure. Just priority.</h3>
             <p>
-              We're not creating false urgency. But we are being honest: founding member perks won't be available forever, with only 75 spots available—50 for users and 25 for creators. If early access and lifetime benefits matter to you—this is your moment.
+              We're not creating false urgency. But we are being honest: founding member perks won't be available forever, with only 75 spots available (50 for users and 25 for creators). If early access and lifetime benefits matter to you, this is your moment.
             </p>
           </div>
         </div>
