@@ -3,6 +3,8 @@ import SupabaseWaitlistForm from '../../components/SupabaseWaitlistForm';
 import WaitlistStatus from '../../components/WaitlistStatus';
 import MagicLinkLogin from '../../components/MagicLinkLogin';
 import AuthCallback from '../../components/AuthCallback';
+import { competitors } from '../../data/competitors';
+
 
 /**
  * WaitlistLandingPage Component
@@ -1065,42 +1067,26 @@ const WaitlistLandingPage = () => {
             </p>
             
             <ul className="lc-comparison-list">
-              <li className="lc-comparison-item">
-                <span className="lc-icon-x">✕</span>
-                <div>
-                  <strong>Sephora & Ulta:</strong>{' '}
-                  <span>Sell inventory first, fit second. Reviews aren't filtered by skin type.</span>
-                </div>
-              </li>
-              <li className="lc-comparison-item">
-                <span className="lc-icon-x">✕</span>
-                <div>
-                  <strong>Amazon:</strong>{' '}
-                  <span>Counterfeit risk. Zero personalization. Review manipulation.</span>
-                </div>
-              </li>
-              <li className="lc-comparison-item">
-                <span className="lc-icon-x">✕</span>
-                <div>
-                  <strong>Google:</strong>{' '}
-                  <span>SEO-gamed results. Sponsored content disguised as advice.</span>
-                </div>
-              </li>
-              <li className="lc-comparison-item">
-                <span className="lc-icon-x">✕</span>
-                <div>
-                  <strong>INCIdecoder:</strong>{' '}
-                  <span>Great for data, but no personalization or guidance.</span>
-                </div>
-              </li>
-              <li className="lc-comparison-item lc-us">
-                <span className="lc-icon-check">✓</span>
-                <div>
-                  <strong>Lorem Curae:</strong>{' '}
-                  <span>Personalized recommendations, community-reviewed retailers, verified marketplace products, science-backed guidance, and a supportive community where you're never figuring it out alone.</span>
-                </div>
-              </li>
-            </ul>
+  {competitors.map((c) => (
+    <li
+      key={c.name}
+      className={`lc-comparison-item ${c.isUs ? 'lc-us' : ''}`}
+    >
+      <span className={c.isUs ? 'lc-icon-check' : 'lc-icon-x'}>
+        {c.isUs ? '✓' : '✕'}
+      </span>
+      <div>
+        <strong>{c.name}:</strong>{' '}
+        <span>
+          {c.bullets.map((b, i) => (
+            <div key={i}>{b}</div>
+          ))}
+        </span>
+      </div>
+    </li>
+  ))}
+</ul>
+
           </div>
           
           <div className="lc-diff-visual">
