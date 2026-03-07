@@ -11,7 +11,8 @@
       "Bash(vercel --version)",
       "Bash(git push:*)",
       "Bash(git reset:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }
