@@ -1,49 +1,45 @@
+// src/data/competitors.ts
 export const competitors = [
   {
-    name: "Sephora & Ulta",
+    name: "Yuka",
     isUs: false,
     bullets: [
-      "Inventory first, fit second",
-      "Product suggestions aren't personalized",
-      "Doesn't adapt to your skin type, concerns, or progress",
-      "Leaves you to guess what works for you",
+      "Universal score. Same verdict for every user.",
+      "No skin-type awareness, no concern-aware ratings.",
     ],
   },
   {
-    name: "Amazon",
+    name: "Think Dirty",
     isUs: false,
     bullets: [
-      "Counterfeit risk",
-      "Zero personalization",
-      "Review manipulation",
+      "Barcode-based, not camera-first.",
+      "Hazard ratings are static, not contextual to your skin.",
     ],
   },
   {
-    name: "Google",
+    name: "INCI Decoder",
     isUs: false,
     bullets: [
-      "SEO-gamed results",
-      "Sponsored content disguised as advice",
+      "Deep ingredient data, zero personalization.",
+      "You're left to interpret what any of it means for you.",
     ],
   },
   {
-    name: "INCIdecoder",
+    name: "EWG Skin Deep",
     isUs: false,
     bullets: [
-      "Great for data, but no personalization or guidance",
+      "Database-first, not scan-first.",
+      "Hazard scores don't change with your profile or concerns.",
     ],
   },
   {
     name: "Lorem Curae",
     isUs: true,
     bullets: [
-      "Personalized recommendations",
-      "Community-reviewed retailers",
-      "Product and retailer comparison tools",
-      "Science-backed guidance",
-      "A supportive community",
-      "A personal AI skincare assistant that walks the journey with you",
-      "Verified marketplace products (coming soon)",
+      "Camera scan identifies any product in seconds.",
+      "Every verdict is scored against your specific skin profile.",
+      "Deterministic rules: EU Annex II, formaldehyde releasers, MI/MCI, heavy metals.",
+      "Unknown products auto-catalog for the next person who scans them.",
     ],
   },
 ];

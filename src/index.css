@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  background: #0f0f0f;
+}
+
 /* ============================================
    WAITLIST FORM ANIMATIONS
    Premium skincare brand aesthetic
