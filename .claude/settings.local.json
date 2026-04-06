@@ -12,7 +12,9 @@
       "Bash(git push:*)",
       "Bash(git reset:*)",
       "Bash(findstr:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }
