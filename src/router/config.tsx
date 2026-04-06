@@ -3,6 +3,29 @@ import { RouteObject } from 'react-router-dom';
 
 // Lazy load components
 const HomePage = lazy(() => import('../pages/home/page'));
+
+// Admin pages
+const AdminLayout = lazy(() => import('../pages/admin/components/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminDashboardPage = lazy(() => import('../pages/admin/page'));
+const WaitlistAnalyticsPage = lazy(() => import('../pages/admin/waitlist-analytics/page'));
+const WaveAnalyticsPage = lazy(() => import('../pages/admin/wave-analytics/page'));
+const EmailAnalyticsPage = lazy(() => import('../pages/admin/email-analytics/page'));
+const ActivityLogPage = lazy(() => import('../pages/admin/activity-log/page'));
+const AdminSearchPage = lazy(() => import('../pages/admin/search/page'));
+const UserDetailPage = lazy(() => import('../pages/admin/user/page'));
+const UserProfilePage = lazy(() => import('../pages/admin/user-profile/page'));
+const UserSimulatePage = lazy(() => import('../pages/admin/user-simulate/page'));
+const AdminToolsPage = lazy(() => import('../pages/admin/tools/page'));
+const HealthChecksPage = lazy(() => import('../pages/admin/health-checks/page'));
+const LiveLogsPage = lazy(() => import('../pages/admin/live-logs/page'));
+const LiveUserActivityPage = lazy(() => import('../pages/admin/live-user-activity/page'));
+const FeatureFlagsPage = lazy(() => import('../pages/admin/feature-flags/page'));
+const WaveManagementPage = lazy(() => import('../pages/admin/waves-management/page'));
+const EmailEventsPage = lazy(() => import('../pages/admin/email-events/page'));
+const EmailTemplatesPage = lazy(() => import('../pages/admin/email-templates/page'));
+const IncidentsPage = lazy(() => import('../pages/admin/incidents/page'));
+const MetricsPage = lazy(() => import('../pages/admin/metrics/page'));
+const NotificationsPage = lazy(() => import('../pages/admin/notifications/page'));
 const DiscoverPage = lazy(() => import('../pages/discover/page'));
 const IngredientsPage = lazy(() => import('../pages/ingredients/page'));
 const RoutinesPage = lazy(() => import('../pages/routines/page'));
@@ -25,6 +48,7 @@ const SubscriptionPage = lazy(() => import('../pages/subscription/page'));
 const PremiumPackagesPage = lazy(() => import('../pages/premium-packages/page'));
 const LoginPage = lazy(() => import('../pages/auth/login/page'));
 const SignupPage = lazy(() => import('../pages/auth/signup/page'));
+const AuthCallbackPage = lazy(() => import('../pages/auth/callback/page'));
 const ProductSearchDetailPage = lazy(() => import('../pages/product-search-detail/page'));
 const ServicesPage = lazy(() => import('../pages/services/page'));
 const ServicesDetailPage = lazy(() => import('../pages/services/detail/page'));
@@ -62,6 +86,10 @@ const CommunityGuidelinesPage = lazy(() => import('../pages/community-guidelines
 const routes: RouteObject[] = [
   {
     path: '/',
+    element: <Waitlist />,
+  },
+  {
+    path: '/waitlist',
     element: <Waitlist />,
   },
   {
@@ -151,6 +179,10 @@ const routes: RouteObject[] = [
   {
     path: '/auth/signup',
     element: <SignupPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallbackPage />,
   },
   {
     path: '/product-search-detail',
@@ -275,6 +307,93 @@ const routes: RouteObject[] = [
   {
     path: '/community-guidelines',
     element: <CommunityGuidelinesPage />,
+  },
+  // Admin routes
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    children: [
+      {
+        index: true,
+        element: <AdminDashboardPage />,
+      },
+      {
+        path: 'waitlist',
+        element: <WaitlistAnalyticsPage />,
+      },
+      {
+        path: 'waves',
+        element: <WaveManagementPage />,
+      },
+      {
+        path: 'wave-analytics',
+        element: <WaveAnalyticsPage />,
+      },
+      {
+        path: 'emails',
+        element: <EmailAnalyticsPage />,
+      },
+      {
+        path: 'activity',
+        element: <ActivityLogPage />,
+      },
+      {
+        path: 'search',
+        element: <AdminSearchPage />,
+      },
+      {
+        path: 'user/:email',
+        element: <UserDetailPage />,
+      },
+      {
+        path: 'user-profile/:email',
+        element: <UserProfilePage />,
+      },
+      {
+        path: 'user-simulate/:email',
+        element: <UserSimulatePage />,
+      },
+      {
+        path: 'tools',
+        element: <AdminToolsPage />,
+      },
+      {
+        path: 'health',
+        element: <HealthChecksPage />,
+      },
+      {
+        path: 'logs',
+        element: <LiveLogsPage />,
+      },
+      {
+        path: 'activity-stream',
+        element: <LiveUserActivityPage />,
+      },
+      {
+        path: 'flags',
+        element: <FeatureFlagsPage />,
+      },
+      {
+        path: 'email-events',
+        element: <EmailEventsPage />,
+      },
+      {
+        path: 'email-templates',
+        element: <EmailTemplatesPage />,
+      },
+      {
+        path: 'incidents',
+        element: <IncidentsPage />,
+      },
+      {
+        path: 'metrics',
+        element: <MetricsPage />,
+      },
+      {
+        path: 'notifications',
+        element: <NotificationsPage />,
+      },
+    ],
   },
   {
     path: '*',

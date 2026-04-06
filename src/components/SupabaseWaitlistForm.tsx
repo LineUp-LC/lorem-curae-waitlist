@@ -1,5 +1,4 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { supabase } from '../lib/supabase';
 
 type WaitlistSegment = 'regular' | 'creator';
 
@@ -9,7 +8,8 @@ interface SupabaseWaitlistFormProps {
 
 interface WaitlistFormState {
   email: string;
-  status: 'idle' | 'submitting' | 'success' | 'error';
+  betaTesterInterest: boolean;
+  status: 'idle' | 'submitting' | 'success' | 'duplicate' | 'error';
   errorMessage: string;
 }
 
@@ -18,6 +18,7 @@ export default function SupabaseWaitlistForm({
 }: SupabaseWaitlistFormProps) {
   const [formState, setFormState] = useState<WaitlistFormState>({
     email: '',
+    betaTesterInterest: false,
     status: 'idle',
     errorMessage: '',
   });
@@ -32,6 +33,13 @@ export default function SupabaseWaitlistForm({
       ...prev,
       email: e.target.value,
       errorMessage: '',
+    }));
+  };
+
+  const handleBetaTesterChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setFormState((prev) => ({
+      ...prev,
+      betaTesterInterest: e.target.checked,
     }));
   };
 
@@ -56,53 +64,86 @@ export default function SupabaseWaitlistForm({
       return;
     }
 
-    setFormState((prev) => ({ ...prev, status: 'submitting' }));
+    setFormState((prev) => ({ ...prev, status: 'submitting', errorMessage: '' }));
 
     try {
-      const { error } = await supabase
-        .from('waitlist')
-        .insert([{ 
-          email: trimmedEmail, 
+      // Sign up via API (handles founding member auto-assignment, wave assignment, cap checks)
+      const signupRes = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
           segment,
-          status: 'waiting', 
-          wave_number: null 
-        }]);
+          wants_tester_access: formState.betaTesterInterest,
+          is_creator: segment === 'creator',
+        }),
+      });
 
-      if (error) {
-        // Handle duplicate email (unique constraint violation)
-        if (error.code === '23505') {
+      const signupData = await signupRes.json();
+
+      if (!signupRes.ok) {
+        if (signupData.error === 'duplicate') {
           setFormState((prev) => ({
             ...prev,
-            status: 'success',
+            status: 'duplicate',
           }));
           return;
         }
-        throw error;
+
+        console.error('Waitlist submission error:', signupData.error);
+        setFormState((prev) => ({
+          ...prev,
+          status: 'error',
+          errorMessage: 'Something went wrong. Please try again.',
+        }));
+        return;
       }
 
-      setFormState((prev) => ({
-        ...prev,
-        status: 'success',
+      // Send role-based signup email with magic link included
+      console.log('[WaitlistForm] Sending request to /api/request-magic-link');
+
+      fetch('/api/request-magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, type: 'signup' }),
+      })
+        .then(async (res) => {
+          console.log('[WaitlistForm] Response status:', res.status);
+          try {
+            const data = await res.json();
+            console.log('[WaitlistForm] Response body:', JSON.stringify(data));
+            if (!res.ok) console.error('[WaitlistForm] Failed to send email:', data.error);
+          } catch {
+            console.log('[WaitlistForm] Response body: (not JSON)');
+            if (!res.ok) console.error('[WaitlistForm] Failed to send email');
+          }
+          if (res.ok) console.log('[WaitlistForm] Email sent successfully');
+        })
+        .catch((err) => console.error('[WaitlistForm] Email send error:', err));
+
+      setFormState({
         email: '',
-      }));
-    } catch (err) {
-      console.error('Waitlist submission error:', err);
-      setFormState((prev) => ({
-        ...prev,
-        status: 'error',
-        errorMessage: 'Something went wrong. Please try again.',
-      }));
+        betaTesterInterest: false,
+        status: 'success',
+        errorMessage: '',
+      });
+    } finally {
+      setFormState((prev) =>
+        prev.status === 'submitting'
+          ? { ...prev, status: 'idle' }
+          : prev
+      );
     }
   };
 
-  const { email, status, errorMessage } = formState;
+  const { email, betaTesterInterest, status, errorMessage } = formState;
   const isSubmitting = status === 'submitting';
 
   // Segment-specific content
   const content = {
     regular: {
       heading: 'Be the first to know',
-      subheading: 'Join our exclusive waitlist for early access.',
+      subheading: 'Join the waitlist for phased access.',
       buttonText: 'Join the waitlist',
       successHeading: "You're on the waitlist",
       successMessage: 'Welcome to the Lorem Curae community.',
@@ -120,7 +161,7 @@ export default function SupabaseWaitlistForm({
 
   return (
     <div className="max-w-xl mx-auto px-4">
-      {status !== 'success' ? (
+      {status !== 'success' && status !== 'duplicate' ? (
         <form
           onSubmit={handleSubmit}
           className="animate-fade-in space-y-6"
@@ -141,6 +182,9 @@ export default function SupabaseWaitlistForm({
             <div className="relative">
               <input
                 type="email"
+                id="email"
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={handleEmailChange}
                 placeholder="Enter your email"
@@ -202,9 +246,38 @@ export default function SupabaseWaitlistForm({
           <p className="text-center text-sage-500 text-sm font-light">
             We respect your privacy. Unsubscribe at any time.
           </p>
+
+          {/* Beta Tester Interest */}
+          <div className="pt-6 mt-2 border-t border-slate-200/60">
+            <p className="text-sage-700 text-sm font-medium mb-3 text-center">
+              Are you interested in testing new features early?
+            </p>
+            <label
+              htmlFor="betaTesterInterest"
+              className="flex items-center justify-center gap-3 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                id="betaTesterInterest"
+                name="betaTesterInterest"
+                checked={betaTesterInterest}
+                onChange={handleBetaTesterChange}
+                disabled={isSubmitting}
+                className="
+                  h-5 w-5 rounded border-slate-300
+                  text-sage-600 focus:ring-sage-500 focus:ring-offset-0
+                  transition-colors duration-200
+                  disabled:opacity-60 disabled:cursor-not-allowed
+                "
+              />
+              <span className="text-sage-600 text-sm leading-snug group-hover:text-sage-700 transition-colors">
+                Yes, I want tester access and I'm open to giving feedback.
+              </span>
+            </label>
+          </div>
         </form>
       ) : (
-        /* Success State */
+        /* Success/Duplicate State */
         <div className="text-center space-y-4 animate-slide-up">
           {/* Success Icon */}
           <div className="mx-auto w-16 h-16 rounded-full bg-sage-100 flex items-center justify-center">
@@ -223,13 +296,15 @@ export default function SupabaseWaitlistForm({
             </svg>
           </div>
 
-          {/* Success Message */}
+          {/* Success/Duplicate Message */}
           <div className="space-y-2">
             <h3 className="font-serif text-2xl md:text-3xl text-sage-800">
-              {successHeading}
+              {status === 'duplicate' ? "You're already on the waitlist" : successHeading}
             </h3>
             <p className="text-sage-600 text-lg font-light">
-              {successMessage}
+              {status === 'duplicate'
+                ? "You're already on the waitlist."
+                : "You're on the waitlist. We release access in waves."}
             </p>
           </div>
 
