@@ -1293,8 +1293,8 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-step-title">Know</h3>
               <p className="lc-step-body">
-                See exactly where the product lands: Safe, Caution, or Avoid. With the
-                specific reasons, per ingredient, for your skin.
+                See exactly where each ingredient lands: Safe, Caution, or Avoid. With
+                the specific reasons, per ingredient, for your skin.
               </p>
             </article>
           </div>
@@ -1360,6 +1360,74 @@ const WaitlistLandingPage = () => {
         </div>
       </section>
 
+      {/* ================= ADDITIONAL FEATURES ================= */}
+      <section className="lc-section lc-section-white">
+        <div className="lc-container">
+          <div className="lc-section-intro">
+            <span className="lc-section-label">Additional features</span>
+            <h2 className="lc-section-title">How it goes beyond the scan</h2>
+          </div>
+
+          <div className="lc-features-grid">
+            <article className="lc-feature-card">
+              <div className="lc-feature-icon">
+                <i className="ri-store-2-line" aria-hidden="true"></i>
+              </div>
+              <h3 className="lc-feature-title">Where to Buy</h3>
+              <p className="lc-feature-text">
+                After a scan, see exactly where to get the product — filtered by price,
+                free shipping, and retailer trustworthiness. Not a generic search.
+                Retailers ranked for your budget, surfaced in seconds.
+              </p>
+            </article>
+
+            <article className="lc-feature-card lc-feature-offset">
+              <div className="lc-feature-icon">
+                <i className="ri-exchange-line" aria-hidden="true"></i>
+              </div>
+              <h3 className="lc-feature-title">Compatible and similar products</h3>
+              <p className="lc-feature-text">
+                Every scan surfaces products that work with what you're already using —
+                matched to your skin profile, not just the ingredient list. Found
+                something better? Similar alternatives at different price points so
+                you're never stuck with one option.
+              </p>
+            </article>
+
+            <article className="lc-feature-card">
+              <div className="lc-feature-icon">
+                <i className="ri-stack-line" aria-hidden="true"></i>
+              </div>
+              <h3 className="lc-feature-title">Your shelf</h3>
+              <p className="lc-feature-text">
+                Scan products into your digital shelf — a visual space that shows
+                everything in your current routine. Ask Curae AI about anything on it,
+                build routines from products you actually own, and get automatic
+                check-ins after a product has been in your routine long enough to show
+                results. If something isn't working, we'll ask why — because your answer
+                makes every future recommendation sharper.
+              </p>
+            </article>
+
+            <article className="lc-feature-card lc-feature-offset">
+              <div className="lc-feature-icon">
+                <i className="ri-sparkling-2-line" aria-hidden="true"></i>
+              </div>
+              <h3 className="lc-feature-title">Curae AI</h3>
+              <p className="lc-feature-text">
+                Not a chatbot. A skincare companion that already knows your skin. Curae
+                AI comes pre-loaded with your skin type, concerns, current routine, and
+                scan history. Ask it anything — 'I'm going to Miami this weekend, is my
+                SPF enough for that humidity?' or 'My skin has been breaking out since I
+                added this serum, what's the likely culprit?' It pulls from your scan
+                results, your profile, real-time environment data, and ingredient
+                research. An answer that's actually about your skin.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       {/* ================= FEATURES ================= */}
       <section className="lc-section lc-section-white">
         <div className="lc-container">
@@ -1414,62 +1482,6 @@ const WaitlistLandingPage = () => {
               <p className="lc-feature-text">
                 The app learns from your scans, taps, and saves. It gets sharper about
                 what you actually care about without a 40-question survey.
-              </p>
-            </article>
-
-            <article className="lc-feature-card">
-              <div className="lc-feature-icon">
-                <i className="ri-store-2-line" aria-hidden="true"></i>
-              </div>
-              <h3 className="lc-feature-title">Where to Buy</h3>
-              <p className="lc-feature-text">
-                After a scan, see exactly where to get the product — filtered by price,
-                free shipping, and retailer trustworthiness. Not a generic search.
-                Retailers ranked for your budget, surfaced in seconds.
-              </p>
-            </article>
-
-            <article className="lc-feature-card lc-feature-offset">
-              <div className="lc-feature-icon">
-                <i className="ri-exchange-line" aria-hidden="true"></i>
-              </div>
-              <h3 className="lc-feature-title">Compatible and similar products</h3>
-              <p className="lc-feature-text">
-                Every scan surfaces products that work with what you're already using —
-                matched to your skin profile, not just the ingredient list. Found
-                something better? Similar alternatives at different price points so
-                you're never stuck with one option.
-              </p>
-            </article>
-
-            <article className="lc-feature-card">
-              <div className="lc-feature-icon">
-                <i className="ri-stack-line" aria-hidden="true"></i>
-              </div>
-              <h3 className="lc-feature-title">Your shelf</h3>
-              <p className="lc-feature-text">
-                Scan products into your digital shelf — a visual space that shows
-                everything in your current routine. Ask Curae AI about anything on it,
-                build routines from products you actually own, and get automatic
-                check-ins after a product has been in your routine long enough to show
-                results. If something isn't working, we'll ask why — because your answer
-                makes every future recommendation sharper.
-              </p>
-            </article>
-
-            <article className="lc-feature-card lc-feature-offset">
-              <div className="lc-feature-icon">
-                <i className="ri-sparkling-2-line" aria-hidden="true"></i>
-              </div>
-              <h3 className="lc-feature-title">Curae AI</h3>
-              <p className="lc-feature-text">
-                Not a chatbot. A skincare companion that already knows your skin. Curae
-                AI comes pre-loaded with your skin type, concerns, current routine, and
-                scan history. Ask it anything — 'I'm going to Miami this weekend, is my
-                SPF enough for that humidity?' or 'My skin has been breaking out since I
-                added this serum, what's the likely culprit?' It pulls from your scan
-                results, your profile, real-time environment data, and ingredient
-                research. An answer that's actually about your skin.
               </p>
             </article>
           </div>
