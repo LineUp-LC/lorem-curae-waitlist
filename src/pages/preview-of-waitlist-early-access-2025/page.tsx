@@ -1,11 +1,12 @@
 // src/pages/preview-of-waitlist-early-access-2025/page.tsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SupabaseWaitlistForm from '../../components/SupabaseWaitlistForm';
 import WaitlistStatus from '../../components/WaitlistStatus';
 import MagicLinkLogin from '../../components/MagicLinkLogin';
 import AuthCallback from '../../components/AuthCallback';
 import { competitors } from '../../data/competitors';
+import { supabase } from '../../lib/supabase';
 
 /**
  * WaitlistLandingPage
@@ -25,7 +26,27 @@ const scrollTo = (id: string) => (e: React.MouseEvent) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
+interface FoundingSlots {
+  slots_used: number;
+  slots_remaining: number;
+  slots_available: boolean;
+}
+
 const WaitlistLandingPage = () => {
+  const [slotData, setSlotData] = useState<FoundingSlots | null>(null);
+  const [slotLoading, setSlotLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from('founding_member_slots')
+      .select('*')
+      .single()
+      .then(({ data }) => {
+        if (data) setSlotData(data as FoundingSlots);
+        setSlotLoading(false);
+      });
+  }, []);
+
   // Scroll reveal: adds .is-visible to .lc-reveal elements when they enter
   // the viewport. Uses IntersectionObserver (no scroll listeners).
   // transform/opacity only — hardware accelerated.
@@ -898,6 +919,40 @@ const WaitlistLandingPage = () => {
           color: #5a5149;
         }
 
+        .lc-slot-badge {
+          display: inline-block;
+          padding: 0.375rem 1rem;
+          border-radius: 9999px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.875rem;
+          font-weight: 600;
+          text-align: center;
+          margin-bottom: 1.5rem;
+        }
+        .lc-slot-badge-active {
+          background: rgba(122, 111, 94, 0.1);
+          color: #7a6f5e;
+        }
+        .lc-slot-badge-closed {
+          background: #f0ece8;
+          color: #9a9490;
+        }
+        .lc-slot-badge-skeleton {
+          background: #f0ece8;
+          color: transparent;
+          min-width: 260px;
+          animation: lc-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes lc-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .lc-price-row-muted {
+          opacity: 0.45;
+          pointer-events: none;
+          filter: grayscale(0.4);
+        }
+
         /* ============================================================
            PERKS
            ============================================================ */
@@ -1153,11 +1208,11 @@ const WaitlistLandingPage = () => {
       <section className="lc-hero">
         <div className="lc-grain" aria-hidden="true"></div>
         <div className="lc-hero-content lc-hero-stagger">
-          <div className="lc-eyebrow" style={{ '--i': 0 } as React.CSSProperties}>Pre-launch waitlist</div>
+          <div className="lc-eyebrow" style={{ '--i': 0 } as React.CSSProperties}>Now accepting founding members</div>
 
           <div className="lc-hero-headline-wrap" style={{ '--i': 1 } as React.CSSProperties}>
             <h1 className="lc-headline">
-              Scan any skincare product. Know instantly if it works for <em>your</em> skin.
+              Your skin profile. Every ingredient. Three seconds.
             </h1>
           </div>
 
@@ -1377,9 +1432,9 @@ const WaitlistLandingPage = () => {
                 Scanning ingredients isn't new. Scanning them <em>for your skin</em> is.
               </h2>
               <p className="lc-section-lead lc-section-lead-dark">
-                Yuka, Think Dirty, INCI Decoder, and EWG hand everyone the same
-                verdict on a product. We don't. Your skin type, concerns, and
-                sensitivities change the answer, every scan.
+                Every other tool hands everyone the same verdict. Yuka, Think Dirty,
+                INCI Decoder, EWG — same score, every user. We don't. Your skin type,
+                concerns, and sensitivities change the answer. Every scan.
               </p>
             </div>
 
@@ -1417,14 +1472,28 @@ const WaitlistLandingPage = () => {
         <div className="lc-container">
           <div className="lc-founding-head">
             <span className="lc-section-label">Early access</span>
-            <h2 className="lc-section-title">Join early. Pay less. Forever.</h2>
+            <h2 className="lc-section-title">Lock your rate before launch. Keep it forever.</h2>
             <p className="lc-section-lead" style={{ maxWidth: '620px', margin: '0 auto' }}>
               Waitlist members get the founding rate locked to their account
               for life. Public pricing goes up after launch. Yours never does.
             </p>
           </div>
 
-          <div className="lc-price-row">
+          <div style={{ textAlign: 'center' }}>
+            {slotLoading ? (
+              <span className="lc-slot-badge lc-slot-badge-skeleton">&nbsp;</span>
+            ) : slotData?.slots_available ? (
+              <span className="lc-slot-badge lc-slot-badge-active">
+                {slotData.slots_remaining} founding member spots remaining
+              </span>
+            ) : (
+              <span className="lc-slot-badge lc-slot-badge-closed">
+                Founding member pricing is now closed. Standard pricing applies at launch.
+              </span>
+            )}
+          </div>
+
+          <div className={`lc-price-row${slotData && !slotData.slots_available ? ' lc-price-row-muted' : ''}`}>
             <div className="lc-price-card">
               <div className="lc-price-label">Founding rate</div>
               <div className="lc-price-amount">
@@ -1432,7 +1501,7 @@ const WaitlistLandingPage = () => {
                 <span className="lc-price-num">4.99</span>
                 <span className="lc-price-period">/ month</span>
               </div>
-              <div className="lc-price-note">Locked in for life</div>
+              <div className="lc-price-note">Your price. Locked forever.</div>
             </div>
             <div className="lc-price-card lc-price-card-accent">
               <div className="lc-price-label">Founding rate, annual</div>
@@ -1499,9 +1568,9 @@ const WaitlistLandingPage = () => {
       {/* ================= FINAL CTA + FORM ================= */}
       <section id="waitlist" className="lc-final-cta">
         <div className="lc-cta-card">
-          <h2 className="lc-cta-title">Join the waitlist.</h2>
+          <h2 className="lc-cta-title">Join before launch.</h2>
           <p className="lc-cta-sub">
-            Be first when Lorem Curae launches. One email. Unsubscribe any time.
+            One email. Your founding rate locked the moment you sign up — if spots remain.
           </p>
 
           <div className="lc-form-wrapper">
