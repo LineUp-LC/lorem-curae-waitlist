@@ -1375,9 +1375,10 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Where to Buy</h3>
               <p className="lc-feature-text">
-                After a scan, see exactly where to get the product — filtered by price,
-                free shipping, and retailer trustworthiness. Not a generic search.
-                Retailers ranked for your budget, surfaced in seconds.
+                After a scan, see exactly where to get the product. Filtered by price,
+                free shipping, and retailer trustworthiness. Surfaced in seconds,
+                ranked using your skin profile, budget, purchase habits, and the
+                onboarding data you shared with us.
               </p>
             </article>
 
@@ -1387,10 +1388,9 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Compatible and similar products</h3>
               <p className="lc-feature-text">
-                Every scan surfaces products that work with what you're already using —
-                matched to your skin profile, not just the ingredient list. Found
-                something better? Similar alternatives at different price points so
-                you're never stuck with one option.
+                Every scan surfaces products that work with what you're already using,
+                matched to your skin profile. We also surface similar alternatives at
+                different price points so you always have options worth considering.
               </p>
             </article>
 
@@ -1400,12 +1400,12 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Your shelf</h3>
               <p className="lc-feature-text">
-                Scan products into your digital shelf — a visual space that shows
+                Scan products into your digital shelf, a visual space that shows
                 everything in your current routine. Ask Curae AI about anything on it,
                 build routines from products you actually own, and get automatic
                 check-ins after a product has been in your routine long enough to show
-                results. If something isn't working, we'll ask why — because your answer
-                makes every future recommendation sharper.
+                results. If something isn't working, we'll help you figure out why and
+                find something better.
               </p>
             </article>
 
@@ -1417,7 +1417,7 @@ const WaitlistLandingPage = () => {
               <p className="lc-feature-text">
                 Not a chatbot. A skincare companion that already knows your skin. Curae
                 AI comes pre-loaded with your skin type, concerns, current routine, and
-                scan history. Ask it anything — 'I'm going to Miami this weekend, is my
+                scan history. Ask it anything: 'I'm going to Miami this weekend, is my
                 SPF enough for that humidity?' or 'My skin has been breaking out since I
                 added this serum, what's the likely culprit?' It pulls from your scan
                 results, your profile, real-time environment data, and ingredient
