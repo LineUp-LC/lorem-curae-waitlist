@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-// Module-load logging
 console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 
 // ----------------------------------------------------------------------------
@@ -10,6 +9,13 @@ console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 
 const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
 const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
+const UNSUBSCRIBE_BASE = 'https://fskvzrobcfokezumadbb.supabase.co/functions/v1/unsubscribe';
+const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscribe';
+
+function buildUnsubscribeUrl(token?: string | null): string {
+  if (token) return `${UNSUBSCRIBE_BASE}?token=${token}`;
+  return UNSUBSCRIBE_URL_FALLBACK;
+}
 
 // ----------------------------------------------------------------------------
 // TYPES
@@ -35,6 +41,7 @@ interface WaitlistRecord {
   is_founding_member: boolean;
   is_founding_member_creator?: boolean;
   wants_tester_access: boolean;
+  unsubscribe_token?: string;
   created_at?: string;
   updated_at?: string | null;
 }
@@ -45,323 +52,196 @@ interface EmailTemplate {
 }
 
 // ----------------------------------------------------------------------------
-// EMAIL TEMPLATES (with {{MAGIC_LINK}} placeholder)
+// SHARED COPY PIECES
+// ----------------------------------------------------------------------------
+
+const SCAN_LINE =
+  "Curae scans any product and tells you, ingredient by ingredient, whether it fits your skin.";
+
+const FOOTER = `<p style="color:#888;font-size:12px;margin-top:32px;">Curae · <a href="{{UNSUBSCRIBE_URL}}" style="color:#888;">Unsubscribe</a> · <a href="https://loremcurae.com/privacy" style="color:#888;">Privacy</a></p>`;
+
+const SIGN_OFF = `<p>— Ethan Jones<br/>Founder, Curae</p>`;
+
+const LOGIN_SUBJECT = "Your Curae sign-in link";
+
+function loginHtml(): string {
+  return `<p>Hi there,</p>
+<p>Here's your sign-in link.</p>
+<p><strong><a href="{{MAGIC_LINK}}">Sign in to Curae</a></strong></p>
+<p>It expires in 1 hour.</p>
+${SIGN_OFF}
+${FOOTER}`;
+}
+
+function signupHtml(opening: string, accessLine: string): string {
+  return `<p>Hi there,</p>
+<p>${opening}</p>
+<p>${SCAN_LINE}</p>
+<p>${accessLine}</p>
+<p>Your founding rate is locked — you'll keep it for as long as you stay subscribed.</p>
+<p><strong><a href="{{MAGIC_LINK}}">Confirm your email</a></strong></p>
+${SIGN_OFF}
+${FOOTER}`;
+}
+
+// ----------------------------------------------------------------------------
+// EMAIL TEMPLATES
 // ----------------------------------------------------------------------------
 
 const templates: Record<string, EmailTemplate> = {
-  // ---- Default/Fallback ----
+  // ---- Default waitlist ----
   waitlist_signup: {
     subject: "You're on the Curae waitlist",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — your spot is saved.</p>
-<p>We'll keep you updated as we roll out new features and open access to more users.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    html: signupHtml(
+      "You're on the Curae waitlist.",
+      "We'll email you when access opens for your wave.",
+    ),
   },
-  non_tester_login: {
-    subject: "Your secure sign-in link",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>Right now, your account is still on the waitlist, so you'll continue to see the waitlist page when you sign in. We'll notify you as soon as access opens for your account.</p>
-<p>Thanks for your patience — we're building something special.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  non_tester_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Tester Creator ----
   tester_creator_signup: {
     subject: "You're on the creator tester list",
-    html: `<p>Hi there,</p>
-<p>You're officially on the creator tester list for Curae.</p>
-<p>When tester access opens, you'll be among the first creators to test our marketplace tools — product listings, creator dashboard, and early analytics. Your feedback will shape how we build for creators.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>We'll notify you as soon as your access is ready.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    html: signupHtml(
+      "You're on the creator tester list.",
+      "When tester access opens, you'll be among the first creators in — your feedback will shape the tools we ship.",
+    ),
   },
-  tester_creator_login: {
-    subject: "Your secure sign-in link — Creator Tester",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a creator tester, you have access to the creator dashboard, product listings, and early marketplace tools. Your feedback helps us build better tools for creators.</p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  tester_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Tester Consumer ----
   tester_consumer_signup: {
-    subject: "You're on the tester access list",
-    html: `<p>Hi there,</p>
-<p>You're officially on the tester access list for Curae.</p>
-<p>When tester access opens, you'll be able to test features and share feedback.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>We'll notify you as soon as your access is ready.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the tester list",
+    html: signupHtml(
+      "You're on the tester list.",
+      "When tester access opens, you'll be able to scan products and try features before anyone else.",
+    ),
   },
-  tester_consumer_login: {
-    subject: "Your secure sign-in link — Tester Access",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a tester, you have access to test features and share feedback.</p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Founding Member ----
   founding_member_signup: {
-    subject: "Welcome to Curae — you're a Founding Member",
-    html: `<p>Hi there,</p>
-<p>Welcome to Curae — you're officially a Founding Member.</p>
-<p>This means you'll have priority access to every feature we build, starting from day one. No waiting, no waves — you're in.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thank you for believing in what we're building.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "Welcome to Curae — founding member",
+    html: signupHtml(
+      "You're a founding member of Curae.",
+      "You have priority access from day one — no waves, no waiting.",
+    ),
   },
-  founding_member_login: {
-    subject: "Your secure sign-in link — Founding Member",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Founding Member, you have full access to Curae — explore everything we've built and everything that's coming.</p>
-<p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  founding_member_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Founding Member Creator ----
   founding_member_creator_signup: {
-    subject: "Welcome to Curae — you're a Founding Creator",
-    html: `<p>Hi there,</p>
-<p>Welcome to Curae — you're officially a Founding Creator.</p>
-<p>This means you'll have priority access to every creator tool we build, starting from day one. Your creator dashboard, product listings, analytics, AI tools — no waiting, no waves. You're in.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thank you for believing in what we're building.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "Welcome to Curae — founding creator",
+    html: signupHtml(
+      "You're a founding creator on Curae.",
+      "You have priority access to every creator tool from day one — dashboard, listings, analytics.",
+    ),
   },
-  founding_member_creator_login: {
-    subject: "Your secure sign-in link — Founding Creator",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Founding Creator, you have full access to Curae's creator tools — your dashboard, product listings, analytics, and everything we're building for creators.</p>
-<p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  founding_member_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Founding Member Tester Creator ----
   founding_member_tester_creator_signup: {
-    subject: "Welcome to Curae — you're a Founding Creator Tester",
-    html: `<p>Hi there,</p>
-<p>Welcome to Curae — you're officially a Founding Creator Tester.</p>
-<p>This means you'll have priority access to test every creator tool we build, starting from day one. Plus early access to experimental features before anyone else.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thank you for believing in what we're building — and for helping us build it.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "Welcome — founding creator tester",
+    html: signupHtml(
+      "You're a founding creator tester on Curae.",
+      "You have priority access to every creator tool plus experimental features before anyone else.",
+    ),
   },
-  founding_member_tester_creator_login: {
-    subject: "Your secure sign-in link — Founding Creator Tester",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Founding Creator Tester, you have full access plus experimental features first.</p>
-<p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  founding_member_tester_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Founding Member Tester Consumer ----
   founding_member_tester_consumer_signup: {
-    subject: "Welcome to Curae — you're a Founding Member Tester",
-    html: `<p>Hi there,</p>
-<p>Welcome to Curae — you're officially a Founding Member Tester.</p>
-<p>This means you'll have priority access to test every feature we build, starting from day one. Plus early access to experimental features before anyone else.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thank you for believing in what we're building — and for helping us build it.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "Welcome — founding tester",
+    html: signupHtml(
+      "You're a founding tester on Curae.",
+      "You have priority access from day one plus experimental features before anyone else.",
+    ),
   },
-  founding_member_tester_consumer_login: {
-    subject: "Your secure sign-in link — Founding Member Tester",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Founding Member Tester, you have full access plus experimental features first.</p>
-<p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  founding_member_tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
-  // ---- Creator Waves ----
+  // ---- Creator Waves (wave number is access timing only) ----
   creator_c1_signup: {
-    subject: "You're on the Curae creator waitlist — Wave C1",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae creator waitlist — you're in Wave C1, our first group of creators.</p>
-<p>As a C1 creator, you'll be among the first to access the marketplace: product listings, your creator dashboard, and the tools to share and monetize your work.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey from the start.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae creator waitlist",
+    html: signupHtml(
+      "You're on the Curae creator waitlist — Wave C1.",
+      "C1 is the first creator wave in. We'll email you when access opens.",
+    ),
   },
-  creator_c1_login: {
-    subject: "Your secure sign-in link — Wave C1 Creator",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a C1 creator, you're first in line. When we open creator access, you'll unlock your creator dashboard, product listing tools, and the marketplace.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  creator_c1_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   creator_c2_signup: {
-    subject: "You're on the Curae creator waitlist — Wave C2",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae creator waitlist — you're in Wave C2.</p>
-<p>As a C2 creator, you'll unlock expanded marketplace tools: product analytics, promotional features, and new ways to grow your audience on Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae creator waitlist",
+    html: signupHtml(
+      "You're on the Curae creator waitlist — Wave C2.",
+      "We'll email you when Wave C2 access opens.",
+    ),
   },
-  creator_c2_login: {
-    subject: "Your secure sign-in link — Wave C2 Creator",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a C2 creator, you'll unlock expanded marketplace tools when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  creator_c2_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   creator_c3_signup: {
-    subject: "You're on the Curae creator waitlist — Wave C3",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae creator waitlist — you're in Wave C3.</p>
-<p>As a C3 creator, you'll unlock our most advanced creator tools: AI-assisted product creation, formulation tools, patch testing workflows, and deep analytics.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae creator waitlist",
+    html: signupHtml(
+      "You're on the Curae creator waitlist — Wave C3.",
+      "We'll email you when Wave C3 access opens.",
+    ),
   },
-  creator_c3_login: {
-    subject: "Your secure sign-in link — Wave C3 Creator",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a C3 creator, you'll unlock advanced creator tools when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  creator_c3_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
-  // ---- Consumer Waves 1-7 ----
+  // ---- Consumer Waves (wave number is access timing only) ----
   consumer_wave_1_signup: {
-    subject: "You're on the Curae waitlist — Wave 1",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — you're in Wave 1, our very first group of users.</p>
-<p>As a Wave 1 member, you'll be among the first to access the foundation of Curae: core discovery tools, personalized feeds, and the essentials we're building everything else on top of.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey from the very beginning.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae waitlist",
+    html: signupHtml(
+      "You're on the Curae waitlist — Wave 1.",
+      "Wave 1 is the first group in. We'll email you when access opens.",
+    ),
   },
-  consumer_wave_1_login: {
-    subject: "Your secure sign-in link — Wave 1",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Wave 1 member, you're first in line for access.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  consumer_wave_1_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   consumer_wave_2_signup: {
-    subject: "You're on the Curae waitlist — Wave 2",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — you're in Wave 2.</p>
-<p>As a Wave 2 member, you'll unlock our engagement features: community interactions, saved collections, and tools that make Curae feel like more than just browsing.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae waitlist",
+    html: signupHtml(
+      "You're on the Curae waitlist — Wave 2.",
+      "We'll email you when Wave 2 access opens.",
+    ),
   },
-  consumer_wave_2_login: {
-    subject: "Your secure sign-in link — Wave 2",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Wave 2 member, you'll unlock engagement features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  consumer_wave_2_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   consumer_wave_3_signup: {
-    subject: "You're on the Curae waitlist — Wave 3",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — you're in Wave 3.</p>
-<p>As a Wave 3 member, you'll unlock our growth features: sharing tools, invite capabilities, and expanded ways to discover content you'll love.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae waitlist",
+    html: signupHtml(
+      "You're on the Curae waitlist — Wave 3.",
+      "We'll email you when Wave 3 access opens.",
+    ),
   },
-  consumer_wave_3_login: {
-    subject: "Your secure sign-in link — Wave 3",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Wave 3 member, you'll unlock growth features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  consumer_wave_3_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   consumer_wave_4_signup: {
-    subject: "You're on the Curae waitlist — Wave 4",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — you're in Wave 4.</p>
-<p>As a Wave 4 member, you'll unlock our marketplace features: secure transactions, verified profiles, and the ability to purchase content you believe in.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae waitlist",
+    html: signupHtml(
+      "You're on the Curae waitlist — Wave 4.",
+      "We'll email you when Wave 4 access opens.",
+    ),
   },
-  consumer_wave_4_login: {
-    subject: "Your secure sign-in link — Wave 4",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Wave 4 member, you'll unlock marketplace features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  consumer_wave_4_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   consumer_wave_5_signup: {
-    subject: "You're on the Curae waitlist — Wave 5",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — you're in Wave 5.</p>
-<p>As a Wave 5 member, you'll unlock our intelligence features: smart recommendations, personalized discovery, and AI-powered tools that learn what you love.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae waitlist",
+    html: signupHtml(
+      "You're on the Curae waitlist — Wave 5.",
+      "We'll email you when Wave 5 access opens.",
+    ),
   },
-  consumer_wave_5_login: {
-    subject: "Your secure sign-in link — Wave 5",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Wave 5 member, you'll unlock intelligence features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  consumer_wave_5_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   consumer_wave_6_signup: {
-    subject: "You're on the Curae waitlist — Wave 6",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — you're in Wave 6.</p>
-<p>As a Wave 6 member, you'll unlock our expansion features: new content categories, broader marketplace offerings, and a more complete Curae experience.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae waitlist",
+    html: signupHtml(
+      "You're on the Curae waitlist — Wave 6.",
+      "We'll email you when Wave 6 access opens.",
+    ),
   },
-  consumer_wave_6_login: {
-    subject: "Your secure sign-in link — Wave 6",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Wave 6 member, you'll unlock expansion features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  consumer_wave_6_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
   consumer_wave_7_signup: {
-    subject: "You're on the Curae waitlist — Wave 7",
-    html: `<p>Hi there,</p>
-<p>Thanks for joining the Curae waitlist — you're in Wave 7.</p>
-<p>As a Wave 7 member, you'll unlock our immersive features: augmented reality previews, interactive product exploration, and new ways to understand what fits your needs.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
-<p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
+    subject: "You're on the Curae waitlist",
+    html: signupHtml(
+      "You're on the Curae waitlist — Wave 7.",
+      "We'll email you when Wave 7 access opens.",
+    ),
   },
-  consumer_wave_7_login: {
-    subject: "Your secure sign-in link — Wave 7",
-    html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Curae.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Wave 7 member, you'll unlock immersive features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`,
-  },
+  consumer_wave_7_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 };
 
 // ----------------------------------------------------------------------------
@@ -531,7 +411,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: waitlist, error: waitlistError } = await supabase
       .from('waitlist')
-      .select('wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member')
+      .select('wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token')
       .eq('email', trimmedEmail)
       .maybeSingle();
 
@@ -592,7 +472,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     console.log(`[request-magic-link] Sending email for role: ${role}...`);
 
-    const htmlWithLink = template.html.replace(/\{\{MAGIC_LINK\}\}/g, magicLink);
+    const htmlWithSubstitutions = template.html
+      .replace(/\{\{MAGIC_LINK\}\}/g, magicLink)
+      .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, buildUnsubscribeUrl(waitlist?.unsubscribe_token));
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -604,7 +486,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         from: FROM_EMAIL,
         to: trimmedEmail,
         subject: template.subject,
-        html: htmlWithLink,
+        html: htmlWithSubstitutions,
       }),
     });
 

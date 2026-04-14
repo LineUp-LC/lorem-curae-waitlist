@@ -19,7 +19,10 @@
       "Bash(node node_modules/typescript/bin/tsc --noEmit)",
       "Bash(ls node_modules/.bin/tsc*)",
       "Bash(ls node_modules/typescript/bin)",
-      "Bash(node node_modules/typescript/bin/tsc --noEmit --project tsconfig.app.json)"
+      "Bash(node node_modules/typescript/bin/tsc --noEmit --project tsconfig.app.json)",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit api/request-magic-link.ts --target ES2022 --module ESNext --moduleResolution bundler --allowImportingTsExtensions --jsx react-jsx --esModuleInterop --skipLibCheck)",
+      "Bash(git:*)",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit --project \"C:/Users/Ethan/lorem-curae-waitlist/tsconfig.app.json\")"
     ]
   }
 }
