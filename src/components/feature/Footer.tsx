@@ -10,10 +10,10 @@ const Footer = () => {
             <div className="flex items-center space-x-3">
               <img 
                 src="https://public.readdy.ai/ai/img_res/a6b3db07-dc0c-42d0-89bb-a50a13cc2680.png" 
-                alt="Lorem Curae Logo" 
+                alt="Curae Logo"
                 className="h-10 w-auto"
               />
-              <span className="text-xl font-semibold text-cream-50">Lorem Curae</span>
+              <span className="text-xl font-semibold text-cream-50">Curae</span>
             </div>
             <p className="text-sm text-cream-200 leading-relaxed">
               Empowering authentic skincare journeys through science-backed personalization, holistic wellness, and collective wisdom.
@@ -124,7 +124,7 @@ const Footer = () => {
         <div className="mt-16 pt-8 border-t border-cream-100/10">
           <div className="flex flex-col items-center space-y-4">
             <p className="text-xs text-cream-400 text-center">
-              © 2025 Lorem Curae. Empowering authentic skincare journeys.
+              © 2025 Curae. Empowering authentic skincare journeys.
             </p>
             <div className="text-center">
               <a 

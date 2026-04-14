@@ -89,7 +89,7 @@ function EmailPreview({ subject, body }: { subject: string; body: string }) {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs">
             <span className="text-sage-500 w-12">From:</span>
-            <span className="text-sage-700">Lorem Curae &lt;hello@loremcurae.com&gt;</span>
+            <span className="text-sage-700">Curae &lt;hello@loremcurae.com&gt;</span>
           </div>
           <div className="flex items-center gap-2 text-xs">
             <span className="text-sage-500 w-12">To:</span>

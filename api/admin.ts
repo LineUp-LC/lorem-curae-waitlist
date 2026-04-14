@@ -30,7 +30,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Constants
 const MAX_FOUNDING_MEMBERS = 50;
 const MAX_FOUNDING_MEMBER_CREATORS = 20;
-const FROM_EMAIL = 'Lorem Curae <hello@loremcurae.com>';
+const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
 const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 
 // Helper: Validate admin auth

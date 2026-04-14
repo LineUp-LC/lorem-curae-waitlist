@@ -15,16 +15,16 @@ const ContactPage = () => {
   const [submitStatus, setSubmitStatus] = useState('');
 
   useEffect(() => {
-    document.title = 'Contact Us | Lorem Curae';
+    document.title = 'Contact Us | Curae';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Get in touch with Lorem Curae. Contact our customer support team for questions about skincare, products, orders, or technical assistance.');
+      metaDescription.setAttribute('content', 'Get in touch with Curae. Contact our customer support team for questions about skincare, products, orders, or technical assistance.');
     }
     
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'contact Lorem Curae, customer support, skincare help, product questions, technical support');
+      metaKeywords.setAttribute('content', 'contact Curae, customer support, skincare help, product questions, technical support');
     }
   }, []);
 

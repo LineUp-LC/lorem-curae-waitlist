@@ -10,7 +10,7 @@ const BadgesPage = () => {
     {
       id: 1,
       name: 'Early Adopter',
-      description: 'Joined Lorem Curae in its first month',
+      description: 'Joined Curae in its first month',
       icon: 'ri-star-fill',
       unlockedDate: 'January 15, 2025',
       rarity: 'Legendary'
@@ -101,7 +101,7 @@ const BadgesPage = () => {
     {
       id: 12,
       name: 'Referral Star',
-      description: 'Invite 10 friends to join Lorem Curae',
+      description: 'Invite 10 friends to join Curae',
       icon: 'ri-user-add-fill',
       requirement: '3/10 friends joined',
       rarity: 'Epic'

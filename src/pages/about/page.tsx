@@ -13,10 +13,10 @@ const AboutPage = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30"></div>
           <div className="relative max-w-4xl mx-auto px-6 lg:px-12 text-center">
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              We Are Lorem Curae
+              We Are Curae
             </h1>
             <p className="text-xl text-sage-100 leading-relaxed">
-              Lorem Curae is a home built on honesty, authenticity, and customer care, values that are at the core of everything we do. Our name, Lorem Curae, derives from Latin, means "Customer Care," a philosophy we embrace wholeheartedly. Lorem Curae is more than just an experience; it's a promise, a commitment to put you, the user, first at every step of your skincare journey.
+              Curae is a home built on honesty, authenticity, and customer care, values that are at the core of everything we do. Our name, Curae, derives from Latin, means "Customer Care," a philosophy we embrace wholeheartedly. Curae is more than just an experience; it's a promise, a commitment to put you, the user, first at every step of your skincare journey.
             </p>
           </div>
         </section>
@@ -107,11 +107,11 @@ const AboutPage = () => {
 
               <div className="mt-8 text-center">
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  "I started Lorem Curae because I was tired of spending countless hours researching products that didn't work for my skin. I wanted to create a space where everyone could find their perfect skincare match without the overwhelm. Today, I'm proud to say we're helping thousands of people discover what truly works for them."
+                  "I started Curae because I was tired of spending countless hours researching products that didn't work for my skin. I wanted to create a space where everyone could find their perfect skincare match without the overwhelm. Today, I'm proud to say we're helping thousands of people discover what truly works for them."
                 </p>
                 <div className="mt-6">
                   <p className="font-semibold text-gray-900 text-lg">Sarah Mitchell</p>
-                  <p className="text-gray-600">Founder & CEO, Lorem Curae</p>
+                  <p className="text-gray-600">Founder & CEO, Curae</p>
                 </div>
               </div>
             </div>

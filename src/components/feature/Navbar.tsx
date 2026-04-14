@@ -44,7 +44,7 @@ const Navbar = () => {
               <span className={`text-xl font-semibold tracking-wide transition-colors ${
                 isScrolled ? 'text-forest-800' : 'text-white'
               }`}>
-                Lorem Curae
+                Curae
               </span>
             </Link>
 

@@ -277,7 +277,7 @@ function MockSidebar({ pages, currentStep }: { pages: VisiblePage[]; currentStep
           <div className="w-8 h-8 rounded-lg bg-forest-500 flex items-center justify-center">
             <span className="text-white font-bold text-sm">L</span>
           </div>
-          <span className="font-semibold text-sm">Lorem Curae</span>
+          <span className="font-semibold text-sm">Curae</span>
         </div>
       </div>
 
@@ -360,7 +360,7 @@ function MockContentArea({
           <div className="max-w-lg mx-auto">
             <div className="bg-white rounded-xl border border-sage-200 shadow-sm overflow-hidden">
               <div className="bg-forest-500 px-6 py-4">
-                <h3 className="text-lg font-semibold text-white">Welcome to Lorem Curae</h3>
+                <h3 className="text-lg font-semibold text-white">Welcome to Curae</h3>
                 <p className="text-forest-100 text-sm mt-1">Complete your setup to get started</p>
               </div>
               <div className="p-6">

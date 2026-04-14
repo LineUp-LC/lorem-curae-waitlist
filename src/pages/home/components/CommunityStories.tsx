@@ -89,7 +89,7 @@ const CommunityStories = () => {
             )}
 
             <blockquote className="text-3xl lg:text-4xl font-serif text-forest-900 leading-relaxed mb-8">
-              "Lorem Curae helped me understand my skin for the first time. The ingredient transparency and community support transformed my entire approach to skincare. I finally feel confident in my routine."
+              "Curae helped me understand my skin for the first time. The ingredient transparency and community support transformed my entire approach to skincare. I finally feel confident in my routine."
             </blockquote>
 
             <div className="flex items-center justify-between">

@@ -5,16 +5,16 @@ import Footer from '../../components/feature/Footer';
 
 const CommunityGuidelinesPage = () => {
   useEffect(() => {
-    document.title = 'Community Guidelines | Lorem Curae';
+    document.title = 'Community Guidelines | Curae';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Lorem Curae community guidelines for respectful, safe, and supportive skincare discussions. Learn about our community standards and expectations.');
+      metaDescription.setAttribute('content', 'Curae community guidelines for respectful, safe, and supportive skincare discussions. Learn about our community standards and expectations.');
     }
     
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'community guidelines, Lorem Curae community, skincare community, community standards, safe space');
+      metaKeywords.setAttribute('content', 'community guidelines, Curae community, skincare community, community standards, safe space');
     }
   }, []);
 
@@ -35,7 +35,7 @@ const CommunityGuidelinesPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">Our Community Values</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed">
                   <p>
-                    Lorem Curae is built on the belief that everyone deserves to feel confident in their skin. 
+                    Curae is built on the belief that everyone deserves to feel confident in their skin. 
                     Our community is a safe space where members can share experiences, learn from each other, 
                     and support one another on their skincare journeys.
                   </p>
@@ -170,7 +170,7 @@ const CommunityGuidelinesPage = () => {
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-yellow-800 mb-3">Important Reminder</h3>
                     <p className="text-yellow-700">
-                      Lorem Curae community members are not medical professionals. While we encourage 
+                      Curae community members are not medical professionals. While we encourage 
                       sharing experiences and support, serious skin conditions should always be evaluated 
                       by qualified dermatologists or healthcare providers.
                     </p>
@@ -247,7 +247,7 @@ const CommunityGuidelinesPage = () => {
                 <div className="bg-sage-50 border border-sage-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-sage-800 mb-3">Thank You</h3>
                   <p className="text-sage-700">
-                    Thank you for being part of the Lorem Curae community. Together, we're building 
+                    Thank you for being part of the Curae community. Together, we're building 
                     a space where everyone can learn, grow, and feel confident in their skincare journey. 
                     Your participation helps make this community a welcoming place for all.
                   </p>

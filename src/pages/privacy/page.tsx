@@ -5,16 +5,16 @@ import Footer from '../../components/feature/Footer';
 
 const PrivacyPage = () => {
   useEffect(() => {
-    document.title = 'Privacy Policy | Lorem Curae';
+    document.title = 'Privacy Policy | Curae';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Learn about Lorem Curae\'s privacy practices, data collection, and how we protect your personal information in our comprehensive privacy policy.');
+      metaDescription.setAttribute('content', 'Learn about Curae\'s privacy practices, data collection, and how we protect your personal information in our comprehensive privacy policy.');
     }
     
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'privacy policy, data protection, personal information, Lorem Curae, skincare data, user privacy');
+      metaKeywords.setAttribute('content', 'privacy policy, data protection, personal information, Curae, skincare data, user privacy');
     }
   }, []);
 
@@ -144,7 +144,7 @@ const PrivacyPage = () => {
               <section>
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">7. Children's Privacy</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed">
-                  <p>Lorem Curae is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we discover that we have collected information from a child under 13, we will take steps to delete such information promptly.</p>
+                  <p>Curae is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we discover that we have collected information from a child under 13, we will take steps to delete such information promptly.</p>
                 </div>
               </section>
 
@@ -173,7 +173,7 @@ const PrivacyPage = () => {
                   <p>If you have questions about this privacy policy or our data practices, please contact us:</p>
                   <div className="bg-gray-50 p-6 rounded-lg">
                     <p><strong>Email:</strong> privacy@loremcurae.com</p>
-                    <p><strong>Address:</strong> Lorem Curae Privacy Office<br/>
+                    <p><strong>Address:</strong> Curae Privacy Office<br/>
                     123 Skincare Boulevard<br/>
                     Beauty District, CA 90210</p>
                     <p><strong>Phone:</strong> +1 (555) 123-SKIN</p>

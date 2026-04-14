@@ -835,7 +835,7 @@ const MarketplaceWaitlistPage = () => {
       <header className="lc-header">
         <div className="lc-header-inner">
           <Link to="/" className="lc-logo">
-            Lorem Curae
+            Curae
           </Link>
           <a href="#waitlist" className="lc-header-cta">
             Join Creator Waitlist
@@ -880,7 +880,7 @@ const MarketplaceWaitlistPage = () => {
               Join the Creator Waitlist
             </a>
             <a href="#why" className="lc-btn-secondary">
-              Why Lorem Curae
+              Why Curae
             </a>
           </div>
         </div>
@@ -955,7 +955,7 @@ const MarketplaceWaitlistPage = () => {
         <div className="lc-diff-grid">
           <div>
             <h2 className="lc-diff-title">
-              What makes Lorem Curae <em>different</em>
+              What makes Curae <em>different</em>
             </h2>
             <p className="lc-diff-text">
               We built a marketplace that puts creators first, because when you succeed, our community thrives. Every feature exists to help you grow sustainably while staying true to your craft.
@@ -1006,7 +1006,7 @@ const MarketplaceWaitlistPage = () => {
             Whether you're just starting or ready to scale
           </h2>
           <p className="lc-section-description">
-            Lorem Curae Marketplace welcomes creators at every stage of their journey, from testing your first formulation to building a recognized brand.
+            Curae Marketplace welcomes creators at every stage of their journey, from testing your first formulation to building a recognized brand.
           </p>
         </div>
         
@@ -1200,7 +1200,7 @@ const MarketplaceWaitlistPage = () => {
         </div>
 
         <p className="lc-founding-description-extended">
-          Founding Members aren't just early adopters. They're the creators shaping the future of Lorem Curae. As part of this limited group, you gain full access to the entire creator ecosystem the moment it launches, along with exclusive perks designed to support your growth from the very beginning.
+          Founding Members aren't just early adopters. They're the creators shaping the future of Curae. As part of this limited group, you gain full access to the entire creator ecosystem the moment it launches, along with exclusive perks designed to support your growth from the very beginning.
         </p>
 
         <div className="lc-founding-grid">
@@ -1285,7 +1285,7 @@ const MarketplaceWaitlistPage = () => {
       {/* Footer */}
       <footer className="lc-footer">
         <Link to="/" className="lc-footer-logo">
-          Lorem Curae
+          Curae
         </Link>
         <p className="lc-footer-tagline">
           Empowering indie beauty creators

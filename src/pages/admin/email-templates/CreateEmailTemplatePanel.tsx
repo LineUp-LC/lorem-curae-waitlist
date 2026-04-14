@@ -268,7 +268,7 @@ export function CreateEmailTemplatePanel({ onTemplateCreated }: CreateEmailTempl
               onChange={(e) => handleFieldChange('subject', e.target.value)}
               onBlur={() => handleFieldBlur('subject')}
               disabled={loading}
-              placeholder="Welcome to Lorem Curae!"
+              placeholder="Welcome to Curae!"
               className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent disabled:bg-sage-50 disabled:text-sage-500 transition-shadow ${
                 errors.subject ? 'border-coral-300 bg-coral-50/50' : 'border-sage-200'
               }`}

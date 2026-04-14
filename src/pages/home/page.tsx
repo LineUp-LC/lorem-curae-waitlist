@@ -21,10 +21,10 @@ const HomePage = () => {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "What is Lorem Curae?",
+          "name": "What is Curae?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Lorem Curae is a comprehensive personalized skincare platform that combines smart product finding, ingredient intelligence, AI guidance, routine tracking, and a curated marketplace to help you discover products perfect for your unique skin."
+            "text": "Curae is a comprehensive personalized skincare platform that combines smart product finding, ingredient intelligence, AI guidance, routine tracking, and a curated marketplace to help you discover products perfect for your unique skin."
           }
         },
         {
@@ -66,7 +66,7 @@ const HomePage = () => {
     const organizationSchema = {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "Lorem Curae",
+      "name": "Curae",
       "url": "https://loremcurae.com",
       "logo": "https://loremcurae.com/logo.png",
       "description": "Personalized skincare platform powered by science and community. Smart product finder, ingredient intelligence, AI guidance, routine tracking, and curated marketplace.",
@@ -88,7 +88,7 @@ const HomePage = () => {
     const websiteSchema = {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Lorem Curae",
+      "name": "Curae",
       "url": "https://loremcurae.com",
       "description": "Personalized skincare platform with smart product finder, ingredient intelligence, AI guidance, and rewards program",
       "potentialAction": {

@@ -14,16 +14,16 @@ const FAQPage = () => {
   const [openItems, setOpenItems] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    document.title = 'Frequently Asked Questions | Lorem Curae';
+    document.title = 'Frequently Asked Questions | Curae';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Find answers to common questions about Lorem Curae skincare platform, products, skin assessments, orders, and account management.');
+      metaDescription.setAttribute('content', 'Find answers to common questions about Curae skincare platform, products, skin assessments, orders, and account management.');
     }
     
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'FAQ, frequently asked questions, Lorem Curae help, skincare questions, product support, account help');
+      metaKeywords.setAttribute('content', 'FAQ, frequently asked questions, Curae help, skincare questions, product support, account help');
     }
   }, []);
 
@@ -31,8 +31,8 @@ const FAQPage = () => {
     // General Questions
     {
       category: 'general',
-      question: 'What is Lorem Curae?',
-      answer: 'Lorem Curae is a comprehensive skincare platform that provides personalized skincare recommendations based on scientific assessments. We combine dermatological expertise with AI technology to help you build effective, personalized skincare routines.'
+      question: 'What is Curae?',
+      answer: 'Curae is a comprehensive skincare platform that provides personalized skincare recommendations based on scientific assessments. We combine dermatological expertise with AI technology to help you build effective, personalized skincare routines.'
     },
     {
       category: 'general',
@@ -41,7 +41,7 @@ const FAQPage = () => {
     },
     {
       category: 'general',
-      question: 'Is Lorem Curae suitable for all skin types?',
+      question: 'Is Curae suitable for all skin types?',
       answer: 'Yes! Our platform is designed to work with all skin types, tones, and concerns. Our assessment includes questions about sensitivity, allergies, and specific conditions to ensure safe, effective recommendations for everyone.'
     },
     {
@@ -80,7 +80,7 @@ const FAQPage = () => {
     },
     {
       category: 'products',
-      question: 'Can I purchase products directly through Lorem Curae?',
+      question: 'Can I purchase products directly through Curae?',
       answer: 'Yes! Our marketplace features curated products from trusted brands. You can purchase recommended products directly through our platform with secure checkout and fast shipping.'
     },
     {
@@ -124,7 +124,7 @@ const FAQPage = () => {
     },
     {
       category: 'technical',
-      question: 'Can I use Lorem Curae on my mobile device?',
+      question: 'Can I use Curae on my mobile device?',
       answer: 'Yes! Our platform is fully optimized for mobile devices and tablets. You can access all features through your mobile browser for a seamless experience.'
     },
     {
@@ -168,7 +168,7 @@ const FAQPage = () => {
           <div className="text-center mb-12">
             <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Frequently Asked Questions</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Find answers to common questions about your skincare journey with Lorem Curae.
+              Find answers to common questions about your skincare journey with Curae.
             </p>
           </div>
 

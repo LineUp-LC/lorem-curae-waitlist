@@ -384,7 +384,7 @@ const StorefrontJoinPage = () => {
               Join Us
             </h2>
             <p className="text-xl text-sage-100 mb-8">
-              Ready to grow your skincare brand? Start your journey with Lorem Curae today
+              Ready to grow your skincare brand? Start your journey with Curae today
             </p>
             <Link
               to="/storefront/register"

@@ -23,10 +23,10 @@ const SignUpPage = () => {
         <Link to="/" className="flex items-center justify-center space-x-3 mb-8 cursor-pointer">
           <img 
             src="https://public.readdy.ai/ai/img_res/a6b3db07-dc0c-42d0-89bb-a50a13cc2680.png" 
-            alt="Lorem Curae" 
+            alt="Curae"
             className="h-12 w-auto"
           />
-          <span className="text-2xl font-semibold text-gray-900">Lorem Curae</span>
+          <span className="text-2xl font-semibold text-gray-900">Curae</span>
         </Link>
 
         {/* Card */}

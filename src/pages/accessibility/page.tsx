@@ -5,16 +5,16 @@ import Footer from '../../components/feature/Footer';
 
 const AccessibilityPage = () => {
   useEffect(() => {
-    document.title = 'Accessibility Statement | Lorem Curae';
+    document.title = 'Accessibility Statement | Curae';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Lorem Curae\'s commitment to digital accessibility and inclusive design. Learn about our accessibility features and how to get support.');
+      metaDescription.setAttribute('content', 'Curae\'s commitment to digital accessibility and inclusive design. Learn about our accessibility features and how to get support.');
     }
     
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'accessibility, inclusive design, WCAG, screen reader, Lorem Curae accessibility, digital inclusion');
+      metaKeywords.setAttribute('content', 'accessibility, inclusive design, WCAG, screen reader, Curae accessibility, digital inclusion');
     }
   }, []);
 
@@ -35,7 +35,7 @@ const AccessibilityPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">Our Commitment</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed">
                   <p>
-                    Lorem Curae is committed to ensuring digital accessibility for all users, including those with disabilities. 
+                    Curae is committed to ensuring digital accessibility for all users, including those with disabilities. 
                     We believe that everyone deserves access to personalized skincare guidance and education, regardless of their abilities.
                   </p>
                   <p>
@@ -173,7 +173,7 @@ const AccessibilityPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">Feedback and Support</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed">
                   <p>
-                    We welcome your feedback on the accessibility of Lorem Curae. If you encounter any barriers or have suggestions 
+                    We welcome your feedback on the accessibility of Curae. If you encounter any barriers or have suggestions 
                     for improvement, please don't hesitate to contact us.
                   </p>
                   

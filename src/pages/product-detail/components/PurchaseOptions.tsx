@@ -367,7 +367,7 @@ const PurchaseOptions = ({ productId }: PurchaseOptionsProps) => {
         <div className="mt-8 p-4 bg-gray-50 rounded-xl">
           <p className="text-xs text-gray-600 text-center">
             <i className="ri-information-line"></i> Prices and availability are subject to change. 
-            Lorem Curae is not responsible for pricing discrepancies. 
+            Curae is not responsible for pricing discrepancies. 
             Final prices will be confirmed at retailer checkout. Sponsored listings and affiliate partners help support our platform.
           </p>
         </div>

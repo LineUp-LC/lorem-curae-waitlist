@@ -22,7 +22,7 @@ export interface CuraePointsAccount {
 
 // Point earning actions
 export const POINTS_ACTIONS = {
-  SIGNUP: { points: 100, description: 'Welcome bonus for joining Lorem Curae' },
+  SIGNUP: { points: 100, description: 'Welcome bonus for joining Curae' },
   SKIN_SURVEY: { points: 50, description: 'Completed skin assessment' },
   PRODUCT_REVIEW: { points: 25, description: 'Wrote a product review' },
   COMMUNITY_POST: { points: 15, description: 'Created a community post' },

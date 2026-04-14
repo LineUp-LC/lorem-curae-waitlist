@@ -213,7 +213,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               <span className="text-white font-bold text-sm">LC</span>
             </div>
             <div>
-              <span className="font-semibold text-sage-800 dark:text-sage-100 block leading-tight">Lorem Curae</span>
+              <span className="font-semibold text-sage-800 dark:text-sage-100 block leading-tight">Curae</span>
               <span className="text-[10px] text-sage-500 dark:text-sage-400 uppercase tracking-wider">Admin Panel</span>
             </div>
           </Link>
