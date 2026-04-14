@@ -191,7 +191,7 @@ export default function MagicLinkLogin() {
           This email isn't on the waitlist yet. Want to join?
         </p>
         <p className="text-sage-500 text-sm mb-4">
-          Sign up above to get early access to Lorem Curae.
+          Sign up above to get early access to Curae.
         </p>
         <button
           onClick={handleReset}

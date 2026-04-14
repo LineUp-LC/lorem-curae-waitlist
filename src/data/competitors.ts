@@ -33,7 +33,7 @@ export const competitors = [
     ],
   },
   {
-    name: "Lorem Curae",
+    name: "Curae",
     isUs: true,
     bullets: [
       "Camera scan identifies any product in seconds.",

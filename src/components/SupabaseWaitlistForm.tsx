@@ -146,7 +146,7 @@ export default function SupabaseWaitlistForm({
       subheading: 'Join the waitlist for phased access.',
       buttonText: 'Join the waitlist',
       successHeading: "You're on the waitlist",
-      successMessage: 'Welcome to the Lorem Curae community.',
+      successMessage: 'Welcome to the Curae community.',
     },
     creator: {
       heading: 'Join the Creator Waitlist',

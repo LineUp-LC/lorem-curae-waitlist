@@ -1199,7 +1199,7 @@ const WaitlistLandingPage = () => {
       {/* ================= HEADER ================= */}
       <header className="lc-header">
         <div className="lc-header-inner">
-          <Link to="/" className="lc-logo">Lorem Curae</Link>
+          <Link to="/" className="lc-logo">Curae</Link>
           <a href="#waitlist" onClick={scrollTo('waitlist')} className="lc-header-cta">Join waitlist</a>
         </div>
       </header>
@@ -1212,15 +1212,14 @@ const WaitlistLandingPage = () => {
 
           <div className="lc-hero-headline-wrap" style={{ '--i': 1 } as React.CSSProperties}>
             <h1 className="lc-headline">
-              Your skin profile. Every ingredient. Three seconds.
+              Point. Scan. Know exactly what's on your skin.
             </h1>
           </div>
 
           <div className="lc-hero-sub-wrap" style={{ '--i': 2 } as React.CSSProperties}>
             <p className="lc-subhead">
-              Point your camera at a bottle. Lorem Curae identifies the product, breaks
-              down every ingredient, and tells you, based on your specific skin profile,
-              whether it's safe, needs caution, or belongs on the avoid list.
+              Curae identifies any skincare product in seconds and tells you — based on
+              your specific skin — whether it belongs in your routine.
             </p>
           </div>
 
@@ -1243,7 +1242,7 @@ const WaitlistLandingPage = () => {
             <strong> Sephora</strong> reviews from people with different skin than yours.
             You're watching <strong>TikToks</strong> where one person calls a product holy
             grail and the next says it ruined them. The information is everywhere.
-            None of it is about <em>your</em> skin.
+            None of it is about <em>your</em> skin. One scan changes that.
           </p>
         </div>
       </section>
@@ -1267,9 +1266,9 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-step-title">Scan</h3>
               <p className="lc-step-body">
-                Point your phone at any skincare product. The camera identifies it in
-                seconds. Products not in the database auto-catalog for the next person
-                who scans them.
+                Point your camera at any skincare product. Curae identifies it in
+                seconds — no barcode required. Products not yet in the database get
+                added automatically for the next person who scans them.
               </p>
             </article>
 
@@ -1280,9 +1279,9 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-step-title">Analyze</h3>
               <p className="lc-step-body">
-                Every ingredient is scored against EU Cosmetics Regulation Annex II,
-                formaldehyde releasers, MI/MCI, heavy metals, known sensitizers, and
-                your own skin profile.
+                Every ingredient is scored against your skin profile. Not a universal
+                rating — yours. Based on your skin type, concerns, sensitivities, and
+                what's already in your routine.
               </p>
             </article>
 
@@ -1293,8 +1292,8 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-step-title">Know</h3>
               <p className="lc-step-body">
-                See exactly where each ingredient lands: Safe, Caution, or Avoid. With
-                the specific reasons, per ingredient, for your skin.
+                Safe, Caution, or Avoid. Every ingredient. With the specific reason
+                it landed there for your skin — not a generic hazard score.
               </p>
             </article>
           </div>
@@ -1360,12 +1359,15 @@ const WaitlistLandingPage = () => {
         </div>
       </section>
 
-      {/* ================= ADDITIONAL FEATURES ================= */}
+      {/* ================= CORE FEATURES — WHAT A SCAN UNLOCKS ================= */}
       <section className="lc-section lc-section-white">
         <div className="lc-container">
           <div className="lc-section-intro">
-            <span className="lc-section-label">Additional features</span>
-            <h2 className="lc-section-title">How it goes beyond the scan</h2>
+            <span className="lc-section-label">Core features</span>
+            <h2 className="lc-section-title">What a scan unlocks</h2>
+            <p className="lc-section-lead">
+              Every scan opens a complete intelligence layer — not just an ingredient list.
+            </p>
           </div>
 
           <div className="lc-features-grid">
@@ -1373,12 +1375,11 @@ const WaitlistLandingPage = () => {
               <div className="lc-feature-icon">
                 <i className="ri-store-2-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-feature-title">Where to Buy</h3>
+              <h3 className="lc-feature-title">Where to buy</h3>
               <p className="lc-feature-text">
-                After a scan, see exactly where to get the product. Filtered by price,
-                free shipping, and retailer trustworthiness. Surfaced in seconds,
-                ranked using your skin profile, budget, purchase habits, and the
-                onboarding data you shared with us.
+                Every scan surfaces where to buy — filtered by price, retailer trust
+                score, and shipping speed. Ranked using your scan history, budget, and
+                onboarding data. Not a generic search result.
               </p>
             </article>
 
@@ -1388,9 +1389,9 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Compatible and similar products</h3>
               <p className="lc-feature-text">
-                Every scan surfaces products that work with what you're already using,
-                matched to your skin profile. We also surface similar alternatives at
-                different price points so you always have options worth considering.
+                Scan anything and instantly see what works alongside it in your routine —
+                and what alternatives exist at different price points. Matched to your
+                skin profile, not a universal compatibility list.
               </p>
             </article>
 
@@ -1400,12 +1401,10 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Your shelf</h3>
               <p className="lc-feature-text">
-                Scan products into your digital shelf, a visual space that shows
-                everything in your current routine. Ask Curae AI about anything on it,
-                build routines from products you actually own, and get automatic
-                check-ins after a product has been in your routine long enough to show
-                results. If something isn't working, we'll help you figure out why and
-                find something better.
+                Every product you scan gets added to your digital shelf — a live view
+                of your full routine. Ask Curae AI about anything on it, build routines
+                from products you actually own, and get automatic check-ins once a
+                product has been in your routine long enough to show results.
               </p>
             </article>
 
@@ -1416,10 +1415,10 @@ const WaitlistLandingPage = () => {
               <h3 className="lc-feature-title">Curae AI</h3>
               <p className="lc-feature-text">
                 Not a chatbot. A skincare companion that already knows your skin. Curae
-                AI comes pre-loaded with your skin type, concerns, current routine, and
-                scan history. Ask it anything: 'I'm going to Miami this weekend, is my
-                SPF enough for that humidity?' or 'My skin has been breaking out since I
-                added this serum, what's the likely culprit?' It pulls from your scan
+                AI comes in already knowing your skin type, concerns, current routine,
+                and scan history. Ask it anything: 'I'm going to Miami this weekend, is
+                my SPF enough for that humidity?' or 'My skin has been breaking out since
+                I added this serum, what's the likely culprit?' It pulls from your scan
                 results, your profile, real-time environment data, and ingredient
                 research. An answer that's actually about your skin.
               </p>
@@ -1446,8 +1445,8 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Camera-first identification</h3>
               <p className="lc-feature-text">
-                Works on any product. Point, scan, done. Unknown products get added to
-                the database automatically for the next person to scan them.
+                Point at any product. Curae identifies it in seconds. Unknown products
+                auto-catalog for the next person.
               </p>
             </article>
 
@@ -1457,8 +1456,8 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Skin-profile-aware ratings</h3>
               <p className="lc-feature-text">
-                The same ingredient gets a different verdict based on your skin type,
-                concerns, and sensitivities. Not a universal score. Yours.
+                Same ingredient, different verdict depending on your skin. Not a
+                universal score. Yours.
               </p>
             </article>
 
@@ -1480,8 +1479,8 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Behavioral personalization</h3>
               <p className="lc-feature-text">
-                The app learns from your scans, taps, and saves. It gets sharper about
-                what you actually care about without a 40-question survey.
+                Curae learns from every scan, tap, and save. Gets sharper about what
+                you care about without asking you to fill in a survey.
               </p>
             </article>
           </div>
@@ -1657,14 +1656,14 @@ const WaitlistLandingPage = () => {
 
       {/* ================= FOOTER ================= */}
       <footer className="lc-footer">
-        <Link to="/" className="lc-footer-logo">Lorem Curae</Link>
+        <Link to="/" className="lc-footer-logo">Curae</Link>
         <p className="lc-footer-tagline">Camera-powered skincare intelligence.</p>
         <div className="lc-footer-links">
           <Link to="/privacy">Privacy</Link>
           <span className="lc-footer-sep">·</span>
           <Link to="/contact">Contact</Link>
         </div>
-        <p className="lc-footer-copy">© {new Date().getFullYear()} Lorem Curae</p>
+        <p className="lc-footer-copy">© {new Date().getFullYear()} Curae</p>
       </footer>
     </div>
   );

@@ -8,7 +8,7 @@ console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 // CONFIGURATION
 // ----------------------------------------------------------------------------
 
-const FROM_EMAIL = 'Lorem Curae <hello@loremcurae.com>';
+const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
 const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 
 // ----------------------------------------------------------------------------
@@ -51,316 +51,316 @@ interface EmailTemplate {
 const templates: Record<string, EmailTemplate> = {
   // ---- Default/Fallback ----
   waitlist_signup: {
-    subject: "You're on the Lorem Curae waitlist",
+    subject: "You're on the Curae waitlist",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — your spot is saved.</p>
+<p>Thanks for joining the Curae waitlist — your spot is saved.</p>
 <p>We'll keep you updated as we roll out new features and open access to more users.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   non_tester_login: {
     subject: "Your secure sign-in link",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>Right now, your account is still on the waitlist, so you'll continue to see the waitlist page when you sign in. We'll notify you as soon as access opens for your account.</p>
 <p>Thanks for your patience — we're building something special.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Tester Creator ----
   tester_creator_signup: {
     subject: "You're on the creator tester list",
     html: `<p>Hi there,</p>
-<p>You're officially on the creator tester list for Lorem Curae.</p>
+<p>You're officially on the creator tester list for Curae.</p>
 <p>When tester access opens, you'll be among the first creators to test our marketplace tools — product listings, creator dashboard, and early analytics. Your feedback will shape how we build for creators.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>We'll notify you as soon as your access is ready.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   tester_creator_login: {
     subject: "Your secure sign-in link — Creator Tester",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a creator tester, you have access to the creator dashboard, product listings, and early marketplace tools. Your feedback helps us build better tools for creators.</p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Tester Consumer ----
   tester_consumer_signup: {
     subject: "You're on the tester access list",
     html: `<p>Hi there,</p>
-<p>You're officially on the tester access list for Lorem Curae.</p>
+<p>You're officially on the tester access list for Curae.</p>
 <p>When tester access opens, you'll be able to test features and share feedback.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>We'll notify you as soon as your access is ready.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   tester_consumer_login: {
     subject: "Your secure sign-in link — Tester Access",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a tester, you have access to test features and share feedback.</p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Founding Member ----
   founding_member_signup: {
-    subject: "Welcome to Lorem Curae — you're a Founding Member",
+    subject: "Welcome to Curae — you're a Founding Member",
     html: `<p>Hi there,</p>
-<p>Welcome to Lorem Curae — you're officially a Founding Member.</p>
+<p>Welcome to Curae — you're officially a Founding Member.</p>
 <p>This means you'll have priority access to every feature we build, starting from day one. No waiting, no waves — you're in.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thank you for believing in what we're building.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   founding_member_login: {
     subject: "Your secure sign-in link — Founding Member",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Founding Member, you have full access to Lorem Curae — explore everything we've built and everything that's coming.</p>
+<p>As a Founding Member, you have full access to Curae — explore everything we've built and everything that's coming.</p>
 <p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Founding Member Creator ----
   founding_member_creator_signup: {
-    subject: "Welcome to Lorem Curae — you're a Founding Creator",
+    subject: "Welcome to Curae — you're a Founding Creator",
     html: `<p>Hi there,</p>
-<p>Welcome to Lorem Curae — you're officially a Founding Creator.</p>
+<p>Welcome to Curae — you're officially a Founding Creator.</p>
 <p>This means you'll have priority access to every creator tool we build, starting from day one. Your creator dashboard, product listings, analytics, AI tools — no waiting, no waves. You're in.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thank you for believing in what we're building.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   founding_member_creator_login: {
     subject: "Your secure sign-in link — Founding Creator",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
-<p>As a Founding Creator, you have full access to Lorem Curae's creator tools — your dashboard, product listings, analytics, and everything we're building for creators.</p>
+<p>As a Founding Creator, you have full access to Curae's creator tools — your dashboard, product listings, analytics, and everything we're building for creators.</p>
 <p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Founding Member Tester Creator ----
   founding_member_tester_creator_signup: {
-    subject: "Welcome to Lorem Curae — you're a Founding Creator Tester",
+    subject: "Welcome to Curae — you're a Founding Creator Tester",
     html: `<p>Hi there,</p>
-<p>Welcome to Lorem Curae — you're officially a Founding Creator Tester.</p>
+<p>Welcome to Curae — you're officially a Founding Creator Tester.</p>
 <p>This means you'll have priority access to test every creator tool we build, starting from day one. Plus early access to experimental features before anyone else.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thank you for believing in what we're building — and for helping us build it.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   founding_member_tester_creator_login: {
     subject: "Your secure sign-in link — Founding Creator Tester",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Founding Creator Tester, you have full access plus experimental features first.</p>
 <p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Founding Member Tester Consumer ----
   founding_member_tester_consumer_signup: {
-    subject: "Welcome to Lorem Curae — you're a Founding Member Tester",
+    subject: "Welcome to Curae — you're a Founding Member Tester",
     html: `<p>Hi there,</p>
-<p>Welcome to Lorem Curae — you're officially a Founding Member Tester.</p>
+<p>Welcome to Curae — you're officially a Founding Member Tester.</p>
 <p>This means you'll have priority access to test every feature we build, starting from day one. Plus early access to experimental features before anyone else.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thank you for believing in what we're building — and for helping us build it.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   founding_member_tester_consumer_login: {
     subject: "Your secure sign-in link — Founding Member Tester",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Founding Member Tester, you have full access plus experimental features first.</p>
 <p>Thanks for being here from the start.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Creator Waves ----
   creator_c1_signup: {
-    subject: "You're on the Lorem Curae creator waitlist — Wave C1",
+    subject: "You're on the Curae creator waitlist — Wave C1",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae creator waitlist — you're in Wave C1, our first group of creators.</p>
+<p>Thanks for joining the Curae creator waitlist — you're in Wave C1, our first group of creators.</p>
 <p>As a C1 creator, you'll be among the first to access the marketplace: product listings, your creator dashboard, and the tools to share and monetize your work.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey from the start.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   creator_c1_login: {
     subject: "Your secure sign-in link — Wave C1 Creator",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a C1 creator, you're first in line. When we open creator access, you'll unlock your creator dashboard, product listing tools, and the marketplace.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   creator_c2_signup: {
-    subject: "You're on the Lorem Curae creator waitlist — Wave C2",
+    subject: "You're on the Curae creator waitlist — Wave C2",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae creator waitlist — you're in Wave C2.</p>
-<p>As a C2 creator, you'll unlock expanded marketplace tools: product analytics, promotional features, and new ways to grow your audience on Lorem Curae.</p>
+<p>Thanks for joining the Curae creator waitlist — you're in Wave C2.</p>
+<p>As a C2 creator, you'll unlock expanded marketplace tools: product analytics, promotional features, and new ways to grow your audience on Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   creator_c2_login: {
     subject: "Your secure sign-in link — Wave C2 Creator",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a C2 creator, you'll unlock expanded marketplace tools when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   creator_c3_signup: {
-    subject: "You're on the Lorem Curae creator waitlist — Wave C3",
+    subject: "You're on the Curae creator waitlist — Wave C3",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae creator waitlist — you're in Wave C3.</p>
+<p>Thanks for joining the Curae creator waitlist — you're in Wave C3.</p>
 <p>As a C3 creator, you'll unlock our most advanced creator tools: AI-assisted product creation, formulation tools, patch testing workflows, and deep analytics.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   creator_c3_login: {
     subject: "Your secure sign-in link — Wave C3 Creator",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a C3 creator, you'll unlock advanced creator tools when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 
   // ---- Consumer Waves 1-7 ----
   consumer_wave_1_signup: {
-    subject: "You're on the Lorem Curae waitlist — Wave 1",
+    subject: "You're on the Curae waitlist — Wave 1",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — you're in Wave 1, our very first group of users.</p>
-<p>As a Wave 1 member, you'll be among the first to access the foundation of Lorem Curae: core discovery tools, personalized feeds, and the essentials we're building everything else on top of.</p>
+<p>Thanks for joining the Curae waitlist — you're in Wave 1, our very first group of users.</p>
+<p>As a Wave 1 member, you'll be among the first to access the foundation of Curae: core discovery tools, personalized feeds, and the essentials we're building everything else on top of.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey from the very beginning.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_1_login: {
     subject: "Your secure sign-in link — Wave 1",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Wave 1 member, you're first in line for access.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_2_signup: {
-    subject: "You're on the Lorem Curae waitlist — Wave 2",
+    subject: "You're on the Curae waitlist — Wave 2",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — you're in Wave 2.</p>
-<p>As a Wave 2 member, you'll unlock our engagement features: community interactions, saved collections, and tools that make Lorem Curae feel like more than just browsing.</p>
+<p>Thanks for joining the Curae waitlist — you're in Wave 2.</p>
+<p>As a Wave 2 member, you'll unlock our engagement features: community interactions, saved collections, and tools that make Curae feel like more than just browsing.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_2_login: {
     subject: "Your secure sign-in link — Wave 2",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Wave 2 member, you'll unlock engagement features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_3_signup: {
-    subject: "You're on the Lorem Curae waitlist — Wave 3",
+    subject: "You're on the Curae waitlist — Wave 3",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — you're in Wave 3.</p>
+<p>Thanks for joining the Curae waitlist — you're in Wave 3.</p>
 <p>As a Wave 3 member, you'll unlock our growth features: sharing tools, invite capabilities, and expanded ways to discover content you'll love.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_3_login: {
     subject: "Your secure sign-in link — Wave 3",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Wave 3 member, you'll unlock growth features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_4_signup: {
-    subject: "You're on the Lorem Curae waitlist — Wave 4",
+    subject: "You're on the Curae waitlist — Wave 4",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — you're in Wave 4.</p>
+<p>Thanks for joining the Curae waitlist — you're in Wave 4.</p>
 <p>As a Wave 4 member, you'll unlock our marketplace features: secure transactions, verified profiles, and the ability to purchase content you believe in.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_4_login: {
     subject: "Your secure sign-in link — Wave 4",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Wave 4 member, you'll unlock marketplace features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_5_signup: {
-    subject: "You're on the Lorem Curae waitlist — Wave 5",
+    subject: "You're on the Curae waitlist — Wave 5",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — you're in Wave 5.</p>
+<p>Thanks for joining the Curae waitlist — you're in Wave 5.</p>
 <p>As a Wave 5 member, you'll unlock our intelligence features: smart recommendations, personalized discovery, and AI-powered tools that learn what you love.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_5_login: {
     subject: "Your secure sign-in link — Wave 5",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Wave 5 member, you'll unlock intelligence features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_6_signup: {
-    subject: "You're on the Lorem Curae waitlist — Wave 6",
+    subject: "You're on the Curae waitlist — Wave 6",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — you're in Wave 6.</p>
-<p>As a Wave 6 member, you'll unlock our expansion features: new content categories, broader marketplace offerings, and a more complete Lorem Curae experience.</p>
+<p>Thanks for joining the Curae waitlist — you're in Wave 6.</p>
+<p>As a Wave 6 member, you'll unlock our expansion features: new content categories, broader marketplace offerings, and a more complete Curae experience.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_6_login: {
     subject: "Your secure sign-in link — Wave 6",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Wave 6 member, you'll unlock expansion features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_7_signup: {
-    subject: "You're on the Lorem Curae waitlist — Wave 7",
+    subject: "You're on the Curae waitlist — Wave 7",
     html: `<p>Hi there,</p>
-<p>Thanks for joining the Lorem Curae waitlist — you're in Wave 7.</p>
+<p>Thanks for joining the Curae waitlist — you're in Wave 7.</p>
 <p>As a Wave 7 member, you'll unlock our immersive features: augmented reality previews, interactive product exploration, and new ways to understand what fits your needs.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in securely</a></strong></p>
 <p>Thanks for being part of this journey.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
   consumer_wave_7_login: {
     subject: "Your secure sign-in link — Wave 7",
     html: `<p>Hi there,</p>
-<p>Here's your secure magic link to sign in to Lorem Curae.</p>
+<p>Here's your secure magic link to sign in to Curae.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Click here to sign in</a></strong></p>
 <p>As a Wave 7 member, you'll unlock immersive features when your wave opens.</p>
-<p>— Ethan Jones<br/>Founder, Lorem Curae</p>`,
+<p>— Ethan Jones<br/>Founder, Curae</p>`,
   },
 };
 
