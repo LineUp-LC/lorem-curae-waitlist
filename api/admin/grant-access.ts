@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { validateAdminRequest } from '../_adminAuth';
-import { sendFollowupEmail } from '../../src/lib/email/followupTemplates';
-import type { UserRole, FollowupEventType } from '../../src/lib/email/followupTemplates';
+import { validateAdminRequest } from '../_adminAuth.js';
+import { sendFollowupEmail } from '../../src/lib/email/followupTemplates.js';
+import type { UserRole, FollowupEventType } from '../../src/lib/email/followupTemplates.js';
 
 // ----------------------------------------------------------------------------
 // Types

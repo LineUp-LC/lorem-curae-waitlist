@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { validateAdminRequest } from '../_adminAuth';
+import { validateAdminRequest } from '../_adminAuth.js';
 
 // There is currently no admin_activity table in the database.
 // This endpoint returns an empty events array so the dashboard renders
