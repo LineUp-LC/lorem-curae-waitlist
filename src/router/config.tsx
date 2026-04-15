@@ -21,6 +21,7 @@ const LiveLogsPage = lazy(() => import('../pages/admin/live-logs/page'));
 const LiveUserActivityPage = lazy(() => import('../pages/admin/live-user-activity/page'));
 const FeatureFlagsPage = lazy(() => import('../pages/admin/feature-flags/page'));
 const WaveManagementPage = lazy(() => import('../pages/admin/waves-management/page'));
+const AccessManagementPage = lazy(() => import('../pages/admin/access/page'));
 const EmailEventsPage = lazy(() => import('../pages/admin/email-events/page'));
 const EmailTemplatesPage = lazy(() => import('../pages/admin/email-templates/page'));
 const IncidentsPage = lazy(() => import('../pages/admin/incidents/page'));
@@ -329,6 +330,10 @@ const routes: RouteObject[] = [
       {
         path: 'waves',
         element: <WaveManagementPage />,
+      },
+      {
+        path: 'access',
+        element: <AccessManagementPage />,
       },
       {
         path: 'wave-analytics',

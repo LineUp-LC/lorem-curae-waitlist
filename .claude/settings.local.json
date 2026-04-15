@@ -24,7 +24,10 @@
       "Bash(git:*)",
       "Bash(node node_modules/typescript/bin/tsc --noEmit --project \"C:/Users/Ethan/lorem-curae-waitlist/tsconfig.app.json\")",
       "Bash(cat /c/Users/Ethan/lorem-curae-waitlist/supabase/migrations/*.sql)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(node_modules/.bin/tsc --noEmit)"
     ]
   }
 }
