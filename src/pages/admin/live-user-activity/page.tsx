@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for activity entries
 interface ActivityEntry {
@@ -190,11 +191,12 @@ export default function LiveUserActivityPage() {
   }, []);
 
   // Connect to SSE
-  const connect = useCallback(() => {
-    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-    if (!adminSecret) {
-      setConnectionError('Admin credentials not configured');
+  const connect = useCallback(async () => {
+    let adminToken: string;
+    try {
+      adminToken = await getAdminToken();
+    } catch {
+      setConnectionError('Not authenticated — please sign in');
       return;
     }
 
@@ -212,7 +214,7 @@ export default function LiveUserActivityPage() {
 
     try {
       // Create SSE connection with auth
-      const url = `/api/admin/live-user-activity?token=${encodeURIComponent(adminSecret)}`;
+      const url = `/api/admin/live-user-activity?token=${encodeURIComponent(adminToken)}`;
       const eventSource = new EventSource(url);
       eventSourceRef.current = eventSource;
 

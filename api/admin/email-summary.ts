@@ -1,26 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { validateAdminRequest } from '../_adminAuth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const adminSecret = process.env.ADMIN_SECRET;
-  const authHeader = req.headers.authorization;
-  if (!adminSecret || authHeader !== `Bearer ${adminSecret}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) {
-    return res.status(500).json({ error: 'Server misconfiguration' });
-  }
-
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  const auth = await validateAdminRequest(req);
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
+  const { supabase } = auth;
 
   // drip_send_log tracks all email sends with status 'sent' | 'failed'.
   // There is no bounce-tracking in this system, so total_bounced is always 0.
@@ -47,7 +35,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Map drip_send_log rows to the shape the dashboard expects.
-  // If the JOIN failed or the table has no data, fall back to empty array.
   type FailureRow = {
     drip_event: string;
     sent_at: string;

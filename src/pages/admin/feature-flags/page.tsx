@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CreateFeatureFlagPanel } from './CreateFeatureFlagPanel';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for API response
 interface FeatureFlag {
@@ -198,16 +199,12 @@ export default function FeatureFlagsPage() {
       setLoading(true);
       setError(null);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/feature-flags', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -269,16 +266,12 @@ export default function FeatureFlagsPage() {
     );
 
     try {
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/update-feature-flag', {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

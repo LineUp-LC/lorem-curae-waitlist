@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // ============================================================================
 // Types
@@ -503,10 +504,10 @@ export default function UserSimulatePage() {
     error: null,
   });
 
-  const getAuthHeaders = useCallback(() => {
-    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
+  const getAuthHeaders = useCallback(async () => {
+    const adminToken = await getAdminToken();
     return {
-      Authorization: `Bearer ${adminSecret}`,
+      Authorization: `Bearer ${adminToken}`,
       'Content-Type': 'application/json',
     };
   }, []);
@@ -518,7 +519,7 @@ export default function UserSimulatePage() {
     try {
       const res = await fetch(
         `/api/admin/user?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -539,7 +540,7 @@ export default function UserSimulatePage() {
     try {
       const res = await fetch(
         `/api/admin/user-state?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -560,7 +561,7 @@ export default function UserSimulatePage() {
     try {
       const res = await fetch(
         `/api/admin/user-visible-flags?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -581,7 +582,7 @@ export default function UserSimulatePage() {
     try {
       const res = await fetch(
         `/api/admin/user-visible-pages?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();

@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 interface CreateFeatureFlagPanelProps {
   onFlagCreated: () => void;
@@ -77,16 +78,12 @@ export function CreateFeatureFlagPanel({ onFlagCreated }: CreateFeatureFlagPanel
       setError(null);
       setSuccess(false);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/create-feature-flag', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

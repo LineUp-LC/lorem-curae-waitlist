@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StatCard } from '../components/StatCard';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for API response
 interface DayCount {
@@ -57,16 +58,12 @@ export default function WaitlistAnalyticsPage() {
       setLoading(true);
       setError(null);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin?action=waitlistAnalytics', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });

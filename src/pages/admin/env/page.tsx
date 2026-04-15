@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for API response
 interface EnvVariable {
@@ -48,8 +49,6 @@ export default function EnvVariablesPage() {
   const [error, setError] = useState<string | null>(null);
   const [editStates, setEditStates] = useState<Record<string, EditState>>({});
 
-  const getAdminSecret = () => import.meta.env.VITE_ADMIN_SECRET;
-
   // Initialize edit states from env vars
   const initializeEditStates = useCallback((vars: EnvVariable[]) => {
     const states: Record<string, EditState> = {};
@@ -71,13 +70,12 @@ export default function EnvVariablesPage() {
       setLoading(true);
       setError(null);
 
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/env', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -153,13 +151,12 @@ export default function EnvVariablesPage() {
         [key]: { ...prev[key], isSaving: true, error: null, success: false },
       }));
 
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/update-env', {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ key, value: editState.value }),

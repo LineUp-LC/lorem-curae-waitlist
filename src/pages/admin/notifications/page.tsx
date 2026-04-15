@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // ============================================================================
 // Types
@@ -333,10 +334,10 @@ export default function NotificationsPage() {
 
   const [markingReadIds, setMarkingReadIds] = useState<Set<string>>(new Set());
 
-  const getAuthHeaders = useCallback(() => {
-    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
+  const getAuthHeaders = useCallback(async () => {
+    const adminToken = await getAdminToken();
     return {
-      Authorization: `Bearer ${adminSecret}`,
+      Authorization: `Bearer ${adminToken}`,
       'Content-Type': 'application/json',
     };
   }, []);
@@ -346,7 +347,7 @@ export default function NotificationsPage() {
 
     try {
       const res = await fetch('/api/admin/notifications', {
-        headers: getAuthHeaders(),
+        headers: await getAuthHeaders(),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -377,7 +378,7 @@ export default function NotificationsPage() {
       try {
         const res = await fetch('/api/admin/notifications/mark-read', {
           method: 'POST',
-          headers: getAuthHeaders(),
+          headers: await getAuthHeaders(),
           body: JSON.stringify({ id }),
         });
 

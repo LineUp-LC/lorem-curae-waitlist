@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for API responses
 interface RoleUser {
@@ -118,18 +119,15 @@ export default function RolesPermissionsPage() {
   const [revokeError, setRevokeError] = useState<string | null>(null);
   const [revokeSuccess, setRevokeSuccess] = useState<string | null>(null);
 
-  const getAdminSecret = () => import.meta.env.VITE_ADMIN_SECRET;
-
   // Fetch roles
   const fetchRoles = useCallback(async () => {
     try {
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/roles', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -150,13 +148,12 @@ export default function RolesPermissionsPage() {
   // Fetch permissions
   const fetchPermissions = useCallback(async () => {
     try {
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/permissions', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -226,13 +223,12 @@ export default function RolesPermissionsPage() {
       setAssignError(null);
       setAssignSuccess(false);
 
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/assign-role', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -272,13 +268,12 @@ export default function RolesPermissionsPage() {
       setRevokeError(null);
       setRevokeSuccess(null);
 
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/revoke-role', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, role }),

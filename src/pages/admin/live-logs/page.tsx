@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for log entries
 interface LogEntry {
@@ -137,11 +138,12 @@ export default function LiveLogsPage() {
   }, []);
 
   // Connect to SSE
-  const connect = useCallback(() => {
-    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-    if (!adminSecret) {
-      setConnectionError('Admin credentials not configured');
+  const connect = useCallback(async () => {
+    let adminToken: string;
+    try {
+      adminToken = await getAdminToken();
+    } catch {
+      setConnectionError('Not authenticated — please sign in');
       return;
     }
 
@@ -159,7 +161,7 @@ export default function LiveLogsPage() {
 
     try {
       // Create SSE connection with auth
-      const url = `/api/admin/live-logs?token=${encodeURIComponent(adminSecret)}`;
+      const url = `/api/admin/live-logs?token=${encodeURIComponent(adminToken)}`;
       const eventSource = new EventSource(url);
       eventSourceRef.current = eventSource;
 

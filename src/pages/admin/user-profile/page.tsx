@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // ============================================================================
 // Types
@@ -281,10 +282,10 @@ export default function UserProfilePage() {
     error: null,
   });
 
-  const getAuthHeaders = useCallback(() => {
-    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
+  const getAuthHeaders = useCallback(async () => {
+    const adminToken = await getAdminToken();
     return {
-      Authorization: `Bearer ${adminSecret}`,
+      Authorization: `Bearer ${adminToken}`,
       'Content-Type': 'application/json',
     };
   }, []);
@@ -296,7 +297,7 @@ export default function UserProfilePage() {
     try {
       const res = await fetch(
         `/api/admin/user?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -317,7 +318,7 @@ export default function UserProfilePage() {
     try {
       const res = await fetch(
         `/api/admin/user-email-events?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -338,7 +339,7 @@ export default function UserProfilePage() {
     try {
       const res = await fetch(
         `/api/admin/user-rate-limits?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -359,7 +360,7 @@ export default function UserProfilePage() {
     try {
       const res = await fetch(
         `/api/admin/user-activity?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -380,7 +381,7 @@ export default function UserProfilePage() {
     try {
       const res = await fetch(
         `/api/admin/user-magic-links?email=${encodeURIComponent(decodedEmail)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CreateEmailTemplatePanel } from './CreateEmailTemplatePanel';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for API response
 interface EmailTemplate {
@@ -148,16 +149,12 @@ export default function EmailTemplatesPage() {
       setLoading(true);
       setError(null);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/email-templates', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -216,11 +213,7 @@ export default function EmailTemplatesPage() {
       setSaveError(null);
       setSaveSuccess(false);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       // Build update payload - only include changed fields
       const payload: { key: string; subject?: string; body?: string } = {
@@ -237,7 +230,7 @@ export default function EmailTemplatesPage() {
       const response = await fetch('/api/admin/update-email-template', {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),

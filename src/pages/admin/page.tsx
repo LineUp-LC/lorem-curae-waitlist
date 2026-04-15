@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { getAdminToken } from '@/lib/adminAuth';
 import { StatCard } from './components/StatCard';
 
 // Types for API responses
@@ -159,19 +160,16 @@ export default function AdminDashboardPage() {
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const getAdminSecret = () => import.meta.env.VITE_ADMIN_SECRET;
-
   // Fetch summary data
   const fetchSummary = useCallback(async () => {
     try {
       setLoadingSummary(true);
       setErrorSummary(null);
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/summary', {
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -192,12 +190,11 @@ export default function AdminDashboardPage() {
     try {
       setLoadingEmail(true);
       setErrorEmail(null);
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/email-summary', {
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -218,12 +215,11 @@ export default function AdminDashboardPage() {
     try {
       setLoadingHealth(true);
       setErrorHealth(null);
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/health-checks', {
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -244,12 +240,11 @@ export default function AdminDashboardPage() {
     try {
       setLoadingActivity(true);
       setErrorActivity(null);
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/admin-activity?limit=5', {
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });

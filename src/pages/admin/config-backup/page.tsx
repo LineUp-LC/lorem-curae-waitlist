@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for config backup
 interface FeatureFlag {
@@ -158,21 +159,18 @@ export default function ConfigBackupPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const getAdminSecret = () => import.meta.env.VITE_ADMIN_SECRET;
-
   // Export configuration
   const handleExport = useCallback(async () => {
     try {
       setExporting(true);
       setExportError(null);
 
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/config-backup', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -269,13 +267,12 @@ export default function ConfigBackupPage() {
       setRestoreError(null);
       setRestoreSuccess(false);
 
-      const adminSecret = getAdminSecret();
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin/config-restore', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(parsedConfig),

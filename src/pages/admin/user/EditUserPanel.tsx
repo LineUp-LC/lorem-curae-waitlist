@@ -1,4 +1,5 @@
 import { useState, FormEvent, useEffect } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 interface UserData {
   email: string;
@@ -103,18 +104,14 @@ export function EditUserPanel({ user, onUserUpdated }: EditUserPanelProps) {
       setError(null);
       setSuccess(false);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const payload = buildUpdatePayload();
 
       const response = await fetch('/api/admin?action=updateUser', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),

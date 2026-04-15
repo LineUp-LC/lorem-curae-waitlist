@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { getAdminToken } from '@/lib/adminAuth';
 import { EditUserPanel } from './EditUserPanel';
 import { DeleteUserPanel } from './DeleteUserPanel';
 import { AnonymizeUserPanel } from './AnonymizeUserPanel';
@@ -138,16 +139,12 @@ export default function UserDetailPage() {
       setError(null);
       setNotFound(false);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch(`/api/admin/get-waitlist-user?email=${encodeURIComponent(email)}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });

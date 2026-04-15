@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // Types for API response
 interface UserResult {
@@ -185,16 +186,12 @@ export default function GlobalSearchPage() {
       setLoading(true);
       setError(null);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch(`/api/admin/search?q=${encodeURIComponent(searchQuery.trim())}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
       });

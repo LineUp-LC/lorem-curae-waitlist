@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 import {
   LineChart,
   Line,
@@ -531,10 +532,10 @@ export default function MetricsPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const getAuthHeaders = useCallback(() => {
-    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
+  const getAuthHeaders = useCallback(async () => {
+    const adminToken = await getAdminToken();
     return {
-      Authorization: `Bearer ${adminSecret}`,
+      Authorization: `Bearer ${adminToken}`,
       'Content-Type': 'application/json',
     };
   }, []);
@@ -546,7 +547,7 @@ export default function MetricsPage() {
     }
 
     try {
-      const res = await fetch('/api/admin/metrics', { headers: getAuthHeaders() });
+      const res = await fetch('/api/admin/metrics', { headers: await getAuthHeaders() });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 

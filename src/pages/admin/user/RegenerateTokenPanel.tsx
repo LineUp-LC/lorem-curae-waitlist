@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 interface RegenerateTokenPanelProps {
   email: string;
@@ -16,16 +17,12 @@ export function RegenerateTokenPanel({ email }: RegenerateTokenPanelProps) {
       setError(null);
       setToken(null);
 
-      const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
-
-      if (!adminSecret) {
-        throw new Error('Admin credentials not configured');
-      }
+      const adminToken = await getAdminToken();
 
       const response = await fetch('/api/admin?action=regenerateToken', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${adminSecret}`,
+          'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email }),

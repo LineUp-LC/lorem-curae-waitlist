@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 
 // ============================================================================
 // Types
@@ -289,7 +290,7 @@ function IncidentDetailPanel({
   getAuthHeaders,
 }: {
   incidentId: string | null;
-  getAuthHeaders: () => Record<string, string>;
+  getAuthHeaders: () => Promise<Record<string, string>>;
 }) {
   const [detail, setDetail] = useState<FetchState<IncidentDetail>>({
     data: null,
@@ -305,7 +306,7 @@ function IncidentDetailPanel({
     try {
       const res = await fetch(
         `/api/admin/incident?id=${encodeURIComponent(incidentId)}`,
-        { headers: getAuthHeaders() }
+        { headers: await getAuthHeaders() }
       );
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -662,10 +663,10 @@ export default function IncidentsPage() {
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const getAuthHeaders = useCallback(() => {
-    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
+  const getAuthHeaders = useCallback(async () => {
+    const adminToken = await getAdminToken();
     return {
-      Authorization: `Bearer ${adminSecret}`,
+      Authorization: `Bearer ${adminToken}`,
       'Content-Type': 'application/json',
     };
   }, []);
@@ -674,7 +675,7 @@ export default function IncidentsPage() {
     setIncidents((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const res = await fetch('/api/admin/incidents', { headers: getAuthHeaders() });
+      const res = await fetch('/api/admin/incidents', { headers: await getAuthHeaders() });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 

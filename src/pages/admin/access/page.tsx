@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getAdminToken } from '@/lib/adminAuth';
 import {
   Button,
   Badge,
@@ -63,15 +64,13 @@ export default function AccessManagementPage() {
   const [granting, setGranting] = useState(false);
   const [grantResult, setGrantResult] = useState<GrantResult | null>(null);
 
-  const adminSecret = import.meta.env.VITE_ADMIN_SECRET as string | undefined;
-
   const loadUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
       const res = await fetch('/api/admin/waitlist-users', {
-        headers: { Authorization: `Bearer ${adminSecret}` },
+        headers: { Authorization: `Bearer ${adminToken}` },
       });
       if (!res.ok) throw new Error(`Failed to load users (${res.status})`);
       const data = await res.json();
@@ -81,7 +80,7 @@ export default function AccessManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [adminSecret]);
+  }, []);
 
   useEffect(() => {
     loadUsers();
@@ -128,11 +127,11 @@ export default function AccessManagementPage() {
     setGranting(true);
     setGrantResult(null);
     try {
-      if (!adminSecret) throw new Error('Admin credentials not configured');
+      const adminToken = await getAdminToken();
       const res = await fetch('/api/admin/grant-access', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${adminSecret}`,
+          Authorization: `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ userIds: Array.from(selectedIds) }),
