@@ -49,6 +49,7 @@ const PremiumPackagesPage = lazy(() => import('../pages/premium-packages/page'))
 const LoginPage = lazy(() => import('../pages/auth/login/page'));
 const SignupPage = lazy(() => import('../pages/auth/signup/page'));
 const AuthCallbackPage = lazy(() => import('../pages/auth/callback/page'));
+const MemberPage = lazy(() => import('../pages/member/page'));
 const ProductSearchDetailPage = lazy(() => import('../pages/product-search-detail/page'));
 const ServicesPage = lazy(() => import('../pages/services/page'));
 const ServicesDetailPage = lazy(() => import('../pages/services/detail/page'));
@@ -183,6 +184,10 @@ const routes: RouteObject[] = [
   {
     path: '/auth/callback',
     element: <AuthCallbackPage />,
+  },
+  {
+    path: '/member',
+    element: <MemberPage />,
   },
   {
     path: '/product-search-detail',

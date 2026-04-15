@@ -31,7 +31,7 @@ export default function AuthCallbackPage() {
         if (waitlistEntry?.wants_tester_access) {
           window.location.href = 'https://tester-access-page.vercel.app';
         } else {
-          navigate('/waitlist');
+          navigate('/member');
         }
       } catch (err) {
         console.error('Auth callback error:', err);
