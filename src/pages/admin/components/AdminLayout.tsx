@@ -51,12 +51,12 @@ export function AdminLayout() {
 
   return (
     <DarkModeContext.Provider value={{ isDark, toggle: toggleDarkMode }}>
-      <div className="min-h-screen bg-sage-50/50 dark:bg-sage-900 transition-colors">
+      <div className="min-h-screen bg-sage-50/50 dark:bg-sage-900 transition-colors lg:flex">
         {/* Sidebar */}
         <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* Main content area */}
-        <div className="lg:pl-64">
+        <div className="lg:flex-1 lg:min-w-0">
           {/* Header */}
           <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
 
