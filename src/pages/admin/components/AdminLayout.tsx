@@ -42,27 +42,16 @@ function AdminLoginForm() {
     setLoginStatus('sending');
     setLoginError('');
 
-    const response = await fetch('/api/request-magic-link', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: trimmed,
-        type: 'login',
-        redirectTo: window.location.origin + '/auth/callback?next=/admin',
-      }),
+    const { error } = await supabase.auth.signInWithOtp({
+      email: trimmed,
+      options: {
+        emailRedirectTo: window.location.origin + '/auth/callback?next=/admin',
+      },
     });
 
-    if (!response.ok) {
-      const data: unknown = await response.json().catch(() => ({}));
-      const apiError = data !== null && typeof data === 'object' && 'error' in data ? (data as { error: unknown }).error : null;
+    if (error) {
       setLoginStatus('error');
-      setLoginError(
-        apiError === 'not-on-waitlist'
-          ? 'This email is not authorized for admin access.'
-          : typeof apiError === 'string'
-          ? apiError
-          : 'Something went wrong. Please try again.',
-      );
+      setLoginError(error.message || 'Something went wrong. Please try again.');
     } else {
       setSentEmail(trimmed);
       setLoginStatus('sent');
