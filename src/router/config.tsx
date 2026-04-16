@@ -27,6 +27,7 @@ const EmailTemplatesPage = lazy(() => import('../pages/admin/email-templates/pag
 const IncidentsPage = lazy(() => import('../pages/admin/incidents/page'));
 const MetricsPage = lazy(() => import('../pages/admin/metrics/page'));
 const NotificationsPage = lazy(() => import('../pages/admin/notifications/page'));
+const TextOptInsPage = lazy(() => import('../pages/admin/text-opt-ins/page'));
 const DiscoverPage = lazy(() => import('../pages/discover/page'));
 const IngredientsPage = lazy(() => import('../pages/ingredients/page'));
 const RoutinesPage = lazy(() => import('../pages/routines/page'));
@@ -402,6 +403,10 @@ const routes: RouteObject[] = [
       {
         path: 'notifications',
         element: <NotificationsPage />,
+      },
+      {
+        path: 'text-opt-ins',
+        element: <TextOptInsPage />,
       },
     ],
   },

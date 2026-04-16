@@ -12,6 +12,19 @@ interface MemberData {
   email: string;
   spotNumber: number;
   slotsRemaining: number;
+  textOptIn: boolean;
+  textOptInDeclined: boolean;
+  textOptInOfferSentAt: string | null;
+  textOptInExpiresAt: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function hoursRemaining(expiresAt: string): number {
+  const ms = new Date(expiresAt).getTime() - Date.now();
+  return Math.max(0, Math.floor(ms / 3600000));
 }
 
 // ---------------------------------------------------------------------------
@@ -22,6 +35,9 @@ export default function MemberPage() {
   const navigate = useNavigate();
   const [state, setState] = useState<PageState>('loading');
   const [data, setData] = useState<MemberData | null>(null);
+  const [phone, setPhone] = useState('');
+  const [optInStatus, setOptInStatus] = useState<'idle' | 'submitting' | 'accepted' | 'declined' | 'error'>('idle');
+  const [optInError, setOptInError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +58,11 @@ export default function MemberPage() {
         { data: row, error: rowErr },
         { data: slotRow },
       ] = await Promise.all([
-        supabase.from('waitlist').select('id, created_at').eq('email', email).maybeSingle(),
+        supabase
+          .from('waitlist')
+          .select('id, created_at, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
+          .eq('email', email)
+          .maybeSingle(),
         supabase.from('founding_member_slots').select('slots_remaining').single(),
       ]);
 
@@ -72,6 +92,10 @@ export default function MemberPage() {
         email,
         spotNumber: (priorCount ?? 0) + 1,
         slotsRemaining: (slotRow as { slots_remaining: number } | null)?.slots_remaining ?? 0,
+        textOptIn: (row as { text_opt_in?: boolean }).text_opt_in ?? false,
+        textOptInDeclined: (row as { text_opt_in_declined?: boolean }).text_opt_in_declined ?? false,
+        textOptInOfferSentAt: (row as { text_opt_in_offer_sent_at?: string | null }).text_opt_in_offer_sent_at ?? null,
+        textOptInExpiresAt: (row as { text_opt_in_expires_at?: string | null }).text_opt_in_expires_at ?? null,
       });
       setState('ready');
     }
@@ -133,6 +157,105 @@ export default function MemberPage() {
       </a>
 
       <div className="w-full max-w-xs">
+        {/* Text opt-in — confirmed */}
+        {(data?.textOptIn || optInStatus === 'accepted') && (
+          <div className="border-b border-sage-100 pb-8 mb-8">
+            <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-2">
+              Personal texts
+            </p>
+            <p className="text-sage-700 text-sm">You're on the personal text list.</p>
+          </div>
+        )}
+
+        {/* Text opt-in — banner (offer active, not yet accepted or declined) */}
+        {!data?.textOptIn &&
+          !data?.textOptInDeclined &&
+          optInStatus !== 'accepted' &&
+          optInStatus !== 'declined' &&
+          data?.textOptInOfferSentAt &&
+          data?.textOptInExpiresAt &&
+          new Date(data.textOptInExpiresAt) > new Date() && (
+          <div className="border-b border-sage-100 pb-8 mb-8">
+            <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
+              Personal texts from Ethan
+            </p>
+            <p className="text-sage-800 text-sm mb-4">
+              You're one of our first 100 founding members. Drop your number and I'll text you directly.
+            </p>
+            <div className="space-y-2">
+              <input
+                type="tel"
+                placeholder="Your phone number"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (optInStatus === 'error') setOptInStatus('idle');
+                }}
+                disabled={optInStatus === 'submitting'}
+                className="w-full px-4 py-3 border border-sage-200 rounded-xl text-sage-800 placeholder-sage-400 focus:outline-none focus:ring-2 focus:ring-sage-400/40 focus:border-sage-400 transition-colors disabled:opacity-60 text-sm"
+              />
+              {optInStatus === 'error' && (
+                <p className="text-coral-600 text-xs">{optInError}</p>
+              )}
+              <button
+                disabled={optInStatus === 'submitting' || !phone.trim()}
+                onClick={async () => {
+                  setOptInStatus('submitting');
+                  setOptInError('');
+                  try {
+                    const r = await fetch('/api/text-opt-in', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: data?.email, phone_number: phone, action: 'accept' }),
+                    });
+                    if (!r.ok) {
+                      const body = await r.json().catch(() => ({})) as { error?: string };
+                      setOptInStatus('error');
+                      setOptInError(
+                        body.error === 'offer-expired'
+                          ? 'This offer has expired.'
+                          : body.error === 'no-slots-remaining'
+                          ? 'All spots have been claimed.'
+                          : 'Something went wrong. Please try again.',
+                      );
+                    } else {
+                      setOptInStatus('accepted');
+                    }
+                  } catch {
+                    setOptInStatus('error');
+                    setOptInError('Something went wrong. Please try again.');
+                  }
+                }}
+                className="w-full py-3 bg-sage-600 text-white rounded-xl font-medium text-sm hover:bg-sage-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {optInStatus === 'submitting' ? 'Saving...' : "I'm in"}
+              </button>
+              <button
+                disabled={optInStatus === 'submitting'}
+                onClick={async () => {
+                  setOptInStatus('submitting');
+                  try {
+                    await fetch('/api/text-opt-in', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: data?.email, action: 'decline' }),
+                    });
+                  } catch {
+                    // Ignore errors on decline — still hide the banner
+                  }
+                  setOptInStatus('declined');
+                }}
+                className="w-full py-2 text-sage-400 text-xs hover:text-sage-600 transition-colors disabled:opacity-60"
+              >
+                No thanks
+              </button>
+            </div>
+            <p className="text-sage-400 text-xs mt-3">
+              Offer expires in {hoursRemaining(data.textOptInExpiresAt)}h
+            </p>
+          </div>
+        )}
+
         {/* Email */}
         <div className="border-b border-sage-100 pb-8 mb-8">
           <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-2">

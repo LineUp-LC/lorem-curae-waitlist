@@ -185,6 +185,18 @@ const templates: Record<string, EmailTemplate> = {
   },
   creator_c3_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
+  // ---- Founder text opt-in offer (sent via api/text-opt-in.ts cascade + api/signup.ts trigger) ----
+  text_opt_in_offer: {
+    subject: "A personal note from Ethan — you're in the first 100",
+    html: `<p>Hi there,</p>
+<p>You're one of our first 100 founding members on Curae.</p>
+<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+<p><strong><a href="{{CLAIM_URL}}">Claim your spot</a></strong></p>
+<p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
+${SIGN_OFF}
+${FOOTER}`,
+  },
+
   // ---- Consumer Waves (wave number is access timing only) ----
   consumer_wave_1_signup: {
     subject: "You're on the Curae waitlist",

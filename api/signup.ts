@@ -153,7 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data, error } = await supabase
       .from('waitlist')
       .insert([insertPayload])
-      .select('status, wave_number, is_founding_member, is_founding_member_creator')
+      .select('id, created_at, status, wave_number, is_founding_member, is_founding_member_creator')
       .single();
 
     if (error) {
@@ -191,6 +191,70 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         email: trimmedEmail.substring(0, 3) + '***',
         timestamp: new Date().toISOString(),
       }));
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP: Text opt-in offer for first 100 signups
+    // -------------------------------------------------------------------------
+    // Fire-and-forget: do not block or fail the signup response if this errors.
+    // NOTE: Sent immediately — a proper 24h delay queue is deferred (no
+    // scheduler infrastructure exists yet).
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (resendApiKey && data.created_at) {
+      (async () => {
+        try {
+          const { count: priorCount } = await supabase
+            .from('waitlist')
+            .select('id', { count: 'exact', head: true })
+            .lt('created_at', data.created_at as string);
+
+          const position = (priorCount ?? 0) + 1;
+
+          if (position <= 100) {
+            const { data: config } = await supabase
+              .from('text_opt_in_config')
+              .select('slots_remaining')
+              .single();
+
+            if (config && (config as { slots_remaining: number }).slots_remaining > 0) {
+              const now = new Date();
+              const expiresAt = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
+              await supabase
+                .from('waitlist')
+                .update({
+                  text_opt_in_offer_sent_at: now.toISOString(),
+                  text_opt_in_expires_at: expiresAt.toISOString(),
+                })
+                .eq('id', data.id);
+
+              const claimUrl = 'https://lorem-curae-waitlist.vercel.app/member';
+              const html = `<p>Hi there,</p>
+<p>You're one of our first 100 founding members on Curae.</p>
+<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+<p><strong><a href="${claimUrl}">Claim your spot</a></strong></p>
+<p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
+<p>— Ethan Jones<br/>Founder, Curae</p>`;
+
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${resendApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  from: 'Curae <hello@loremcurae.com>',
+                  to: trimmedEmail,
+                  subject: "A personal note from Ethan — you're in the first 100",
+                  html,
+                }),
+              });
+            }
+          }
+        } catch (err) {
+          console.error('[signup] Text opt-in offer failed (non-fatal):', err);
+        }
+      })();
     }
 
     // -------------------------------------------------------------------------
