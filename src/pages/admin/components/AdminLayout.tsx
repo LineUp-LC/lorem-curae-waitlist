@@ -42,16 +42,27 @@ function AdminLoginForm() {
     setLoginStatus('sending');
     setLoginError('');
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmed,
-      options: {
-        emailRedirectTo: window.location.origin + '/auth/callback?next=/admin',
-      },
+    const response = await fetch('/api/request-magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: trimmed,
+        type: 'login',
+        redirectTo: 'https://lorem-curae-waitlist.vercel.app/auth/callback?next=/admin',
+      }),
     });
 
-    if (error) {
+    if (!response.ok) {
+      const data: unknown = await response.json().catch(() => ({}));
+      const apiError = data !== null && typeof data === 'object' && 'error' in data ? (data as { error: unknown }).error : null;
       setLoginStatus('error');
-      setLoginError(error.message || 'Something went wrong. Please try again.');
+      setLoginError(
+        apiError === 'not-on-waitlist'
+          ? 'This email is not authorized for admin access.'
+          : typeof apiError === 'string'
+          ? apiError
+          : 'Something went wrong. Please try again.',
+      );
     } else {
       setSentEmail(trimmed);
       setLoginStatus('sent');

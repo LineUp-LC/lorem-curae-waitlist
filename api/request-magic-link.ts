@@ -451,6 +451,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? redirectTo
         : DEFAULT_REDIRECT_URL;
 
+    console.log('[request-magic-link] redirectTo being passed:', resolvedRedirectTo);
+
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: trimmedEmail,
