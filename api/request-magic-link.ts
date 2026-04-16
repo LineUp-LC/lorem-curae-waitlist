@@ -474,6 +474,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const magicLink = linkData.properties.action_link;
     console.log(`[request-magic-link] Magic link generated: ${magicLink.substring(0, 60)}...`);
 
+    // Supabase ignores the redirectTo option in generateLink and instead appends
+    // the project's Site URL as redirect_to. Rewrite it to the correct value.
+    const rewrittenUrl = new URL(magicLink);
+    rewrittenUrl.searchParams.set('redirect_to', resolvedRedirectTo);
+    const finalMagicLink = rewrittenUrl.toString();
+    console.log(`[request-magic-link] finalMagicLink redirect_to: ${resolvedRedirectTo}`);
+
     // -------------------------------------------------------------------------
     // STEP: Select email template
     // -------------------------------------------------------------------------
@@ -493,7 +500,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`[request-magic-link] Sending email for role: ${role}...`);
 
     const htmlWithSubstitutions = template.html
-      .replace(/\{\{MAGIC_LINK\}\}/g, magicLink)
+      .replace(/\{\{MAGIC_LINK\}\}/g, finalMagicLink)
       .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, buildUnsubscribeUrl(waitlist?.unsubscribe_token));
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
