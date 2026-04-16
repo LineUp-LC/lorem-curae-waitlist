@@ -16,16 +16,6 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        const email = session.user.email.trim().toLowerCase();
-
-        const { data: waitlistEntry } = await supabase
-          .from('waitlist')
-          .select('wants_tester_access')
-          .eq('email', email)
-          .maybeSingle();
-
-        // Note: Login email with magic link was already sent BEFORE the callback
-        // via /api/request-magic-link. No need to send another email here.
         console.log('[AuthCallback] Callback fired - user authenticated via magic link');
 
         const params = new URLSearchParams(window.location.search);
@@ -34,8 +24,6 @@ export default function AuthCallbackPage() {
 
         if (safeNext) {
           navigate(safeNext);
-        } else if (waitlistEntry?.wants_tester_access) {
-          window.location.href = 'https://tester-access-page.vercel.app';
         } else {
           navigate('/member');
         }
