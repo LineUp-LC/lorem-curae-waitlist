@@ -111,7 +111,7 @@ function AdminLoginForm() {
               name="email"
               autoComplete="email"
               required
-              placeholder="lineupdownbiz@gmail.com"
+              placeholder="your@email.com"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
