@@ -8,7 +8,7 @@ console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 // ----------------------------------------------------------------------------
 
 const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
-const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
+const DEFAULT_REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 const UNSUBSCRIBE_BASE = 'https://fskvzrobcfokezumadbb.supabase.co/functions/v1/unsubscribe';
 const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscribe';
 
@@ -375,7 +375,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     console.log(`[request-magic-link] Validating request body...`);
 
-    const { email, type } = req.body || {};
+    const { email, type, redirectTo } = req.body || {};
 
     if (!email) {
       console.log(`[request-magic-link] Missing email`);
@@ -422,8 +422,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`[request-magic-link] Waitlist record:`, waitlist);
 
-    // For login, require waitlist membership
-    if (type === 'login' && !waitlist) {
+    // For login, require waitlist membership unless the email is an admin
+    const adminEmails = process.env.SUPABASE_ADMIN_EMAILS
+      ? process.env.SUPABASE_ADMIN_EMAILS.split(',').map((e) => e.trim().toLowerCase())
+      : [];
+    const isAdminEmail = adminEmails.includes(trimmedEmail);
+
+    if (type === 'login' && !waitlist && !isAdminEmail) {
       console.log(`[request-magic-link] Email not on waitlist (login rejected)`);
       return res.status(404).json({ error: 'not-on-waitlist' });
     }
@@ -433,11 +438,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     console.log(`[request-magic-link] Generating magic link...`);
 
+    // Only allow redirectTo values that originate from this app (same Origin as
+    // the browser request). Falls back to the default callback URL for direct
+    // API calls or cross-origin attempts that could enable open-redirect attacks.
+    const requestOrigin =
+      typeof req.headers['origin'] === 'string' ? req.headers['origin'] : null;
+    const resolvedRedirectTo =
+      typeof redirectTo === 'string' &&
+      redirectTo.length > 0 &&
+      requestOrigin !== null &&
+      redirectTo.startsWith(requestOrigin)
+        ? redirectTo
+        : DEFAULT_REDIRECT_URL;
+
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: trimmedEmail,
       options: {
-        redirectTo: REDIRECT_URL,
+        redirectTo: resolvedRedirectTo,
       },
     });
 

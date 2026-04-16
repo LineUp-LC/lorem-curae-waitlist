@@ -28,7 +28,13 @@ export default function AuthCallbackPage() {
         // via /api/request-magic-link. No need to send another email here.
         console.log('[AuthCallback] Callback fired - user authenticated via magic link');
 
-        if (waitlistEntry?.wants_tester_access) {
+        const params = new URLSearchParams(window.location.search);
+        const nextParam = params.get('next');
+        const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : null;
+
+        if (safeNext) {
+          navigate(safeNext);
+        } else if (waitlistEntry?.wants_tester_access) {
           window.location.href = 'https://tester-access-page.vercel.app';
         } else {
           navigate('/member');
