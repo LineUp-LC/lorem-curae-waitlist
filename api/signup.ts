@@ -194,7 +194,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // -------------------------------------------------------------------------
-    // STEP: Text opt-in offer for first 100 signups
+    // STEP: Text opt-in offer for first 1,000 signups
     // -------------------------------------------------------------------------
     // Fire-and-forget: do not block or fail the signup response if this errors.
     // NOTE: Sent immediately — a proper 24h delay queue is deferred (no
@@ -210,7 +210,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
           const position = (priorCount ?? 0) + 1;
 
-          if (position <= 100) {
+          if (position <= 1000) {
             const { data: config } = await supabase
               .from('text_opt_in_config')
               .select('slots_remaining')
@@ -230,8 +230,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
               const claimUrl = 'https://lorem-curae-waitlist.vercel.app/member';
               const html = `<p>Hi there,</p>
-<p>You're one of our first 100 founding members on Curae.</p>
-<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+<p>You're one of our first 1,000 founding members on Curae.</p>
+<p>I personally text the first 1,000 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="${claimUrl}">Claim your spot</a></strong></p>
 <p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
 <p>— Ethan Jones<br/>Founder, Curae</p>`;
@@ -245,7 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 body: JSON.stringify({
                   from: 'Curae <hello@loremcurae.com>',
                   to: trimmedEmail,
-                  subject: "A personal note from Ethan — you're in the first 100",
+                  subject: "A personal note from Ethan — you're in the first 1,000",
                   html,
                 }),
               });

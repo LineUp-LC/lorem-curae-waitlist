@@ -191,7 +191,7 @@ export default function MemberPage() {
               Personal texts from Ethan
             </p>
             <p className="text-sage-800 text-sm mb-4">
-              You're one of our first 100 founding members. Drop your number and I'll text you directly.
+              You're one of our first 1,000 founding members. Drop your number and I'll text you directly.
             </p>
             <div className="space-y-2">
               <input
