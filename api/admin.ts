@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { validateAdminRequest } from './_adminAuth.js';
 
 // ============================================================================
 // CONSOLIDATED ADMIN API
@@ -478,28 +479,16 @@ async function handleRegenerateToken(supabase: SupabaseClient, req: VercelReques
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Validate environment
-    const adminSecret = process.env.ADMIN_SECRET;
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!adminSecret || !supabaseUrl || !serviceRoleKey) {
-      return res.status(500).json({ error: 'Server configuration error' });
-    }
-
-    // Validate admin auth
-    if (!validateAdminAuth(req, adminSecret)) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    // Validate admin auth via Supabase JWT
+    const auth = await validateAdminRequest(req);
+    if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
+    const supabase = auth.supabase;
 
     // Get action from query or body
     const action = (req.query.action as string) || req.body?.action;
     if (!action) {
       return res.status(400).json({ error: 'action parameter is required' });
     }
-
-    // Create Supabase client
-    const supabase = createSupabaseClient(supabaseUrl, serviceRoleKey);
 
     // Route to handler based on action
     switch (action) {
