@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { validateAdminRequest } from './_adminAuth.js';
+import { sendFollowupEmail } from '../src/lib/email/followupTemplates.js';
+import type { UserRole, FollowupEventType } from '../src/lib/email/followupTemplates.js';
 
 // ============================================================================
 // CONSOLIDATED ADMIN API
@@ -474,6 +476,165 @@ async function handleRegenerateToken(supabase: SupabaseClient, req: VercelReques
 }
 
 // ============================================================================
+// HANDLERS MERGED FROM api/admin/* (consolidated to stay under Vercel 12-fn limit)
+// ============================================================================
+
+async function handleSummary(supabase: SupabaseClient, res: VercelResponse) {
+  const [totalResult, waveResult, recentResult] = await Promise.all([
+    supabase.from('waitlist').select('*', { count: 'exact', head: true }),
+    supabase.from('waitlist').select('wave_number').not('wave_number', 'is', null),
+    supabase.from('waitlist').select('email, created_at, wave_number').order('created_at', { ascending: false }).limit(10),
+  ]);
+  if (totalResult.error || waveResult.error || recentResult.error) {
+    return res.status(500).json({ error: 'Failed to fetch summary data' });
+  }
+  const waveCounts = new Map<number, number>();
+  for (const row of waveResult.data ?? []) {
+    if (row.wave_number != null) waveCounts.set(row.wave_number, (waveCounts.get(row.wave_number) ?? 0) + 1);
+  }
+  return res.status(200).json({
+    total_users: totalResult.count ?? 0,
+    total_waves: waveCounts.size,
+    users_per_wave: Array.from(waveCounts.entries()).map(([wave_number, count]) => ({ wave_number, count })).sort((a, b) => a.wave_number - b.wave_number),
+    recent_signups: recentResult.data ?? [],
+  });
+}
+
+async function handleHealthChecks(supabase: SupabaseClient, res: VercelResponse) {
+  const [dbResult, flagsResult] = await Promise.all([
+    supabase.from('waitlist').select('*', { count: 'exact', head: true }),
+    supabase.from('feature_flags').select('*', { count: 'exact', head: true }),
+  ]);
+  return res.status(200).json({
+    database: { ok: !dbResult.error },
+    email: { ok: !!process.env.RESEND_API_KEY },
+    magic_link: { ok: !!process.env.SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY },
+    feature_flags: { ok: !flagsResult.error },
+    timestamp: new Date().toISOString(),
+  });
+}
+
+async function handleEmailSummary(supabase: SupabaseClient, res: VercelResponse) {
+  const [sentResult, failedResult, recentFailuresResult] = await Promise.all([
+    supabase.from('drip_send_log').select('*', { count: 'exact', head: true }).eq('status', 'sent'),
+    supabase.from('drip_send_log').select('*', { count: 'exact', head: true }).eq('status', 'failed'),
+    supabase.from('drip_send_log').select('drip_event, sent_at, user_id, waitlist!user_id(email)').eq('status', 'failed').order('sent_at', { ascending: false }).limit(5),
+  ]);
+  if (sentResult.error || failedResult.error) {
+    return res.status(500).json({ error: 'Failed to fetch email summary' });
+  }
+  type FailureRow = { drip_event: string; sent_at: string; waitlist: { email: string } | null };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recent_failures = (recentFailuresResult.data ?? [] as any[]).map((row: FailureRow) => ({
+    email: row.waitlist?.email ?? '(unknown)',
+    template: row.drip_event,
+    status: 'failed' as const,
+    created_at: row.sent_at,
+  }));
+  return res.status(200).json({
+    total_emails_sent: (sentResult.count ?? 0) + (failedResult.count ?? 0),
+    total_bounced: 0,
+    total_failed: failedResult.count ?? 0,
+    recent_failures,
+  });
+}
+
+async function handleWaitlistUsers(supabase: SupabaseClient, res: VercelResponse) {
+  const { data, error } = await supabase
+    .from('waitlist')
+    .select('id, email, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access')
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: 'Failed to fetch waitlist users' });
+  return res.status(200).json({ users: data ?? [] });
+}
+
+async function handleTextOptInUsers(supabase: SupabaseClient, res: VercelResponse) {
+  const [usersResult, configResult] = await Promise.all([
+    supabase.from('waitlist').select('email, phone_number, wave_number, is_founding_member, text_opt_in_offer_sent_at, created_at').eq('text_opt_in', true).order('created_at', { ascending: true }),
+    supabase.from('text_opt_in_config').select('slots_remaining').single(),
+  ]);
+  if (usersResult.error) return res.status(500).json({ error: 'Failed to fetch opted-in users' });
+  return res.status(200).json({
+    users: usersResult.data ?? [],
+    slots_remaining: (configResult.data as { slots_remaining: number } | null)?.slots_remaining ?? 0,
+  });
+}
+
+interface WaitlistRow {
+  id: string; email: string; has_access: boolean; unsubscribed_at: string | null;
+  wave_number: number | null; creator_wave_number: number | null;
+  is_creator: boolean; is_founding_member: boolean; wants_tester_access: boolean;
+}
+
+function determineUserRole(row: WaitlistRow): UserRole {
+  if (row.is_founding_member) return 'founding_member';
+  if (row.wants_tester_access) return row.is_creator ? 'tester_creator' : 'tester_consumer';
+  if (row.is_creator && row.creator_wave_number) {
+    if (row.creator_wave_number === 1) return 'creator_c1';
+    if (row.creator_wave_number === 2) return 'creator_c2';
+    if (row.creator_wave_number === 3) return 'creator_c3';
+  }
+  if (row.wave_number) return `consumer_wave_${row.wave_number}` as UserRole;
+  return 'user';
+}
+
+function getEventType(role: UserRole): FollowupEventType | null {
+  if (role === 'tester_creator' || role === 'tester_consumer') return 'tester_access_opened';
+  if (role === 'creator_c1' || role === 'creator_c2' || role === 'creator_c3') return 'creator_tools_opened';
+  if (role.startsWith('consumer_wave_')) return 'consumer_wave_opened';
+  return null;
+}
+
+async function handleGrantAccess(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
+  const { userIds } = req.body ?? {};
+  if (!Array.isArray(userIds) || userIds.length === 0) {
+    return res.status(400).json({ error: 'userIds must be a non-empty array' });
+  }
+  const { data: rows, error: fetchErr } = await supabase
+    .from('waitlist')
+    .select('id, email, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access')
+    .in('id', userIds);
+  if (fetchErr || !rows) return res.status(500).json({ error: 'Failed to fetch waitlist records' });
+
+  let granted = 0, skipped = 0, failed = 0;
+  const results: Array<{ email: string; status: 'granted' | 'skipped' | 'failed'; reason?: string }> = [];
+
+  for (const row of rows as WaitlistRow[]) {
+    if (row.has_access) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'already_granted' }); continue; }
+    if (row.unsubscribed_at) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'unsubscribed' }); continue; }
+    const { error: updateErr } = await supabase.from('waitlist').update({ has_access: true }).eq('id', row.id);
+    if (updateErr) { failed++; results.push({ email: row.email, status: 'failed', reason: updateErr.message }); continue; }
+    const role = determineUserRole(row);
+    const eventType = getEventType(role);
+    if (eventType) {
+      try { await sendFollowupEmail(row.email, role, eventType); }
+      catch (emailErr) {
+        console.error(JSON.stringify({ level: 'error', event: 'grant_access_email_failed', email: row.email.substring(0, 3) + '***', error: emailErr instanceof Error ? emailErr.message : String(emailErr) }));
+        granted++; results.push({ email: row.email, status: 'granted', reason: 'email_failed' }); continue;
+      }
+    }
+    granted++; results.push({ email: row.email, status: 'granted' });
+  }
+  return res.status(200).json({ granted, skipped, failed, results });
+}
+
+function getStubResponse(action: string): Record<string, unknown> {
+  const stubs: Record<string, Record<string, unknown>> = {
+    'admin-activity': { events: [] },
+    'activity-log': { logs: [] },
+    'email-templates': { templates: [] },
+    'email-events': { events: [] },
+    'email-analytics': { total_emails_sent: 0, total_bounced: 0, bounce_rate: 0, template_stats: [], last_30_days: [] },
+    'feature-flags': { flags: [] },
+    'waves': { waves: [] },
+    'metrics': { signups_over_time: [], api_latency: [], error_rate: [], active_users: [], email_volume: [] },
+    'notifications': { notifications: [] },
+    'incidents': { incidents: [] },
+  };
+  return stubs[action] ?? {};
+}
+
+// ============================================================================
 // MAIN HANDLER
 // ============================================================================
 
@@ -555,6 +716,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'regenerateToken':
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         return handleRegenerateToken(supabase, req, res);
+
+      // Merged from api/admin/* files
+      case 'summary':
+        if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+        return handleSummary(supabase, res);
+
+      case 'health-checks':
+        if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+        return handleHealthChecks(supabase, res);
+
+      case 'email-summary':
+        if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+        return handleEmailSummary(supabase, res);
+
+      case 'waitlist-users':
+        if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+        return handleWaitlistUsers(supabase, res);
+
+      case 'text-opt-in-users':
+        if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+        return handleTextOptInUsers(supabase, res);
+
+      case 'grant-access':
+        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        return handleGrantAccess(supabase, req, res);
+
+      case 'admin-activity':
+      case 'activity-log':
+      case 'email-templates':
+      case 'email-events':
+      case 'email-analytics':
+      case 'feature-flags':
+      case 'waves':
+      case 'metrics':
+      case 'notifications':
+      case 'incidents':
+        // Stub endpoints — not yet implemented
+        return res.status(200).json(getStubResponse(action));
 
       default:
         return res.status(400).json({ error: `Unknown action: ${action}` });
