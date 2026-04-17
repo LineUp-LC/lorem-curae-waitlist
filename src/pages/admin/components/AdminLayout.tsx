@@ -42,6 +42,10 @@ function AdminLoginForm() {
     setLoginStatus('sending');
     setLoginError('');
 
+    // Store destination before the magic link flow so the callback can restore
+    // it even if Supabase strips query params from the redirect URL.
+    sessionStorage.setItem('auth_next', '/admin');
+
     const response = await fetch('/api/request-magic-link', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

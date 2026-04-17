@@ -7,8 +7,13 @@ export default function AuthCallbackPage() {
   const [status, setStatus] = useState<'loading' | 'error'>('loading');
 
   useEffect(() => {
+    // sessionStorage is the reliable source — set by AdminLayout before the
+    // magic link request so it survives even if Supabase strips query params.
+    // Fall back to ?next= for other callers.
+    const stored = sessionStorage.getItem('auth_next');
+    sessionStorage.removeItem('auth_next');
     const params = new URLSearchParams(window.location.search);
-    const nextParam = params.get('next');
+    const nextParam = stored || params.get('next');
     const safeNext =
       nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')
         ? nextParam
