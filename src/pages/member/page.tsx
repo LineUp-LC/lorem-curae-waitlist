@@ -42,6 +42,13 @@ export default function MemberPage() {
   const [optInError, setOptInError] = useState('');
 
   useEffect(() => {
+    // If Supabase redirected here instead of /auth/callback (Site URL misconfiguration),
+    // hand off to the callback page so it can exchange the token and redirect properly.
+    if (window.location.hash.includes('access_token')) {
+      navigate('/auth/callback' + window.location.search + window.location.hash, { replace: true });
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {

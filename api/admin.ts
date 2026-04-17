@@ -506,10 +506,10 @@ async function handleHealthChecks(supabase: SupabaseClient, res: VercelResponse)
     supabase.from('feature_flags').select('*', { count: 'exact', head: true }),
   ]);
   return res.status(200).json({
-    database: { ok: !dbResult.error },
-    email: { ok: !!process.env.RESEND_API_KEY },
-    magic_link: { ok: !!process.env.SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY },
-    feature_flags: { ok: !flagsResult.error },
+    database: { ok: !dbResult.error, latency_ms: 0 },
+    email: { ok: !!process.env.RESEND_API_KEY, provider: 'Resend', last_bounce_check: new Date().toISOString() },
+    magic_link: { ok: !!process.env.SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY, last_token_created: new Date().toISOString() },
+    feature_flags: { ok: !flagsResult.error, missing_flags: [], invalid_type_flags: [], unexpected_flags: [] },
     timestamp: new Date().toISOString(),
   });
 }
@@ -627,7 +627,7 @@ function getStubResponse(action: string): Record<string, unknown> {
     'email-analytics': { total_emails_sent: 0, total_bounced: 0, bounce_rate: 0, template_stats: [], last_30_days: [] },
     'feature-flags': { flags: [] },
     'waves': { waves: [] },
-    'metrics': { signups_over_time: [], api_latency: [], error_rate: [], active_users: [], email_volume: [] },
+    'metrics': { request_throughput: [], error_rate: [], latency_ms: [], queue_depth: [], email_send_rate: [], wave_progression_rate: [] },
     'notifications': { notifications: [] },
     'incidents': { incidents: [] },
   };
