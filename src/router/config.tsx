@@ -369,7 +369,7 @@ const routes: RouteObject[] = [
         element: <AdminToolsPage />,
       },
       {
-        path: 'health',
+        path: 'health-checks',
         element: <HealthChecksPage />,
       },
       {
