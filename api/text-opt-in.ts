@@ -20,8 +20,9 @@ function textOptInOfferHtml(): string {
 // slots_remaining > 0, so at most 100 users can ever accept regardless of
 // how far the cascade travels. Users beyond position 100 can only accept
 // if a prior user declined (their slot is available).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function sendCascadeOffer(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   resendApiKey: string,
   afterCreatedAt: string
 ): Promise<void> {
@@ -37,7 +38,7 @@ async function sendCascadeOffer(
     .limit(1)
     .maybeSingle();
 
-  if (!nextUser?.email) return;
+  if (!nextUser || !nextUser.email) return;
 
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 48 * 60 * 60 * 1000);

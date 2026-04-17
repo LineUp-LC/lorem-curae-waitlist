@@ -27,7 +27,9 @@
       "Bash(find:*)",
       "mcp__claude_ai_Supabase__list_projects",
       "mcp__claude_ai_Supabase__apply_migration",
-      "Bash(node_modules/.bin/tsc --noEmit)"
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node node_modules/typescript/bin/tsc --noEmit --strict api/text-opt-in.ts)"
     ]
   }
 }
