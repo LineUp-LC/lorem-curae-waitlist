@@ -108,8 +108,8 @@ export default function WaitlistAnalyticsPage() {
     },
     {
       title: 'Founding Members',
-      value: analytics ? `${formatNumber(analytics.founding_member_count)} / 50` : '—',
-      description: 'General founding pool (cap 50)',
+      value: analytics ? `${formatNumber(analytics.founding_member_count)} / 1,000` : '—',
+      description: 'General founding pool (cap 1,000)',
       isLoading: loading,
     },
     {

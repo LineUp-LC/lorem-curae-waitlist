@@ -255,7 +255,7 @@ export function EditUserPanel({ user, onUserUpdated }: EditUserPanelProps) {
               </label>
             </div>
             <p className="text-xs text-sage-500 ml-7">
-              Founding members receive priority access and special benefits (general pool, cap 50)
+              Founding members receive priority access and special benefits (general pool, cap 1,000)
             </p>
           </div>
 
