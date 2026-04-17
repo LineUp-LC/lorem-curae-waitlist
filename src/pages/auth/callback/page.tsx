@@ -7,33 +7,45 @@ export default function AuthCallbackPage() {
   const [status, setStatus] = useState<'loading' | 'error'>('loading');
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
+    const params = new URLSearchParams(window.location.search);
+    const nextParam = params.get('next');
+    const safeNext =
+      nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')
+        ? nextParam
+        : null;
 
-        if (!session?.user?.email) {
+    // getSession() may return null while Supabase is still exchanging the
+    // hash-fragment token. Listen for SIGNED_IN instead, which fires once the
+    // exchange completes and the session is established.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          subscription.unsubscribe();
+          navigate(safeNext ?? '/member');
+        } else if (event === 'SIGNED_OUT') {
+          subscription.unsubscribe();
           navigate('/waitlist');
-          return;
         }
-
-        console.log('[AuthCallback] Callback fired - user authenticated via magic link');
-
-        const params = new URLSearchParams(window.location.search);
-        const nextParam = params.get('next');
-        const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : null;
-
-        if (safeNext) {
-          navigate(safeNext);
-        } else {
-          navigate('/member');
-        }
-      } catch (err) {
-        console.error('Auth callback error:', err);
-        setStatus('error');
       }
-    };
+    );
 
-    handleAuthCallback();
+    // Fallback: if the session already exists (page refreshed), resolve immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        subscription.unsubscribe();
+        navigate(safeNext ?? '/member');
+      }
+    });
+
+    const timeout = setTimeout(() => {
+      subscription.unsubscribe();
+      setStatus('error');
+    }, 10_000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [navigate]);
 
   if (status === 'error') {
