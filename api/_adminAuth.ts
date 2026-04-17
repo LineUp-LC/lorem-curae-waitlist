@@ -13,12 +13,12 @@ import type { VercelRequest } from '@vercel/node';
 //   const { supabase } = auth; // reuse for subsequent DB queries
 // ----------------------------------------------------------------------------
 
-type AuthSuccess = {
+export type AuthSuccess = {
   ok: true;
   supabase: SupabaseClient;
 };
 
-type AuthFailure = {
+export type AuthFailure = {
   ok: false;
   status: number;
   error: string;

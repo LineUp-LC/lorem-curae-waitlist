@@ -41,7 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     waitlist: { email: string } | null;
   };
 
-  const recent_failures = (recentFailuresResult.data ?? []).map((row: FailureRow) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recent_failures = (recentFailuresResult.data ?? [] as any[]).map((row: FailureRow) => ({
     email: row.waitlist?.email ?? '(unknown)',
     template: row.drip_event,
     status: 'failed' as const,
