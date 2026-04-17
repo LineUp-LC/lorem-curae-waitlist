@@ -6,8 +6,8 @@ const CLAIM_URL = 'https://lorem-curae-waitlist.vercel.app/member';
 
 function textOptInOfferHtml(): string {
   return `<p>Hi there,</p>
-<p>You're one of our first 1,000 founding members on Curae.</p>
-<p>I personally text the first 1,000 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+<p>You're one of our first 100 founding members on Curae.</p>
+<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="${CLAIM_URL}">Claim your spot</a></strong></p>
 <p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
 <p>— Ethan Jones<br/>Founder, Curae</p>`;
@@ -60,7 +60,7 @@ async function sendCascadeOffer(
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: nextUser.email as string,
-      subject: "A personal note from Ethan — you're in the first 1,000",
+      subject: "A personal note from Ethan — you're in the first 100",
       html: textOptInOfferHtml(),
     }),
   });
