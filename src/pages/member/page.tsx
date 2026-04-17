@@ -12,6 +12,8 @@ interface MemberData {
   email: string;
   spotNumber: number;
   slotsRemaining: number;
+  waveNumber: number | null;
+  isFoundingMember: boolean;
   textOptIn: boolean;
   textOptInDeclined: boolean;
   textOptInOfferSentAt: string | null;
@@ -60,7 +62,7 @@ export default function MemberPage() {
       ] = await Promise.all([
         supabase
           .from('waitlist')
-          .select('id, created_at, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
+          .select('id, created_at, wave_number, is_founding_member, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
           .eq('email', email)
           .maybeSingle(),
         supabase.from('founding_member_slots').select('slots_remaining').single(),
@@ -92,6 +94,8 @@ export default function MemberPage() {
         email,
         spotNumber: (priorCount ?? 0) + 1,
         slotsRemaining: (slotRow as { slots_remaining: number } | null)?.slots_remaining ?? 0,
+        waveNumber: (row as { wave_number?: number | null }).wave_number ?? null,
+        isFoundingMember: (row as { is_founding_member?: boolean }).is_founding_member ?? false,
         textOptIn: (row as { text_opt_in?: boolean }).text_opt_in ?? false,
         textOptInDeclined: (row as { text_opt_in_declined?: boolean }).text_opt_in_declined ?? false,
         textOptInOfferSentAt: (row as { text_opt_in_offer_sent_at?: string | null }).text_opt_in_offer_sent_at ?? null,
@@ -272,6 +276,22 @@ export default function MemberPage() {
           <p className="font-serif text-5xl text-sage-900 leading-none">
             #{data?.spotNumber}
           </p>
+        </div>
+
+        {/* Wave assignment */}
+        <div className="border-b border-sage-100 pb-8 mb-8">
+          <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
+            Your wave
+          </p>
+          {data?.waveNumber != null ? (
+            <p className="font-serif text-5xl text-sage-900 leading-none">
+              Wave {data.waveNumber}
+            </p>
+          ) : data?.isFoundingMember ? (
+            <p className="text-sage-700 text-sm">Founding Member — Priority Access</p>
+          ) : (
+            <p className="text-sage-400 text-sm">No wave assigned yet</p>
+          )}
         </div>
 
         {/* Founding spots remaining */}
