@@ -1199,7 +1199,7 @@ const WaitlistLandingPage = () => {
       {/* ================= HEADER ================= */}
       <header className="lc-header">
         <div className="lc-header-inner">
-          <Link to="/" className="lc-logo">Curae</Link>
+          <Link to="/" className="lc-logo"><img src="/curae-logo.png" alt="Curae" style={{ height: '28px', width: 'auto' }} /></Link>
           <a href="#waitlist" onClick={scrollTo('waitlist')} className="lc-header-cta">Join waitlist</a>
         </div>
       </header>
@@ -1212,14 +1212,13 @@ const WaitlistLandingPage = () => {
 
           <div className="lc-hero-headline-wrap" style={{ '--i': 1 } as React.CSSProperties}>
             <h1 className="lc-headline">
-              Point. Scan. Know exactly what's on your skin.
+              The layer of intelligence between you and every skincare product you'll ever buy.
             </h1>
           </div>
 
           <div className="lc-hero-sub-wrap" style={{ '--i': 2 } as React.CSSProperties}>
             <p className="lc-subhead">
-              Curae identifies any skincare product in seconds and tells you — based on
-              your specific skin — whether it belongs in your routine.
+              Point your camera at any product. Curae breaks down every ingredient, flags your allergens, checks it against your routine, and tells you honestly whether it belongs on your shelf.
             </p>
           </div>
 
@@ -1267,7 +1266,7 @@ const WaitlistLandingPage = () => {
               <h3 className="lc-step-title">Scan</h3>
               <p className="lc-step-body">
                 Point your camera at any skincare product. Curae identifies it in
-                seconds — no barcode required. Products not yet in the database get
+                seconds. No barcode required. Products not yet in the database get
                 added automatically for the next person who scans them.
               </p>
             </article>
@@ -1280,7 +1279,7 @@ const WaitlistLandingPage = () => {
               <h3 className="lc-step-title">Analyze</h3>
               <p className="lc-step-body">
                 Every ingredient is scored against your skin profile. Not a universal
-                rating — yours. Based on your skin type, concerns, sensitivities, and
+                rating. Yours. Based on your skin type, concerns, sensitivities, and
                 what's already in your routine.
               </p>
             </article>
@@ -1293,7 +1292,7 @@ const WaitlistLandingPage = () => {
               <h3 className="lc-step-title">Know</h3>
               <p className="lc-step-body">
                 Safe, Caution, or Avoid. Every ingredient. With the specific reason
-                it landed there for your skin — not a generic hazard score.
+                it landed there for your skin, not a generic hazard score.
               </p>
             </article>
           </div>
@@ -1366,7 +1365,7 @@ const WaitlistLandingPage = () => {
             <span className="lc-section-label">Core features</span>
             <h2 className="lc-section-title">What a scan unlocks</h2>
             <p className="lc-section-lead">
-              Every scan opens a complete intelligence layer — not just an ingredient list.
+              Every scan opens a complete intelligence layer, not just an ingredient list.
             </p>
           </div>
 
@@ -1377,7 +1376,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Where to buy</h3>
               <p className="lc-feature-text">
-                Every scan surfaces where to buy — filtered by price, retailer trust
+                Every scan surfaces where to buy, filtered by price, retailer trust
                 score, and shipping speed. Ranked using your scan history, budget, and
                 onboarding data. Not a generic search result.
               </p>
@@ -1389,7 +1388,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Compatible and similar products</h3>
               <p className="lc-feature-text">
-                Scan anything and instantly see what works alongside it in your routine —
+                Scan anything and instantly see what works alongside it in your routine
                 and what alternatives exist at different price points. Matched to your
                 skin profile, not a universal compatibility list.
               </p>
@@ -1401,7 +1400,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Your shelf</h3>
               <p className="lc-feature-text">
-                Every product you scan gets added to your digital shelf — a live view
+                Every product you scan gets added to your digital shelf, a live view
                 of your full routine. Ask Curae AI about anything on it, build routines
                 from products you actually own, and get automatic check-ins once a
                 product has been in your routine long enough to show results.
@@ -1500,7 +1499,7 @@ const WaitlistLandingPage = () => {
               </h2>
               <p className="lc-section-lead lc-section-lead-dark">
                 Every other tool hands everyone the same verdict. Yuka, Think Dirty,
-                INCI Decoder, EWG — same score, every user. We don't. Your skin type,
+                INCI Decoder, EWG: same score, every user. We don't. Your skin type,
                 concerns, and sensitivities change the answer. Every scan.
               </p>
             </div>
@@ -1637,7 +1636,7 @@ const WaitlistLandingPage = () => {
         <div className="lc-cta-card">
           <h2 className="lc-cta-title">Join before launch.</h2>
           <p className="lc-cta-sub">
-            One email. Your founding rate locked the moment you sign up — if spots remain.
+            One email. Your founding rate locked the moment you sign up, if spots remain.
           </p>
 
           <div className="lc-form-wrapper">
@@ -1656,7 +1655,7 @@ const WaitlistLandingPage = () => {
 
       {/* ================= FOOTER ================= */}
       <footer className="lc-footer">
-        <Link to="/" className="lc-footer-logo">Curae</Link>
+        <Link to="/" className="lc-footer-logo"><img src="/curae-logo.png" alt="Curae" style={{ height: '30px', width: 'auto' }} /></Link>
         <p className="lc-footer-tagline">Camera-powered skincare intelligence.</p>
         <div className="lc-footer-links">
           <Link to="/privacy">Privacy</Link>
