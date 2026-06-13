@@ -7,14 +7,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Column 1 - Brand */}
           <div className="space-y-6">
-            <div className="flex items-center space-x-3">
-              <img 
-                src="https://public.readdy.ai/ai/img_res/a6b3db07-dc0c-42d0-89bb-a50a13cc2680.png" 
-                alt="Curae Logo"
-                className="h-10 w-auto"
-              />
-              <span className="text-xl font-semibold text-cream-50">Curae</span>
-            </div>
+            <img src="/curae-logo.png" alt="Curae" className="h-10 w-auto" />
             <p className="text-sm text-cream-200 leading-relaxed">
               Camera-powered skincare intelligence. Know what's in every product. Know if it's right for your skin.
             </p>
@@ -122,14 +115,25 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="mt-16 pt-8 border-t border-cream-100/10">
-          <div className="flex flex-col items-center space-y-4">
-            <p className="text-xs text-cream-400 text-center">
-              © 2026 Curae. Know what's in every product.
-            </p>
+          <div className="flex flex-col items-center space-y-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+              <p className="text-xs text-cream-400 text-center">
+                © 2026 Curae. Know what's in every product.
+              </p>
+              <div className="flex items-center gap-4">
+                <Link to="/privacy" className="text-xs text-cream-400 hover:text-cream-200 transition-colors cursor-pointer">
+                  Privacy Policy
+                </Link>
+                <span className="text-cream-600">·</span>
+                <Link to="/terms" className="text-xs text-cream-400 hover:text-cream-200 transition-colors cursor-pointer">
+                  Terms of Service
+                </Link>
+              </div>
+            </div>
             <div className="text-center">
-              <a 
-                href="https://readdy.ai/?origin=logo" 
-                target="_blank" 
+              <a
+                href="https://readdy.ai/?origin=logo"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-cream-500 hover:text-cream-300 transition-colors cursor-pointer"
               >

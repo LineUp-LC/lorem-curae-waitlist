@@ -20,13 +20,10 @@ const SignUpPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-sage-50 via-cream-50 to-coral-50 flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <Link to="/" className="flex items-center justify-center space-x-3 mb-8 cursor-pointer">
-          <img 
-            src="https://public.readdy.ai/ai/img_res/a6b3db07-dc0c-42d0-89bb-a50a13cc2680.png" 
-            alt="Curae"
-            className="h-12 w-auto"
-          />
-          <span className="text-2xl font-semibold text-gray-900">Curae</span>
+        <Link to="/" className="flex items-center justify-center mb-8 cursor-pointer">
+          <span className="inline-flex items-center bg-[#0f0f0f] rounded-md px-4 py-2">
+            <img src="/curae-logo.png" alt="Curae" className="h-10 w-auto" />
+          </span>
         </Link>
 
         {/* Card */}
