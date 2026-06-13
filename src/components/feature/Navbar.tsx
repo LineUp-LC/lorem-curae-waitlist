@@ -41,9 +41,7 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center cursor-pointer">
-              <span className={`inline-flex items-center transition-all duration-300 ${
-                isScrolled ? 'bg-[#0f0f0f] rounded-md px-3 py-1.5' : ''
-              }`}>
+              <span className="inline-flex items-center bg-[#0f0f0f] rounded-md px-3 py-1.5">
                 <img src="/curae-logo.png" alt="Curae" className="h-8 w-auto" />
               </span>
             </Link>
