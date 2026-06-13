@@ -1,4 +1,15 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Impact-Site-Verification",
+          "value": "16832a12-9d6d-441c-a884-d039c6c5156c"
+        }
+      ]
+    }
+  ],
   "functions": {
     "api/**/*.ts": {
       "includeFiles": "src/lib/email/**"
