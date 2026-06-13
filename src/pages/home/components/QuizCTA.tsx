@@ -11,10 +11,10 @@ const QuizCTA = () => {
             </div>
             <div>
               <h2 className="text-3xl font-serif text-forest-900 mb-2">
-                Not sure where to start?
+                Start with your skin profile.
               </h2>
               <p className="text-forest-700 leading-relaxed">
-                Start with our adaptive quiz, designed to help us understand your unique skin. Allowing you to receive personalized, science-driven recommendations aligned with your wellness journey.
+                Before your first scan, tell us about your skin — type, concerns, sensitivities, allergens. That profile is what makes every result personal rather than generic. It takes about two minutes.
               </p>
             </div>
           </div>
@@ -22,7 +22,7 @@ const QuizCTA = () => {
             to="/skin-survey-account"
             className="flex items-center space-x-2 px-8 py-4 bg-forest-800 text-cream-50 rounded-full font-semibold text-base hover:bg-forest-900 transition-all shadow-md hover:shadow-lg whitespace-nowrap cursor-pointer flex-shrink-0"
           >
-            <span>Take the Quiz (2 min)</span>
+            <span>Build my skin profile</span>
             <i className="ri-arrow-right-line text-xl"></i>
           </Link>
         </div>

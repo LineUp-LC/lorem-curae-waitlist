@@ -47,10 +47,10 @@ export default function IngredientCarousel() {
     const container = document.getElementById('ingredient-scroll');
     if (container) {
       const scrollAmount = 320;
-      const newPosition = direction === 'left' 
+      const newPosition = direction === 'left'
         ? Math.max(0, scrollPosition - scrollAmount)
         : Math.min(container.scrollWidth - container.clientWidth, scrollPosition + scrollAmount);
-      
+
       container.scrollTo({ left: newPosition, behavior: 'smooth' });
       setScrollPosition(newPosition);
     }
@@ -61,10 +61,10 @@ export default function IngredientCarousel() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Ingredient Transparency You Can Trust
+            Every Ingredient, Explained for Your Skin
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explore our science-backed <a href="/ingredients" className="text-sage-600 hover:text-sage-700 font-medium underline" title="Browse complete ingredient library">ingredient library</a> with comprehensive information about benefits, potential concerns, and scientific research. Understand how ingredients work together, which ones to avoid based on your skin type, and access clear explanations with myth-busting content and community reviews.
+            Curae breaks down what each ingredient does, flags it against your profile, and labels its confidence level: Confirmed, Likely, or Unknown. We don't pretend to know more than the evidence supports — and we explain the gap when it exists.
           </p>
         </div>
 

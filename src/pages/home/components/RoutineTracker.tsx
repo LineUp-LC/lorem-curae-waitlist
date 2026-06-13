@@ -4,16 +4,16 @@ export default function RoutineTracker() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Routine Tracking
+            Your Routine. Cross-Checked Automatically.
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Build and track your perfect routine. Create personalized morning and evening skincare routines with our guided builder. Get smart conflict detection to avoid ingredient interactions and optimize product order for maximum effectiveness.
+            Add products to your routine and every future scan checks against them. Curae detects ingredient conflicts across your whole shelf — retinol with acids, vitamin C with niacinamide, and more — and labels each clash Confirmed, Likely, or Unknown. So you know what the concern actually is, and how certain we are about it.
           </p>
         </div>
 
         <div className="relative max-w-5xl mx-auto mb-12">
           <div className="w-full h-96 rounded-2xl overflow-hidden shadow-xl">
-            <img 
+            <img
               src="https://readdy.ai/api/search-image?query=modern%20clean%20skincare%20routine%20tracking%20interface%20showing%20morning%20and%20evening%20schedule%20with%20product%20organization%20cards%20progress%20monitoring%20minimalist%20design%20white%20background%20sage%20green%20accents%20professional%20UI%20screenshot%20style&width=1200&height=600&seq=routine-tracking-interface-realistic&orientation=landscape"
               alt="Routine Tracking interface showing morning and evening skincare schedule with product organization and progress monitoring"
               className="w-full h-full object-cover object-top"

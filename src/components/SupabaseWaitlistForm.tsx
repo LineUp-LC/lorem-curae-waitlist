@@ -142,11 +142,11 @@ export default function SupabaseWaitlistForm({
   // Segment-specific content
   const content = {
     regular: {
-      heading: 'Be the first to know',
-      subheading: 'Join the waitlist for phased access.',
+      heading: 'Get early access.',
+      subheading: "We open Curae in waves. Drop your email and we'll reach out when your spot is ready.",
       buttonText: 'Join the waitlist',
-      successHeading: "You're on the waitlist",
-      successMessage: 'Welcome to the Curae community.',
+      successHeading: "You're in.",
+      successMessage: "We'll reach out when your wave opens — usually within a few weeks of launch.",
     },
     creator: {
       heading: 'Join the Creator Waitlist',
@@ -304,7 +304,7 @@ export default function SupabaseWaitlistForm({
             <p className="text-sage-600 text-lg font-light">
               {status === 'duplicate'
                 ? "You're already on the waitlist."
-                : "You're on the waitlist. We release access in waves."}
+                : "We'll reach out when your wave opens — usually within a few weeks of launch."}
             </p>
           </div>
 

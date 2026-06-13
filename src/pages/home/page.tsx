@@ -9,7 +9,6 @@ import QuizCTA from './components/QuizCTA';
 import IngredientCarousel from './components/IngredientCarousel';
 import RoutineTracker from './components/RoutineTracker';
 import MarketplaceSection from './components/MarketplaceSection';
-import CommunityStories from './components/CommunityStories';
 import TrustBanner from './components/TrustBanner';
 
 const HomePage = () => {
@@ -24,39 +23,39 @@ const HomePage = () => {
           "name": "What is Curae?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Curae is a comprehensive personalized skincare platform that combines smart product finding, ingredient intelligence, AI guidance, routine tracking, and a curated marketplace to help you discover products perfect for your unique skin."
+            "text": "Curae is a camera-powered skincare intelligence app. Point your phone at any skincare product and Curae instantly analyzes every ingredient against your skin profile — flagging allergens, detecting conflicts with your existing routine, and scoring compatibility. Every result is personalized to your specific skin type, concerns, and sensitivities."
           }
         },
         {
           "@type": "Question",
-          "name": "How does the Smart Product Finder work?",
+          "name": "How does Curae find compatible products?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Our Smart Product Finder uses your skin assessment results, concerns, and preferences to recommend products from verified retailers. You can compare products, read reviews from similar skin types, and earn Curae Points when you shop through our affiliate links."
+            "text": "After you scan a product, Curae compares its ingredient profile against your skin data and your existing routine. It surfaces products that are compatible with both — scored by fit, not by paid placement. You can also see where to buy any of them directly in the app."
           }
         },
         {
           "@type": "Question",
-          "name": "What are Curae Points?",
+          "name": "What do Confirmed, Likely, and Unknown mean?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Curae Points are our rewards system. Earn points exclusively by shopping through our affiliate links. Redeem points for exclusive perks, early access to features, and discounts."
+            "text": "Curae labels every ingredient conflict and caution with one of three confidence levels. Confirmed means the interaction or concern is well-established in the research. Likely means there is meaningful evidence but it isn't definitive. Unknown means we don't yet have reliable data — and we say so rather than guessing."
           }
         },
         {
           "@type": "Question",
-          "name": "How does the Ingredient Intelligence library work?",
+          "name": "How does allergen detection work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Our comprehensive ingredient library provides detailed information about skincare ingredients including benefits, potential concerns, and scientific research. Learn how ingredients work together and which ones to avoid based on your skin type."
+            "text": "When you set up your skin profile, you can specify allergens and sensitivities. Every time you scan a product, Curae cross-checks the full ingredient list against your allergens and surfaces any matches at the top of your results — above everything else. It checks ingredient synonyms and INCI names, not just exact matches."
           }
         },
         {
           "@type": "Question",
-          "name": "Can I track my skincare routine?",
+          "name": "How does routine conflict detection work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes! Create personalized morning and evening routines with our guided builder. Get smart conflict detection to avoid ingredient interactions and optimize product order. Track progress with photos, notes, and skin condition logs."
+            "text": "When you add products to your routine, Curae builds a cross-shelf ingredient map. Every new scan checks the incoming product's ingredients against everything already on your shelf and flags clashes — retinol + AHAs, vitamin C + niacinamide, and others. Each conflict is labeled Confirmed, Likely, or Unknown so you know how seriously to take it."
           }
         }
       ]
@@ -69,7 +68,7 @@ const HomePage = () => {
       "name": "Curae",
       "url": "https://loremcurae.com",
       "logo": "https://loremcurae.com/logo.png",
-      "description": "Personalized skincare platform powered by science and community. Smart product finder, ingredient intelligence, AI guidance, routine tracking, and curated marketplace.",
+      "description": "Camera-powered skincare intelligence. Scan any product, analyze every ingredient, detect conflicts with your routine, and find what's right for your skin.",
       "sameAs": [
         "https://facebook.com/loremcurae",
         "https://instagram.com/loremcurae",
@@ -90,7 +89,7 @@ const HomePage = () => {
       "@type": "WebSite",
       "name": "Curae",
       "url": "https://loremcurae.com",
-      "description": "Personalized skincare platform with smart product finder, ingredient intelligence, AI guidance, and rewards program",
+      "description": "Camera-powered skincare intelligence. Know what's in every product. Know if it's right for your skin.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": "https://loremcurae.com/discover?q={search_term_string}",
@@ -132,7 +131,6 @@ const HomePage = () => {
         <IngredientCarousel />
         <RoutineTracker />
         <MarketplaceSection />
-        <CommunityStories />
         <TrustBanner />
       </main>
       <Footer />

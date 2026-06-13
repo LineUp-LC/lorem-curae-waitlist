@@ -1,9 +1,9 @@
 const TrustBanner = () => {
   const badges = [
+    { icon: 'ri-price-tag-3-line', label: 'Honest Confidence Labels' },
+    { icon: 'ri-alert-line', label: 'Allergen-Aware' },
+    { icon: 'ri-bar-chart-line', label: 'No Fake Rankings' },
     { icon: 'ri-shield-check-line', label: 'WCAG Compliant' },
-    { icon: 'ri-leaf-line', label: 'Cruelty-Free' },
-    { icon: 'ri-heart-line', label: 'Indie Supported' },
-    { icon: 'ri-global-line', label: 'Inclusive Community' },
   ];
 
   return (
@@ -22,7 +22,7 @@ const TrustBanner = () => {
 
         <div className="text-center">
           <h3 className="text-3xl font-serif text-forest-900 mb-2">
-            Built for Every Skin, Every Story, Every Journey
+            Built to earn your trust, not just your attention.
           </h3>
           <div className="w-24 h-1 bg-sage-600 mx-auto rounded-full"></div>
         </div>

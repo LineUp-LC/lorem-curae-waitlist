@@ -14,10 +14,10 @@ export default function HeroSection() {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 text-center w-full">
         <h1 className="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight">
-          Your Skin, Your Journey,<br />Personalized for You
+          The layer of intelligence between you and every skincare product you'll ever buy.
         </h1>
         <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
-          Discover products perfect for your unique skin with our <em className="text-sage-300 not-italic font-medium">smart finder</em>, <em className="text-cream-300 not-italic font-medium">ingredient intelligence</em>, <em className="text-coral-300 not-italic font-medium">AI guidance</em>, and <em className="italic text-sage-200">rewards program</em>
+          Point your camera at any product. Curae breaks down every ingredient, flags your allergens, checks it against your routine, and tells you — honestly — if it belongs on your shelf.
         </p>
       </div>
 

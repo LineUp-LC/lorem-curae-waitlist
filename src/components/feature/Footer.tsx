@@ -16,7 +16,7 @@ const Footer = () => {
               <span className="text-xl font-semibold text-cream-50">Curae</span>
             </div>
             <p className="text-sm text-cream-200 leading-relaxed">
-              Empowering authentic skincare journeys through science-backed personalization, holistic wellness, and collective wisdom.
+              Camera-powered skincare intelligence. Know what's in every product. Know if it's right for your skin.
             </p>
             <div className="flex items-center space-x-4">
               <a
@@ -124,7 +124,7 @@ const Footer = () => {
         <div className="mt-16 pt-8 border-t border-cream-100/10">
           <div className="flex flex-col items-center space-y-4">
             <p className="text-xs text-cream-400 text-center">
-              © 2025 Curae. Empowering authentic skincare journeys.
+              © 2026 Curae. Know what's in every product.
             </p>
             <div className="text-center">
               <a 

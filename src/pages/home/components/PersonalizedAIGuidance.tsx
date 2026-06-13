@@ -8,13 +8,13 @@ export default function PersonalizedAIGuidance() {
           {/* Content */}
           <div>
             <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-              Personalized AI Guidance
+              Ask Curae AI
             </h2>
             <h3 className="text-xl text-slate-600 mb-6 leading-relaxed font-semibold">
-              Your personal skincare assistant
+              Context-aware. Ingredient-level. Built around your skin.
             </h3>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              Get instant answers to your skincare questions with our <a href="/ai-chat" className="text-sage-600 hover:text-sage-700 font-medium underline" title="Chat with AI skincare assistant">AI-powered guidance system</a>. Ask about product compatibility, routine order, ingredient concerns, or get personalized recommendations based on your unique skin profile.
+              Every answer is rooted in your actual profile — your skin type, concerns, sensitivities, and the products already in your routine. Ask why an ingredient is flagged, whether two actives are safe to layer, or what your skin might need right now. It knows the full picture.
             </p>
             <Link
               to="/ai-chat"
@@ -36,7 +36,7 @@ export default function PersonalizedAIGuidance() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent"></div>
             </div>
-            
+
             {/* Floating Badge */}
             <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-6 max-w-xs">
               <div className="flex items-start gap-4">

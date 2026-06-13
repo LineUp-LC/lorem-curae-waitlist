@@ -31,13 +31,13 @@ const ProductComparison = () => {
           {/* Content */}
           <div className="order-1 lg:order-2">
             <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-              Product Comparison
+              Compatibility Scoring
             </h2>
             <h3 className="text-xl text-slate-600 mb-6 leading-relaxed font-semibold">
-              Make informed decisions
+              Scored for your skin. Explained, not just ranked.
             </h3>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              Compare products side-by-side to see ingredients, pricing, reviews, and compatibility with your skin type. Our <a href="/discover" className="text-sage-600 hover:text-sage-700 font-medium underline" title="Use product comparison tool">comparison tool</a> highlights key differences and helps you choose the best option for your needs.
+              Every product gets two scores — ingredient safety and skin compatibility — both calculated against your profile. When something is flagged, Curae explains exactly why: which ingredient, what the concern is for your skin type, and whether the evidence is Confirmed, Likely, or Unknown. No black boxes.
             </p>
             <Link
               to="/discover"

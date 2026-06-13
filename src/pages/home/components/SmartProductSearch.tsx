@@ -7,13 +7,13 @@ const SmartProductSearch = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <h2 className="text-4xl lg:text-5xl font-serif text-slate-900 mb-6">
-              Smart Product Finder
+              Compatible Products, Found After Every Scan
             </h2>
             <h3 className="text-xl text-slate-600 mb-6 leading-relaxed font-semibold">
-              Find exactly what your skin needs
+              No guesswork. No generic lists.
             </h3>
             <p className="text-lg text-slate-600 mb-6 leading-relaxed">
-              Our intelligent search understands your skin type, concerns, and preferences to recommend products from verified retailers. Compare options, read reviews from people with similar skin, and make confident decisions.
+              After you scan a product, Curae surfaces alternatives and complements that are compatible with your full ingredient profile — scored by how well they fit your specific skin type, concerns, and sensitivities. Find where to buy any of them in the same screen.
             </p>
             <Link
               to="/discover"
