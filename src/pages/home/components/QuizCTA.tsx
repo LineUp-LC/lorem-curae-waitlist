@@ -14,7 +14,7 @@ const QuizCTA = () => {
                 Start with your skin profile.
               </h2>
               <p className="text-forest-700 leading-relaxed">
-                Before your first scan, tell us about your skin — type, concerns, sensitivities, allergens. That profile is what makes every result personal rather than generic. It takes about two minutes.
+                Before your first scan, tell us about your skin: type, concerns, sensitivities, allergens. That profile is what makes every result personal rather than generic. It takes about two minutes.
               </p>
             </div>
           </div>

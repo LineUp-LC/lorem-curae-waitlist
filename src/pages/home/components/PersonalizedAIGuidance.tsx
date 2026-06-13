@@ -14,7 +14,7 @@ export default function PersonalizedAIGuidance() {
               Context-aware. Ingredient-level. Built around your skin.
             </h3>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              Every answer is rooted in your actual profile — your skin type, concerns, sensitivities, and the products already in your routine. Ask why an ingredient is flagged, whether two actives are safe to layer, or what your skin might need right now. It knows the full picture.
+              Every answer is rooted in your actual profile: your skin type, concerns, sensitivities, and the products already in your routine. Ask why an ingredient is flagged, whether two actives are safe to layer, or what your skin might need right now. It knows the full picture.
             </p>
             <Link
               to="/ai-chat"

@@ -7,7 +7,7 @@ export default function RoutineTracker() {
             Your Routine. Cross-Checked Automatically.
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Add products to your routine and every future scan checks against them. Curae detects ingredient conflicts across your whole shelf — retinol with acids, vitamin C with niacinamide, and more — and labels each clash Confirmed, Likely, or Unknown. So you know what the concern actually is, and how certain we are about it.
+            Add products to your routine and every future scan checks against them. Curae detects ingredient conflicts across your whole shelf, like retinol with acids or vitamin C with niacinamide, and labels each clash Confirmed, Likely, or Unknown. So you know what the concern actually is, and how certain we are about it.
           </p>
         </div>
 

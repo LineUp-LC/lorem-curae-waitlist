@@ -64,7 +64,7 @@ export default function IngredientCarousel() {
             Every Ingredient, Explained for Your Skin
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Curae breaks down what each ingredient does, flags it against your profile, and labels its confidence level: Confirmed, Likely, or Unknown. We don't pretend to know more than the evidence supports — and we explain the gap when it exists.
+            Curae breaks down what each ingredient does, flags it against your profile, and labels its confidence level: Confirmed, Likely, or Unknown. We don't pretend to know more than the evidence supports, and we explain the gap when it exists.
           </p>
         </div>
 

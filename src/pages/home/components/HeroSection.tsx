@@ -17,7 +17,7 @@ export default function HeroSection() {
           The layer of intelligence between you and every skincare product you'll ever buy.
         </h1>
         <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
-          Point your camera at any product. Curae breaks down every ingredient, flags your allergens, checks it against your routine, and tells you — honestly — if it belongs on your shelf.
+          Point your camera at any product. Curae breaks down every ingredient, flags your allergens, checks it against your routine, and tells you honestly whether it belongs on your shelf.
         </p>
       </div>
 

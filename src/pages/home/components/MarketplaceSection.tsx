@@ -18,7 +18,7 @@ const MarketplaceSection = () => {
             </div>
             <h3 className="text-2xl font-serif text-slate-900 mb-4">Creator Space</h3>
             <p className="text-slate-600 leading-relaxed">
-              Indie brands and creators will have their own space inside Curae — not just listed, but integrated. Discover formulations from small-batch founders, with full ingredient transparency built in.
+              Indie brands and creators will have their own space inside Curae, not just listed but integrated. Discover formulations from small-batch founders, with full ingredient transparency built in.
             </p>
           </div>
 

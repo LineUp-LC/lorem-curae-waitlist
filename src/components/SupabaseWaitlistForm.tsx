@@ -146,7 +146,7 @@ export default function SupabaseWaitlistForm({
       subheading: "We open Curae in waves. Drop your email and we'll reach out when your spot is ready.",
       buttonText: 'Join the waitlist',
       successHeading: "You're in.",
-      successMessage: "We'll reach out when your wave opens — usually within a few weeks of launch.",
+      successMessage: "We'll reach out when your wave opens, usually within a few weeks of launch.",
     },
     creator: {
       heading: 'Join the Creator Waitlist',
@@ -304,7 +304,7 @@ export default function SupabaseWaitlistForm({
             <p className="text-sage-600 text-lg font-light">
               {status === 'duplicate'
                 ? "You're already on the waitlist."
-                : "We'll reach out when your wave opens — usually within a few weeks of launch."}
+                : "We'll reach out when your wave opens, usually within a few weeks of launch."}
             </p>
           </div>
 

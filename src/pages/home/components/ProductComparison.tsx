@@ -37,7 +37,7 @@ const ProductComparison = () => {
               Scored for your skin. Explained, not just ranked.
             </h3>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              Every product gets two scores — ingredient safety and skin compatibility — both calculated against your profile. When something is flagged, Curae explains exactly why: which ingredient, what the concern is for your skin type, and whether the evidence is Confirmed, Likely, or Unknown. No black boxes.
+              Every product gets two scores, ingredient safety and skin compatibility, both calculated against your profile. When something is flagged, Curae explains exactly why: which ingredient, what the concern is for your skin type, and whether the evidence is Confirmed, Likely, or Unknown. No black boxes.
             </p>
             <Link
               to="/discover"

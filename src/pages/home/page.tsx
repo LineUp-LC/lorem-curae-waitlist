@@ -23,7 +23,7 @@ const HomePage = () => {
           "name": "What is Curae?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Curae is a camera-powered skincare intelligence app. Point your phone at any skincare product and Curae instantly analyzes every ingredient against your skin profile — flagging allergens, detecting conflicts with your existing routine, and scoring compatibility. Every result is personalized to your specific skin type, concerns, and sensitivities."
+            "text": "Curae is a camera-powered skincare intelligence app. Point your phone at any skincare product and Curae instantly analyzes every ingredient against your skin profile, flagging allergens, detecting conflicts with your existing routine, and scoring compatibility. Every result is personalized to your specific skin type, concerns, and sensitivities."
           }
         },
         {
@@ -31,7 +31,7 @@ const HomePage = () => {
           "name": "How does Curae find compatible products?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "After you scan a product, Curae compares its ingredient profile against your skin data and your existing routine. It surfaces products that are compatible with both — scored by fit, not by paid placement. You can also see where to buy any of them directly in the app."
+            "text": "After you scan a product, Curae compares its ingredient profile against your skin data and your existing routine. It surfaces products that are compatible with both, scored by fit, not by paid placement. You can also see where to buy any of them directly in the app."
           }
         },
         {
@@ -39,7 +39,7 @@ const HomePage = () => {
           "name": "What do Confirmed, Likely, and Unknown mean?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Curae labels every ingredient conflict and caution with one of three confidence levels. Confirmed means the interaction or concern is well-established in the research. Likely means there is meaningful evidence but it isn't definitive. Unknown means we don't yet have reliable data — and we say so rather than guessing."
+            "text": "Curae labels every ingredient conflict and caution with one of three confidence levels. Confirmed means the interaction or concern is well-established in the research. Likely means there is meaningful evidence but it isn't definitive. Unknown means we don't yet have reliable data, and we say so rather than guessing."
           }
         },
         {
@@ -47,7 +47,7 @@ const HomePage = () => {
           "name": "How does allergen detection work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "When you set up your skin profile, you can specify allergens and sensitivities. Every time you scan a product, Curae cross-checks the full ingredient list against your allergens and surfaces any matches at the top of your results — above everything else. It checks ingredient synonyms and INCI names, not just exact matches."
+            "text": "When you set up your skin profile, you can specify allergens and sensitivities. Every time you scan a product, Curae cross-checks the full ingredient list against your allergens and surfaces any matches at the top of your results, above everything else. It checks ingredient synonyms and INCI names, not just exact matches."
           }
         },
         {
@@ -55,7 +55,7 @@ const HomePage = () => {
           "name": "How does routine conflict detection work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "When you add products to your routine, Curae builds a cross-shelf ingredient map. Every new scan checks the incoming product's ingredients against everything already on your shelf and flags clashes — retinol + AHAs, vitamin C + niacinamide, and others. Each conflict is labeled Confirmed, Likely, or Unknown so you know how seriously to take it."
+            "text": "When you add products to your routine, Curae builds a cross-shelf ingredient map. Every new scan checks the incoming product's ingredients against everything already on your shelf and flags clashes like retinol + AHAs, vitamin C + niacinamide, and others. Each conflict is labeled Confirmed, Likely, or Unknown so you know how seriously to take it."
           }
         }
       ]

@@ -13,7 +13,7 @@ const SmartProductSearch = () => {
               No guesswork. No generic lists.
             </h3>
             <p className="text-lg text-slate-600 mb-6 leading-relaxed">
-              After you scan a product, Curae surfaces alternatives and complements that are compatible with your full ingredient profile — scored by how well they fit your specific skin type, concerns, and sensitivities. Find where to buy any of them in the same screen.
+              After you scan a product, Curae surfaces alternatives and complements that are compatible with your full ingredient profile, scored by how well they fit your specific skin type, concerns, and sensitivities. Find where to buy any of them in the same screen.
             </p>
             <Link
               to="/discover"

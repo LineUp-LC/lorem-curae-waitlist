@@ -13,7 +13,7 @@ const YourJourneySection = () => {
             Early access. Real influence.
           </h2>
           <p className="text-lg text-slate-700 mb-10 leading-relaxed max-w-3xl mx-auto">
-            Curae releases access in waves. Join now to be in the first cohort — and to help shape what comes next. Early members get priority access to new features as they ship.
+            Curae releases access in waves. Join now to be in the first cohort, and help shape what comes next. Early members get priority access to new features as they ship.
           </p>
         </div>
 
