@@ -81,6 +81,7 @@ const SkinSurveyAccountPage = lazy(() => import('../pages/skin-survey-account/pa
 const SurveyResultsPage = lazy(() => import('../pages/skin-survey/results/page'));
 const CartPage = lazy(() => import('../pages/cart/page'));
 const PrivacyPage = lazy(() => import('../pages/privacy/page'));
+const TermsPage = lazy(() => import('../pages/terms/page'));
 const ContactPage = lazy(() => import('../pages/contact/page'));
 const FAQPage = lazy(() => import('../pages/faq/page'));
 const AccessibilityPage = lazy(() => import('../pages/accessibility/page'));
@@ -298,6 +299,10 @@ const routes: RouteObject[] = [
   {
     path: '/privacy',
     element: <PrivacyPage />,
+  },
+  {
+    path: '/terms',
+    element: <TermsPage />,
   },
   {
     path: '/contact',
