@@ -149,7 +149,7 @@ const WaitlistLandingPage = () => {
            ============================================================ */
         .lc-hero {
           padding: 6rem 1.5rem 5.5rem;
-          margin-top: 132px;
+          margin-top: 112px;
           background: #0f0f0f;
           position: relative;
           overflow: hidden;
@@ -1187,7 +1187,7 @@ const WaitlistLandingPage = () => {
            MOBILE FINE-TUNING (375px target)
            ============================================================ */
         @media (max-width: 480px) {
-          .lc-hero { padding: 4.5rem 1.25rem 4.5rem; margin-top: 128px; }
+          .lc-hero { padding: 4.5rem 1.25rem 4.5rem; margin-top: 108px; }
           .lc-section { padding: 4rem 1.25rem; }
           .lc-cta-card { padding: 2.25rem 1.5rem; }
           .lc-header-inner { padding: 0.875rem 1.25rem; }
@@ -1199,7 +1199,7 @@ const WaitlistLandingPage = () => {
       {/* ================= HEADER ================= */}
       <header className="lc-header">
         <div className="lc-header-inner">
-          <Link to="/" className="lc-logo"><img src="/curae-logo.png" alt="Curae" style={{ height: '100px', width: 'auto' }} /></Link>
+          <Link to="/" className="lc-logo"><img src="/curae-logo.png" alt="Curae" style={{ height: '80px', width: 'auto' }} /></Link>
           <a href="#waitlist" onClick={scrollTo('waitlist')} className="lc-header-cta">Join waitlist</a>
         </div>
       </header>
@@ -1655,7 +1655,7 @@ const WaitlistLandingPage = () => {
 
       {/* ================= FOOTER ================= */}
       <footer className="lc-footer">
-        <Link to="/" className="lc-footer-logo"><img src="/curae-logo.png" alt="Curae" style={{ height: '100px', width: 'auto' }} /></Link>
+        <Link to="/" className="lc-footer-logo"><img src="/curae-logo.png" alt="Curae" style={{ height: '80px', width: 'auto' }} /></Link>
         <p className="lc-footer-tagline">Camera-powered skincare intelligence.</p>
         <div className="lc-footer-links">
           <Link to="/privacy">Privacy</Link>
