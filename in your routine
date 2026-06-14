@@ -1,0 +1,148 @@
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m12[m[36m:[m# Prompt Categories [1;31m—[m Lorem Curae
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m21[m[36m:[m## 1. UI Polish [1;31m—[m React Native
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m31[m[36m:[m| Skill | `skills/taste-skill/SKILL.md` | Mobile brand filter [1;31m—[m palette, fonts, native patterns |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m33[m[36m:[m**Boilerplate:** `Read @.claude/Memory.md. Read @.claude/skills/taste-skill/SKILL.md [1;31m—[m apply design constraints throughout. State model + effort per rule 19. No audit needed [1;31m—[m proceed directly.`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m36[m[36m:[m- Cormorant Garamond + DM Sans [1;31m—[m do NOT strip, replace, or add alternatives
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m37[m[36m:[m- `result.tsx` uses `StyleSheet.create`, NOT NativeWind [1;31m—[m check before writing press feedback
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m38[m[36m:[m- Stagger entrance animation **DEFERRED** in `result.tsx` [1;31m—[m do not re-add without Android device testing
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m41[m[36m:[m- Bottom safe area: `paddingBottom: insets.bottom` bare [1;31m—[m no constant on dark full-screen screens (Memory: feedback_bottom-whitespace)
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m46[m[36m:[m## 2. UI Polish [1;31m—[m Web MVP
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m58[m[36m:[m| Skill | `skills/redesign-existing-projects/SKILL.md` | Diagnostic audit [1;31m—[m typography, color, layout, states on existing web screens |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m60[m[36m:[m**Boilerplate:** `Read @.claude/Memory.md, @.claude/rules/03-frontend.md. Read @.claude/skills/design-taste-frontend/SKILL.md [1;31m—[m apply design constraints throughout. State model + effort per rule 19. No audit needed [1;31m—[m proceed directly.`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m63[m[36m:[m- Tailwind tokens ONLY [1;31m—[m never `text-[#C4704D]` or arbitrary values
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m64[m[36m:[m- `taupe` is NOT a Tailwind token (90+ files use it) [1;31m—[m use `warm-gray` instead
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m65[m[36m:[m- Dark mode NOT implemented [1;31m—[m never add `dark:` classes
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m66[m[36m:[m- Never introduce new font families [1;31m—[m Cormorant Garamond + Inter/DM Sans only
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m70[m[36m:[m## 3. New Screen / Feature [1;31m—[m React Native
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m82[m[36m:[m| Rule | `rules/15-roadmap.md` | Feature tier (MoSCoW) [1;31m—[m check before building |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m94[m[36m:[m- `KeyboardAvoidingView`: `behavior="padding"` always [1;31m—[m **never** branch on `Platform.OS`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m95[m[36m:[m- TSC error path `apps/mobile/apps/mobile/...` = ghost nested duplicate [1;31m—[m check real path first
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m96[m[36m:[m- Supabase CLI exit code 13 = permission issue [1;31m—[m use MCP tools for all Supabase operations
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m100[m[36m:[m## 4. New Screen / Feature [1;31m—[m Web MVP
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m114[m[36m:[m| Rule | `rules/15-roadmap.md` | Feature tier (MoSCoW) [1;31m—[m check before building |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m124[m[36m:[m- Check active route count before adding new routes [1;31m—[m current count in `rules/16-routing.md`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m126[m[36m:[m- Guest users: zero Supabase calls, zero API calls [1;31m—[m verify graceful degradation
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m127[m[36m:[m- `taupe` is NOT a Tailwind token [1;31m—[m use `warm-gray`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m128[m[36m:[m- Supabase CLI exit code 13 [1;31m—[m use MCP tools
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m147[m[36m:[m- TSC error path `apps/mobile/apps/mobile/...` = ghost nested duplicate path [1;31m—[m real file is at the non-duplicated path
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m148[m[36m:[m- Supabase CLI exit code 13 = permission error [1;31m—[m use MCP tools
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m171[m[36m:[m- NEVER apply migrations automatically [1;31m—[m always show SQL diff + impact + rollback plan first
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m172[m[36m:[m- `LargeSecureStore` race condition on cold start [1;31m—[m serialize async access, initialize state early
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m174[m[36m:[m- `INITIAL_SESSION` event: handled in bootstrap; subscription must `return` early [1;31m—[m do NOT re-route from it
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m175[m[36m:[m- Edge Functions: Deno runtime, `esm.sh` imports, `Deno.serve()` pattern [1;31m—[m cannot be validated with `tsc`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m194[m[36m:[m- No em dashes (`[1;31m—[m`) in user-facing copy
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m196[m[36m:[m- No "skincare advisor" / "your personal skincare advisor" framing [1;31m—[m legal risk
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m197[m[36m:[m- Ingredient claims must cite basis [1;31m—[m no absolute promises ("will clear", "eliminates")
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m199[m[36m:[m- Brand voice: calm, educational, empowering [1;31m—[m no hype, no exclamation marks unless explicitly requested
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m216[m[36m:[m- `intelligent-lewin` branch is **locked in a worktree** [1;31m—[m skip in any branch sync, cleanup, or bulk operation pipelines
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m218[m[36m:[m- Supabase CLI exit code 13 [1;31m—[m use MCP tools for all Supabase deployments
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m239[m[36m:[m- No `.md` file may exceed 500 lines [1;31m—[m estimate line count before writing
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m264[m[36m:[m- `ai-chat` Edge Function returns raw text, **not JSON** [1;31m—[m use system prompt to enforce JSON; add client-side `JSON.parse` with fallback
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m265[m[36m:[m- Use raw `fetch()` with explicit `Bearer` token [1;31m—[m NOT `supabase.functions.invoke()`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m268[m[36m:[m- Never add highlight keywords without verifying no partial-word collision [1;31m—[m word boundary `\b...\b` rule
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m293[m[36m:[m- `result.tsx` uses `StyleSheet.create`, NOT NativeWind [1;31m—[m check before writing any styles
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m294[m[36m:[m- Stagger entrance animation **DEFERRED** [1;31m—[m do not re-add `Animated.View` wrappers without Android device testing (Memory: feedback_result-cta-layout)
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m297[m[36m:[m- Use `Ionicons chevron-forward` [1;31m—[m NOT a custom `View` chevron (renders as stray `<` on device)
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m314[m[36m:[m| Skill | `skills/design-taste-frontend/SKILL.md` | Web animation only [1;31m—[m MOTION_INTENSITY dial, Framer Motion rules, perf guardrails |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m315[m[36m:[m| Skill | `skills/high-end-visual-design/SKILL.md` | Web animation only [1;31m—[m spring physics, scroll reveals, motion choreography |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m318[m[36m:[m**Boilerplate:** `Read @.claude/Memory.md. Read @.claude/rules/03-frontend.md (motion section). Read @.claude/skills/taste-skill/SKILL.md [1;31m—[m apply design constraints throughout.`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m321[m[36m:[m- `useEffect([])` for entrance animations ONLY [1;31m—[m never stagger inside `useEffect` with deps that change post-mount
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m322[m[36m:[m- `isMounted` ref guard in ALL `.start()` callbacks [1;31m—[m prevents `setState` after unmount
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m323[m[36m:[m- `transform` + `opacity` ONLY [1;31m—[m never animate layout properties (`width`, `height`, `padding`, `margin`)
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m325[m[36m:[m- No bounce, spring, or playful animation [1;31m—[m soft, slow, premium only
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m326[m[36m:[m- Stagger animations in `result.tsx`: **deferred** [1;31m—[m do not re-add without device testing (Memory: feedback_result-cta-layout)
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m348[m[36m:[m- `INITIAL_SESSION` event: bootstrap in `_layout.tsx` resolves routing; subscription must `return` early [1;31m—[m never re-route from it
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m349[m[36m:[m- `KeyboardAvoidingView`: `behavior="padding"` always [1;31m—[m **never** branch on `Platform.OS`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m351[m[36m:[m- `survey_completed` drives routing [1;31m—[m set via upsert `onConflict: "id"` on `users_profiles`
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m352[m[36m:[m- `users_profiles` requires INSERT RLS policy: `auth.uid() = id` [1;31m—[m without it, first-signup upsert silently fails
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m353[m[36m:[m- Bottom safe area: `paddingBottom: insets.bottom` bare [1;31m—[m no added constant (Memory: feedback_bottom-whitespace)
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m354[m[36m:[m- Upsert failure: show visible error + retry button [1;31m—[m never swallow silently and navigate anyway
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m370[m[36m:[m| Skill | `skills/design-taste-frontend/SKILL.md` | Web UI engineering [1;31m—[m Tailwind, component architecture, motion |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m371[m[36m:[m| Skill | `skills/high-end-visual-design/SKILL.md` | Agency-level design [1;31m—[m Editorial Luxury archetype, spacing, CTAs |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m372[m[36m:[m| Skill | `skills/redesign-existing-projects/SKILL.md` | For iterating on existing waitlist screens [1;31m—[m typography, color, layout audit |
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m378[m[36m:[m- Separate Next.js project at `lorem-curae-waitlist` [1;31m—[m NOT the same codebase as mobile or web MVP
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m379[m[36m:[m- Vercel auto-deploys on push to `main` of `lorem-curae-waitlist` [1;31m—[m be careful
+[35m.claude/PROMPT-CATEGORIES.md[m[36m:[m[32m382[m[36m:[m- `intelligent-lewin` branch locked in a worktree [1;31m—[m skip in any branch sync pipelines
+[35m.claude/plan.md[m[36m:[m[32m1[m[36m:[m# Founding Member Creator [1;31m—[m Implementation Plan
+[35m.claude/plan.md[m[36m:[m[32m6[m[36m:[m- `api/signup.ts` [1;31m—[m Full auto-assignment logic for both pools (general 50, creator 20), logging, response fields
+[35m.claude/plan.md[m[36m:[m[32m7[m[36m:[m- `supabase/migrations/20260201_add_founding_member_creator.sql` [1;31m—[m Column + partial index
+[35m.claude/plan.md[m[36m:[m[32m8[m[36m:[m- `src/lib/email/followupTemplates.ts` [1;31m—[m `founding_member_creator` role, template, and resolver
+[35m.claude/plan.md[m[36m:[m[32m9[m[36m:[m- `src/components/SupabaseWaitlistForm.tsx` [1;31m—[m Sends `is_creator: segment === 'creator'`
+[35m.claude/plan.md[m[36m:[m[32m12[m[36m:[m1. `api/admin/update-waitlist-user.ts` [1;31m—[m No `is_founding_member_creator` support
+[35m.claude/plan.md[m[36m:[m[32m13[m[36m:[m2. `api/admin/search-waitlist.ts` [1;31m—[m No `is_founding_member_creator` filter or column
+[35m.claude/plan.md[m[36m:[m[32m14[m[36m:[m3. `api/admin/export-waitlist.ts` [1;31m—[m No `is_founding_member_creator` in CSV
+[35m.claude/plan.md[m[36m:[m[32m15[m[36m:[m4. `api/admin/import-waitlist.ts` [1;31m—[m No `is_founding_member_creator` parsing or cap enforcement
+[35m.claude/plan.md[m[36m:[m[32m16[m[36m:[m5. `api/admin/waitlist-stats.ts` [1;31m—[m No founding creator count
+[35m.claude/plan.md[m[36m:[m[32m17[m[36m:[m6. `api/admin/waitlist-analytics.ts` [1;31m—[m No founding creator analytics
+[35m.claude/plan.md[m[36m:[m[32m18[m[36m:[m7. `src/pages/admin/user/EditUserPanel.tsx` [1;31m—[m No founding creator toggle
+[35m.claude/plan.md[m[36m:[m[32m19[m[36m:[m8. `src/pages/admin/page.tsx` [1;31m—[m No founding creator stats on dashboard
+[35m.claude/plan.md[m[36m:[m[32m20[m[36m:[m9. `src/pages/admin/waitlist-analytics/page.tsx` [1;31m—[m No founding creator analytics display
+[35m.claude/plan.md[m[36m:[m[32m21[m[36m:[m10. `src/pages/admin/search/page.tsx` [1;31m—[m No founding creator filter or column (needs verification)
+[35m.claude/plan.md[m[36m:[m[32m285[m[36m:[m**4d. Add `is_founding_member_creator` filter parameter** (mirror the `is_founding_member` pattern [1;31m—[m parse, validate, apply to query):
+[35m.claude/plan.md[m[36m:[m[32m442[m[36m:[m  value={analytics ? `${formatNumber(analytics.founding_member_creator_count)} / 20` : '[1;31m—[m'}
+[35m.claude/plan.md[m[36m:[m[32m461[m[36m:[mThe dashboard currently uses a `/api/admin/summary` endpoint (not `waitlist-stats`). If the summary endpoint already returns founding data, add a StatCard for founding creator stats. Otherwise, this step depends on what the summary API returns [1;31m—[m may need a separate fetch to `waitlist-stats`.
+[35m.claude/plan.md[m[36m:[m[32m482[m[36m:[m- `api/signup.ts` [1;31m—[m Already logs `founding_member_auto_assigned` with `pool: 'creator'` (done)
+[35m.claude/plan.md[m[36m:[m[32m483[m[36m:[m- `api/admin/update-waitlist-user.ts` [1;31m—[m Already logs `waitlist_user_updated` with the full `updatePayload` (will naturally include `is_founding_member_creator`)
+[35m.claude/plan.md[m[36m:[m[32m484[m[36m:[m- `api/admin/import-waitlist.ts` [1;31m—[m Already logs `waitlist_import` with counts (no change needed for top-level logging)
+[35m.claude/plan.md[m[36m:[m[32m486[m[36m:[m**Cap-near warnings:** Not adding 80% threshold warnings [1;31m—[m the admin dashboard stat cards provide real-time visibility. Adding console warnings would create noise in Vercel logs without clear actionability.
+[35m.claude/plan.md[m[36m:[m[32m517[m[36m:[m1. **Database migration** [1;31m—[m Run `20260201_add_founding_member_creator.sql` if not already applied (column + index)
+[35m.claude/plan.md[m[36m:[m[32m518[m[36m:[m2. **Deploy API changes** [1;31m—[m All admin endpoints in a single deploy (they're all serverless functions)
+[35m.claude/plan.md[m[36m:[m[32m519[m[36m:[m3. **Deploy frontend** [1;31m—[m Admin UI changes (EditUserPanel, analytics, search)
+[35m.claude/plan.md[m[36m:[m[32m520[m[36m:[m4. **Verify** [1;31m—[m Create a test creator signup, check admin dashboard shows correct counts, verify cap enforcement via admin update API
+[35m.claude/plan.md[m[36m:[m[32m521[m[36m:[m5. **No feature flag needed** [1;31m—[m The column has `DEFAULT false`, so existing users are unaffected. The auto-assignment only triggers for new creator signups going forward.
+[35mDEPLOY_CHECKLIST.md[m[36m:[m[32m27[m[36m:[mNo extra secrets needed [1;31m—[m SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are auto-injected.
+[35mDEPLOY_CHECKLIST.md[m[36m:[m[32m57[m[36m:[mThe same `RESEND_API_KEY` is already referenced by `api/request-magic-link.ts` (Vercel-side). The Edge Function needs its own copy configured in Supabase [1;31m—[m Vercel env vars do not cross over.
+[35mDEPLOY_CHECKLIST.md[m[36m:[m[32m65[m[36m:[m| `project_url` | `https://<project-ref>.supabase.co` [1;31m—[m no trailing slash | Project Settings → General → Reference ID (build URL), or Project Settings → API → Project URL |
+[35mDEPLOY_CHECKLIST.md[m[36m:[m[32m68[m[36m:[m**Set via Dashboard:** Project Settings → Vault → Secrets → New secret. Create one row per name above. The `name` column must match exactly [1;31m—[m the cron SQL looks these up by literal name.
+[35mapi/admin.ts[m[36m:[m[32m755[m[36m:[m        // Stub endpoints [1;31m—[m not yet implemented
+[35mapi/request-magic-link.ts[m[36m:[m[32m63[m[36m:[mconst SIGN_OFF = `<p>[1;31m—[m Ethan Jones<br/>Founder, Curae</p>`;
+[35mapi/request-magic-link.ts[m[36m:[m[32m81[m[36m:[m<p>Your founding rate is locked [1;31m—[m you'll keep it for as long as you stay subscribed.</p>
+[35mapi/request-magic-link.ts[m[36m:[m[32m107[m[36m:[m      "When tester access opens, you'll be among the first creators in [1;31m—[m your feedback will shape the tools we ship.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m124[m[36m:[m    subject: "Welcome to Curae [1;31m—[m founding member",
+[35mapi/request-magic-link.ts[m[36m:[m[32m127[m[36m:[m      "You have priority access from day one [1;31m—[m no waves, no waiting.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m134[m[36m:[m    subject: "Welcome to Curae [1;31m—[m founding creator",
+[35mapi/request-magic-link.ts[m[36m:[m[32m137[m[36m:[m      "You have priority access to every creator tool from day one [1;31m—[m dashboard, listings, analytics.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m144[m[36m:[m    subject: "Welcome [1;31m—[m founding creator tester",
+[35mapi/request-magic-link.ts[m[36m:[m[32m154[m[36m:[m    subject: "Welcome [1;31m—[m founding tester",
+[35mapi/request-magic-link.ts[m[36m:[m[32m166[m[36m:[m      "You're on the Curae creator waitlist [1;31m—[m Wave C1.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m174[m[36m:[m      "You're on the Curae creator waitlist [1;31m—[m Wave C2.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m182[m[36m:[m      "You're on the Curae creator waitlist [1;31m—[m Wave C3.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m190[m[36m:[m    subject: "A personal note from Ethan [1;31m—[m you're in the first 100",
+[35mapi/request-magic-link.ts[m[36m:[m[32m193[m[36m:[m<p>I personally text the first 100 [1;31m—[m it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+[35mapi/request-magic-link.ts[m[36m:[m[32m195[m[36m:[m<p>This offer expires in 48 hours. If you'd rather not, no worries [1;31m—[m just ignore this email.</p>
+[35mapi/request-magic-link.ts[m[36m:[m[32m204[m[36m:[m      "You're on the Curae waitlist [1;31m—[m Wave 1.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m212[m[36m:[m      "You're on the Curae waitlist [1;31m—[m Wave 2.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m220[m[36m:[m      "You're on the Curae waitlist [1;31m—[m Wave 3.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m228[m[36m:[m      "You're on the Curae waitlist [1;31m—[m Wave 4.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m236[m[36m:[m      "You're on the Curae waitlist [1;31m—[m Wave 5.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m244[m[36m:[m      "You're on the Curae waitlist [1;31m—[m Wave 6.",
+[35mapi/request-magic-link.ts[m[36m:[m[32m252[m[36m:[m      "You're on the Curae waitlist [1;31m—[m Wave 7.",
+[35mapi/signup.ts[m[36m:[m[32m200[m[36m:[m    // NOTE: Sent immediately [1;31m—[m a proper 24h delay queue is deferred (no
+[35mapi/signup.ts[m[36m:[m[32m234[m[36m:[m<p>I personally text the first 100 [1;31m—[m it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+[35mapi/signup.ts[m[36m:[m[32m236[m[36m:[m<p>This offer expires in 48 hours. If you'd rather not, no worries [1;31m—[m just ignore this email.</p>
+[35mapi/signup.ts[m[36m:[m[32m237[m[36m:[m<p>[1;31m—[m Ethan Jones<br/>Founder, Curae</p>`;
+[35mapi/signup.ts[m[36m:[m[32m248[m[36m:[m                  subject: "A personal note from Ethan [1;31m—[m you're in the first 100",
+[35mapi/text-opt-in.ts[m[36m:[m[32m10[m[36m:[m<p>I personally text the first 100 [1;31m—[m it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+[35mapi/text-opt-in.ts[m[36m:[m[32m12[m[36m:[m<p>This offer expires in 48 hours. If you'd rather not, no worries [1;31m—[m just ignore this email.</p>
+[35mapi/text-opt-in.ts[m[36m:[m[32m13[m[36m:[m<p>[1;31m—[m Ethan Jones<br/>Founder, Curae</p>`;
+[35mapi/text-opt-in.ts[m[36m:[m[32m63[m[36m:[m      subject: "A personal note from Ethan [1;31m—[m you're in the first 100",
+[35mapi/text-opt-in.ts[m[36m:[m[32m122[m[36m:[m      // Offer expired [1;31m—[m treat as decline and cascade
+[35mapi/text-opt-in.ts[m[36m:[m[32m135[m[36m:[m    // Validate phone: digits, spaces, hyphens, parentheses, plus sign [1;31m—[m 7 to 20 chars
+[35mapi/text-opt-in.ts[m[36m:[m[32m152[m[36m:[m    // update time in Postgres [1;31m—[m if another request already claimed the slot,
+[35mapi/text-opt-in.ts[m[36m:[m[32m166[m[36m:[m    // Slot claimed [1;31m—[m record the opt-in
+[35mapi/text-opt-in.ts[m[36m:[m[32m176[m[36m:[m  // Decline passes the slot to the next person via cascade [1;31m—[m slots_remaining
+[35mnode_modules/.vite/deps/react-dom_client.js[m[36m:[m[32m4926[m[36m:[m                  "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted [1;31m—[m the behavior is unsupported and could change in a future version.",
+Binary file [35mnode_modules/@esbuild/win32-x64/esbuild.exe[m matches
+[35mnode_modules/@firebase/auth/README.md[m[36m:[m[32m37[m[36m:[m  * `yarn test:integration:local` [1;31m—[m Executes Node and browser emulator
+[35mnode_modules/@firebase/auth/README.md[m[36m:[m[32m40[m[36m:[m  * `yarn test:webdriver` [1;31m—[m Executes only the Selenium WebDriver
+[35mnode_modules/@nodelib/fs.scandir/README.md[m[36m:[m[32m78[m[36m:[m* `name` [1;31m—[m The name of the entry (`unknown.txt`).
+[35mnode_modules/@nodelib/fs.scandir/README.md[m[36m:[m[32m79[m[36m:[m* `path` [1;31m—[m The path of the entry relative to call directory (`root/unknown.txt`).
+[35mnode_modules/@nodelib/fs.scandir/README.md[m[36m:[m[32m80[m[36m:[m* `dirent` [1;31m—[m An instance of [`fs.Dirent`](./src/types/index.ts) class. On Node.js below 10.10 will be emulated by [`DirentFromStats`](./src/utils/fs.ts) class.
+[35mnode_modules/@nodelib/fs.scandir/README.md[m[36m:[m[32m81[m[36m:[m* `stats` (optional) [1;31m—[m An instance of `fs.Stats` class.
+[35mnode_modules/@nodelib/fs.walk/README.md[m[36m:[m[32m89[m[36m:[m* `name` [1;31m—[m The name of the entry (`unknown.txt`).
+[35mnode_modules/@nodelib/fs.walk/README.md[m[36m:[m[32m90[m[36m:[m* `path` [1;31m—[m The path of the entry relative to call directory (`root/unknown.txt`).
+[35mnode_modules/@nodelib/fs.walk/README.md[m[36m:[m[32m91[m[36m:[m* `dirent` [1;31m—[m An instance of [`fs.Dirent`](./src/types/index.ts) class.
+[35mnode_modules/@nodelib/fs.walk/README.md[m[36m:[m[32m92[m[36m:[m* [`stats`] [1;31m—[m An instance of `fs.Stats` class.
+[35mnode_modules/@protobufjs/utf8/tests/data/utf8.txt[m[36m:[m[32m4[m[36m:[mMarkus Kuhn [ˈmaʳkʊs kuːn] <http://www.cl.cam.ac.uk/~mgk25/> [1;31m—[m 2002-07-25 CC BY
+[35mnode_modules/@protobufjs/utf8/tests/data/utf8.txt[m[36m:[m[32m46[m[36m:[m  ║   • †, ‡, ‰, •, 3–4, [1;31m—[m, −5/+5, ™, …      ║
+[35mnode_modules/@protobufjs/utf8/tests/data/utf8.txt[m[36m:[m[32m195[m[36m:[m  –[1;31m—[m‘“”„†•…‰™œŠŸž€ ΑΒΓΔΩαβγδω АБВГДабвгд

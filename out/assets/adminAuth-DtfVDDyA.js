@@ -1,0 +1,2 @@
+import{s as t}from"./supabase-CFcKYdot.js";async function o(){const{data:{session:e}}=await t.auth.getSession();if(!e?.access_token)throw new Error("Not authenticated — please sign in to access the admin panel");if(e.expires_at&&e.expires_at*1e3<Date.now()+6e4){const{data:s,error:a}=await t.auth.refreshSession();if(!a&&s.session?.access_token)return s.session.access_token}return e.access_token}export{o as g};
+//# sourceMappingURL=adminAuth-DtfVDDyA.js.map
