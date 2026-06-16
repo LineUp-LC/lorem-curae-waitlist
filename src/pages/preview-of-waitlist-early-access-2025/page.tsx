@@ -452,6 +452,30 @@ const WaitlistLandingPage = () => {
 
         .lc-section-lead-dark { color: rgba(250, 248, 245, 0.68); }
 
+        .lc-builder {
+          text-align: center;
+        }
+
+        .lc-builder-lead {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-size: clamp(1.5rem, 3vw, 2.0625rem);
+          font-weight: 500;
+          line-height: 1.4;
+          letter-spacing: -0.01em;
+          color: #1a1a1a;
+          margin: 0 0 1.5rem;
+        }
+
+        .lc-builder-emphasis {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-size: clamp(1.75rem, 3.5vw, 2.625rem);
+          font-weight: 600;
+          line-height: 1.2;
+          letter-spacing: -0.01em;
+          color: #C4704D;
+          margin: 0;
+        }
+
         .lc-section-intro {
           text-align: center;
           max-width: 720px;
@@ -1628,6 +1652,17 @@ const WaitlistLandingPage = () => {
               </p>
             </article>
           </div>
+        </div>
+      </section>
+
+      {/* ================= BUILT BY FOUNDING MEMBERS ================= */}
+      <section className="lc-section lc-section-cream lc-builder">
+        <div className="lc-container-narrow">
+          <span className="lc-section-label">Built by founding members</span>
+          <p className="lc-builder-lead">
+            Most apps pretend they have everything. We won't. Curae is new, and our catalog grows from real scans by real people. As a founding member, every product you scan makes Curae smarter for everyone who comes after you.
+          </p>
+          <p className="lc-builder-emphasis">You're not a user. You're a builder.</p>
         </div>
       </section>
 

@@ -11,6 +11,8 @@ interface WaitlistFormState {
   betaTesterInterest: boolean;
   status: 'idle' | 'submitting' | 'success' | 'duplicate' | 'error';
   errorMessage: string;
+  position?: number;
+  isFoundingMember?: boolean;
 }
 
 export default function SupabaseWaitlistForm({ 
@@ -126,6 +128,8 @@ export default function SupabaseWaitlistForm({
         betaTesterInterest: false,
         status: 'success',
         errorMessage: '',
+        position: typeof signupData.position === 'number' ? signupData.position : undefined,
+        isFoundingMember: signupData.is_founding_member === true,
       });
     } finally {
       setFormState((prev) =>
@@ -136,8 +140,10 @@ export default function SupabaseWaitlistForm({
     }
   };
 
-  const { email, betaTesterInterest, status, errorMessage } = formState;
+  const { email, betaTesterInterest, status, errorMessage, position, isFoundingMember } = formState;
   const isSubmitting = status === 'submitting';
+  const showFoundingMember =
+    status === 'success' && isFoundingMember === true && typeof position === 'number';
 
   // Segment-specific content
   const content = {
@@ -299,12 +305,18 @@ export default function SupabaseWaitlistForm({
           {/* Success/Duplicate Message */}
           <div className="space-y-2">
             <h3 className="font-serif text-2xl md:text-3xl text-sage-800">
-              {status === 'duplicate' ? "You're already on the waitlist" : successHeading}
+              {status === 'duplicate'
+                ? "You're already on the waitlist"
+                : showFoundingMember
+                  ? `You're in, Founding Member #${position}.`
+                  : successHeading}
             </h3>
             <p className="text-sage-600 text-lg font-light">
               {status === 'duplicate'
                 ? "You're already on the waitlist."
-                : "We'll reach out when your wave opens, usually within a few weeks of launch."}
+                : showFoundingMember
+                  ? 'Every scan you make shapes what Curae becomes.'
+                  : "We'll reach out when your wave opens, usually within a few weeks of launch."}
             </p>
           </div>
 

@@ -268,9 +268,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    // Spot number: count rows created before this one, then add 1 (same method
+    // as the member dashboard). Surfaced so the confirmation screen can greet
+    // founding members by their existing spot number.
+    let position: number | undefined;
+    if (data.created_at) {
+      const { count: priorCount } = await supabase
+        .from('waitlist')
+        .select('id', { count: 'exact', head: true })
+        .lt('created_at', data.created_at as string);
+      position = (priorCount ?? 0) + 1;
+    }
+
     return res.status(200).json({
       status: 'active',
       wave: data.wave_number,
+      ...(position !== undefined && { position }),
       ...(testerCapReached && { testerCapReached: true }),
       ...(data.is_founding_member && { is_founding_member: true }),
       ...(data.is_founding_member_creator && { is_founding_member_creator: true }),

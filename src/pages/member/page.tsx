@@ -301,6 +301,18 @@ export default function MemberPage() {
           )}
         </div>
 
+        {/* Founding member contribution */}
+        {data?.isFoundingMember && (
+          <div className="border-b border-sage-100 pb-8 mb-8">
+            <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
+              Your contribution
+            </p>
+            <p className="text-sage-700 text-sm">
+              Founding Member #{data.spotNumber}. Every product you scan makes Curae sharper for the next person.
+            </p>
+          </div>
+        )}
+
         {/* Founding spots remaining */}
         <div>
           <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
