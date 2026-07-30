@@ -28,8 +28,8 @@ const TermsPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Terms of Service</h1>
-              <p className="text-gray-600 text-lg">Last Updated: June 12, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: June 12, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: July 30, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: July 30, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -37,7 +37,7 @@ const TermsPage = () => {
               {/* Introduction */}
               <section>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  These Terms of Service ("Terms") govern your access to and use of the Curae mobile application and related services (collectively, the "Service") operated by Curae.App ("Curae," "we," "our," or "us").
+                  These Terms of Service ("Terms") govern your access to and use of the Curae mobile application and related services (collectively, the "Service") operated by Lineup Labs LLC ("Curae," "we," "our," or "us").
                 </p>
                 <p className="text-gray-700 leading-relaxed mb-4">
                   By downloading, installing, or using the Service, you agree to be bound by these Terms. If you do not agree to these Terms, do not use the Service.
@@ -53,7 +53,7 @@ const TermsPage = () => {
               <section>
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">1. Who We Are</h2>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed">
-                  <li><strong>Company:</strong> Curae.App</li>
+                  <li><strong>Company:</strong> Lineup Labs LLC</li>
                   <li><strong>Founder:</strong> Ethan Jones</li>
                   <li><strong>Location:</strong> Chicago, Illinois, United States</li>
                   <li><strong>Contact:</strong> <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a></li>
@@ -182,7 +182,7 @@ const TermsPage = () => {
 
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">5.2 Free Trial</h3>
-                    <p className="leading-relaxed">We may offer a free trial period for the Annual plan. Free trial terms will be disclosed at the time of offer. After the free trial ends, you will be charged the applicable subscription fee unless you cancel before the trial period ends.</p>
+                    <p className="leading-relaxed">We may offer a one-week free trial of Premium, once per user, opt-in only. Free trial terms will be disclosed at the time of offer. After the free trial ends, you will be charged the applicable subscription fee unless you cancel before the trial period ends.</p>
                   </div>
 
                   <div>
@@ -212,7 +212,7 @@ const TermsPage = () => {
 
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">5.6 Free Tier</h3>
-                    <p className="leading-relaxed">Curae offers an unlimited free tier (unlimited scans, basic ingredient analysis, allergen warnings, and standard compatibility). Premium gates advanced/depth features. We reserve the right to modify the features available in the free tier at any time.</p>
+                    <p className="leading-relaxed">Curae offers a free tier (up to 15 scans per month, ingredient analysis, allergen warnings, and routine tools). Compatibility, conflict detection, and unlimited scanning are Premium features. We reserve the right to modify the features available in the free tier at any time.</p>
                   </div>
                 </div>
               </section>
@@ -285,11 +285,11 @@ const TermsPage = () => {
                 <div className="space-y-5 text-gray-700">
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">8.1 Curae's Intellectual Property</h3>
-                    <p className="leading-relaxed">The Service, including its design, code, features, content, branding, and AI models, is owned by Curae.App and protected by intellectual property laws. You may not copy, modify, distribute, or create derivative works based on the Service without our written permission.</p>
+                    <p className="leading-relaxed">The Service, including its design, code, features, content, branding, and AI models, is owned by Lineup Labs LLC and protected by intellectual property laws. You may not copy, modify, distribute, or create derivative works based on the Service without our written permission.</p>
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">8.2 Trademarks</h3>
-                    <p className="leading-relaxed">Curae, Curae.App, and associated logos are trademarks of Curae.App. You may not use our trademarks without prior written permission.</p>
+                    <p className="leading-relaxed">Curae and associated logos are trademarks of Lineup Labs LLC. You may not use our trademarks without prior written permission.</p>
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">8.3 Feedback</h3>
@@ -343,7 +343,7 @@ const TermsPage = () => {
               {/* Section 12 */}
               <section>
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">12. Limitation of Liability</h2>
-                <p className="text-gray-700 leading-relaxed mb-4">To the fullest extent permitted by applicable law, Curae.App, its founder, employees, agents, and affiliates shall not be liable for:</p>
+                <p className="text-gray-700 leading-relaxed mb-4">To the fullest extent permitted by applicable law, Lineup Labs LLC, its founder, employees, agents, and affiliates shall not be liable for:</p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed mb-4">
                   <li>Any indirect, incidental, special, consequential, or punitive damages</li>
                   <li>Loss of profits, data, use, goodwill, or other intangible losses</li>
@@ -363,7 +363,7 @@ const TermsPage = () => {
               {/* Section 13 */}
               <section>
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">13. Indemnification</h2>
-                <p className="text-gray-700 leading-relaxed mb-3">You agree to indemnify, defend, and hold harmless Curae.App, its founder, officers, employees, and agents from and against any claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising from:</p>
+                <p className="text-gray-700 leading-relaxed mb-3">You agree to indemnify, defend, and hold harmless Lineup Labs LLC, its founder, officers, employees, and agents from and against any claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising from:</p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed">
                   <li>Your use of the Service</li>
                   <li>Your violation of these Terms</li>
@@ -445,7 +445,7 @@ const TermsPage = () => {
                     <h3 className="text-xl font-medium text-forest-800 mb-3">16.1 Apple App Store</h3>
                     <p className="leading-relaxed mb-3">If you download the Service from the Apple App Store:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
-                      <li>These Terms are between you and Curae.App only, not Apple</li>
+                      <li>These Terms are between you and Lineup Labs LLC only, not Apple</li>
                       <li>Apple has no obligation to provide maintenance or support for the Service</li>
                       <li>Apple is not responsible for any product liability claims or third-party legal claims relating to the Service</li>
                       <li>Apple and its subsidiaries are third-party beneficiaries of these Terms</li>
@@ -455,7 +455,7 @@ const TermsPage = () => {
                     <h3 className="text-xl font-medium text-forest-800 mb-3">16.2 Google Play Store</h3>
                     <p className="leading-relaxed mb-3">If you download the Service from Google Play:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
-                      <li>These Terms are between you and Curae.App only, not Google</li>
+                      <li>These Terms are between you and Lineup Labs LLC only, not Google</li>
                       <li>Google has no obligation to provide maintenance or support for the Service</li>
                     </ul>
                   </div>
@@ -474,6 +474,12 @@ const TermsPage = () => {
                   <li>For significant changes, we may require your re-acceptance</li>
                 </ul>
                 <p className="text-gray-700 leading-relaxed mt-4">Your continued use of the Service after any changes constitutes your acceptance of the updated Terms. If you do not agree to the updated Terms, you must stop using the Service.</p>
+                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
+                  <p className="font-semibold text-forest-900 mb-2">Changelog</p>
+                  <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>July 30, 2026:</strong> Free tier updated to 15 scans per month; compatibility and conflict detection moved to Premium; added a one-week Premium free trial (once per user, opt-in).</li>
+                  </ul>
+                </div>
               </section>
 
               <hr className="border-gray-200" />
@@ -482,7 +488,7 @@ const TermsPage = () => {
               <section>
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">18. Miscellaneous</h2>
                 <div className="space-y-3 text-gray-700 leading-relaxed">
-                  <p><strong>Entire Agreement:</strong> These Terms, together with our Privacy Policy, constitute the entire agreement between you and Curae.App regarding the Service.</p>
+                  <p><strong>Entire Agreement:</strong> These Terms, together with our Privacy Policy, constitute the entire agreement between you and Lineup Labs LLC regarding the Service.</p>
                   <p><strong>Severability:</strong> If any provision of these Terms is found to be unenforceable, the remaining provisions will remain in full force and effect.</p>
                   <p><strong>Waiver:</strong> Our failure to enforce any provision of these Terms does not constitute a waiver of that provision.</p>
                   <p><strong>Assignment:</strong> You may not assign your rights under these Terms without our written consent. We may assign our rights without restriction.</p>

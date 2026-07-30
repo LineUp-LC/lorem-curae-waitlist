@@ -8,6 +8,18 @@
           "value": "16832a12-9d6d-441c-a884-d039c6c5156c"
         }
       ]
+    },
+    {
+      "source": "/:page(marketplace|nutrition|subscription|my-skin|routines|routines-list|discover)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/:section(marketplace|seller|services|storefront)/:path*",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
     }
   ],
   "functions": {

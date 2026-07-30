@@ -68,7 +68,7 @@ const HomePage = () => {
       "name": "Curae",
       "url": "https://loremcurae.com",
       "logo": "https://loremcurae.com/logo.png",
-      "description": "Camera-powered skincare intelligence. Scan any product, analyze every ingredient, detect conflicts with your routine, and find what's right for your skin.",
+      "description": "Know if a skincare product is right for your skin. Scan any product, verify every ingredient across multiple sources, and catch formula changes automatically as brands reformulate.",
       "sameAs": [
         "https://facebook.com/loremcurae",
         "https://instagram.com/loremcurae",
@@ -76,7 +76,6 @@ const HomePage = () => {
       ],
       "contactPoint": {
         "@type": "ContactPoint",
-        "telephone": "+1-555-123-7546",
         "contactType": "Customer Service",
         "email": "support@loremcurae.com",
         "availableLanguage": "English"

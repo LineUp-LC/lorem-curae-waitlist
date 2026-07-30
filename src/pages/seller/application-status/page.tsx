@@ -238,10 +238,10 @@ export default function SellerApplicationStatusPage() {
                     Have questions about your application? Our support team is here to help.
                   </p>
                   <a
-                    href="mailto:seller-support@nutrire.com"
+                    href="mailto:support@loremcurae.com"
                     className="text-teal-600 hover:text-teal-700 font-medium text-sm"
                   >
-                    seller-support@nutrire.com
+                    support@loremcurae.com
                   </a>
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function SellerApplicationStatusPage() {
                 <div>
                   <h4 className="font-medium text-gray-900 mb-1">Seller FAQ</h4>
                   <p className="text-gray-600 text-sm mb-3">
-                    Find answers to common questions about selling on Nutrire.
+                    Find answers to common questions about selling on Curae.
                   </p>
                   <Link
                     to="/seller/faq"

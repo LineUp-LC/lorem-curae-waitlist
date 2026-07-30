@@ -218,30 +218,6 @@ const ContactPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <i className="ri-phone-line text-gray-600 text-xl"></i>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-forest-900 mb-1">Phone Support</h4>
-                      <p className="text-gray-600">+1 (555) 123-SKIN</p>
-                      <p className="text-sm text-gray-500 mt-1">Mon-Fri 9AM-6PM EST</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <i className="ri-map-pin-line text-gray-600 text-xl"></i>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-forest-900 mb-1">Office Address</h4>
-                      <p className="text-gray-600">
-                        123 Skincare Boulevard<br/>
-                        Beauty District, CA 90210<br/>
-                        United States
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
 

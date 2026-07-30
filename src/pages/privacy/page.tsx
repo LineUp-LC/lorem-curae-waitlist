@@ -27,8 +27,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: June 12, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: June 12, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: July 30, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: July 30, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -36,7 +36,7 @@ const PrivacyPage = () => {
               {/* Introduction */}
               <section>
                 <p className="text-gray-700 leading-relaxed">
-                  Welcome to Curae, a skincare intelligence platform operated by Curae.App ("Curae," "we," "our," or "us"). This Privacy Policy explains how we collect, use, disclose, and protect your personal information when you use our mobile application and related services (collectively, the "Service").
+                  Welcome to Curae, a skincare intelligence platform operated by Lineup Labs LLC ("Curae," "we," "our," or "us"). This Privacy Policy explains how we collect, use, disclose, and protect your personal information when you use our mobile application and related services (collectively, the "Service").
                 </p>
                 <p className="text-gray-700 leading-relaxed mt-4">
                   By using the Service, you agree to the collection and use of information in accordance with this Privacy Policy. If you do not agree, please do not use the Service.
@@ -50,7 +50,7 @@ const PrivacyPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">1. Who We Are</h2>
                 <div className="space-y-2 text-gray-700 leading-relaxed">
                   <ul className="list-disc pl-6 space-y-2">
-                    <li><strong>Company:</strong> Curae.App</li>
+                    <li><strong>Company:</strong> Lineup Labs LLC</li>
                     <li><strong>Founder:</strong> Ethan Jones</li>
                     <li><strong>Location:</strong> Chicago, Illinois, United States</li>
                     <li><strong>Contact:</strong> <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a></li>
@@ -399,6 +399,12 @@ const PrivacyPage = () => {
                   <li>For significant changes, we may require you to re-acknowledge the policy</li>
                 </ul>
                 <p className="text-gray-700 leading-relaxed mt-4">Your continued use of the Service after any changes constitutes your acceptance of the updated policy.</p>
+                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
+                  <p className="font-semibold text-forest-900 mb-2">Changelog</p>
+                  <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>July 30, 2026:</strong> Updated the operating entity name to Lineup Labs LLC. Service tier and free-trial terms were also updated (see our Terms of Service).</li>
+                  </ul>
+                </div>
               </section>
 
               <hr className="border-gray-200" />
