@@ -28,8 +28,8 @@ const TermsPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Terms of Service</h1>
-              <p className="text-gray-600 text-lg">Last Updated: July 30, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: July 30, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: August 2, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: August 2, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -274,6 +274,10 @@ const TermsPage = () => {
                       <li>The content is accurate to the best of your knowledge</li>
                     </ul>
                   </div>
+                  <div>
+                    <h3 className="text-xl font-medium text-forest-800 mb-3">7.4 Aggregated and Anonymized Data</h3>
+                    <p className="leading-relaxed">Nothing in Section 7.2 prevents us from creating aggregated, anonymized insights that are derived from User Content but no longer identify you or constitute your User Content or personal information. We may, in the future and on an opt-in basis, share such aggregated, anonymized insights with third parties such as skincare brands or researchers. This does not change our commitment never to sell your User Content or personal information. See the "Aggregated and Anonymized Insights" section of our Privacy Policy for what this means and how opt-in works.</p>
+                  </div>
                 </div>
               </section>
 
@@ -477,6 +481,7 @@ const TermsPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>August 2, 2026:</strong> Clarified (Section 7.4) that aggregated, anonymized data derived from User Content — which no longer identifies you — may be shared on an opt-in basis, consistent with our Privacy Policy and our commitment never to sell your User Content.</li>
                     <li><strong>July 30, 2026:</strong> Free tier updated to 15 scans per month; compatibility and conflict detection moved to Premium; added a one-week Premium free trial (once per user, opt-in).</li>
                   </ul>
                 </div>

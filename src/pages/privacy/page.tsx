@@ -27,8 +27,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: July 30, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: July 30, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: August 2, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: August 2, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -239,6 +239,16 @@ const PrivacyPage = () => {
                 <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
                   <p className="font-semibold text-green-900">We do not sell your personal information or your skin profile data to any third party. Ever.</p>
                 </div>
+                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mb-6">
+                  <p className="font-semibold text-forest-900 mb-2">Aggregated and Anonymized Insights (Future)</p>
+                  <p className="text-gray-700 leading-relaxed mb-3">In the future, we may create and share aggregated, anonymized insights about skincare trends — for example, which kinds of products people with a particular skin type tend to scan, keep, or stop using — with skincare brands, researchers, or similar partners. This is not the same as selling your personal information, which we never do (as stated in Section 5, "How We Share Your Information"). By "aggregated and anonymized" we mean:</p>
+                  <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed mb-3">
+                    <li><strong>No individual data.</strong> These insights never include your name, email, account, images, or skin profile, and never any information that could identify you.</li>
+                    <li><strong>Combined across many users.</strong> Insights are calculated over large groups, so that neither we nor any recipient can single you out or trace an insight back to you.</li>
+                    <li><strong>Trends, not people.</strong> They describe patterns across a population, never any individual's activity.</li>
+                  </ul>
+                  <p className="text-gray-700 leading-relaxed">This would be <strong>opt-in only.</strong> We are not doing this today, and we will not include your activity in any such insights unless you expressly choose to participate — and you could withdraw that choice at any time. Our commitment never to sell your personal information or skin profile data remains unchanged regardless of any aggregated-insights program.</p>
+                </div>
                 <p className="text-gray-700 leading-relaxed mb-4">We may share information with:</p>
                 <div className="space-y-5 text-gray-700">
                   <div>
@@ -402,6 +412,7 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>August 2, 2026:</strong> Added a forward-looking disclosure that we may, on an opt-in basis, share aggregated, anonymized skincare-trend insights with third parties — never individual data, and never a sale of your personal information.</li>
                     <li><strong>July 30, 2026:</strong> Updated the operating entity name to Lineup Labs LLC. Service tier and free-trial terms were also updated (see our Terms of Service).</li>
                   </ul>
                 </div>
