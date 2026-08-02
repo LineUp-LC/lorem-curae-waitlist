@@ -238,12 +238,31 @@ const WaitlistLandingPage = () => {
           color: #E8A888;
         }
 
+        .lc-hero-brandline {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-style: italic;
+          font-size: clamp(1.125rem, 2vw, 1.5rem);
+          font-weight: 400;
+          line-height: 1.3;
+          margin: 0 0 1.5rem;
+          color: rgba(250, 248, 245, 0.62);
+        }
+
         .lc-subhead {
           font-family: 'DM Sans', sans-serif;
           font-size: clamp(1rem, 1.6vw, 1.125rem);
           color: rgba(250, 248, 245, 0.72);
           margin: 0 0 2.5rem;
           line-height: 1.65;
+        }
+
+        .lc-hero-trust {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.8125rem;
+          font-weight: 500;
+          letter-spacing: 0.04em;
+          color: rgba(250, 248, 245, 0.55);
+          margin: 1.5rem 0 0;
         }
 
         .lc-cta-group {
@@ -737,6 +756,21 @@ const WaitlistLandingPage = () => {
           margin: 0 0 0.5rem;
           color: #1a1a1a;
           letter-spacing: -0.005em;
+        }
+
+        .lc-feature-tag {
+          display: inline-block;
+          margin-left: 0.5rem;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.625rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #C4704D;
+          background: rgba(196, 112, 77, 0.1);
+          padding: 0.2rem 0.5rem;
+          border-radius: 100px;
+          vertical-align: middle;
         }
 
         .lc-feature-text {
@@ -1236,13 +1270,16 @@ const WaitlistLandingPage = () => {
 
           <div className="lc-hero-headline-wrap" style={{ '--i': 1 } as React.CSSProperties}>
             <h1 className="lc-headline">
-              The layer of intelligence between you and every skincare product you'll ever buy.
+              Know if it's right for your skin. Not just what's in it.
             </h1>
+            <p className="lc-hero-brandline">
+              The layer of intelligence between you and every skincare product you'll ever buy.
+            </p>
           </div>
 
           <div className="lc-hero-sub-wrap" style={{ '--i': 2 } as React.CSSProperties}>
             <p className="lc-subhead">
-              Point your camera at any product. Curae breaks down every ingredient, flags your allergens, checks it against your routine, and tells you honestly whether it belongs on your shelf.
+              Scan any skincare product. Curae reads every ingredient against your skin type, concerns and allergens, then keeps re-checking as brands quietly reformulate.
             </p>
           </div>
 
@@ -1250,6 +1287,10 @@ const WaitlistLandingPage = () => {
             <a href="#waitlist" onClick={scrollTo('waitlist')} className="lc-btn-primary">Join the waitlist</a>
             <a href="#how" onClick={scrollTo('how')} className="lc-btn-ghost-dark">See how it works</a>
           </div>
+
+          <p className="lc-hero-trust" style={{ '--i': 4 } as React.CSSProperties}>
+            No face scan. No selfie. No biometric data, ever.
+          </p>
         </div>
       </section>
 
@@ -1410,7 +1451,7 @@ const WaitlistLandingPage = () => {
               <div className="lc-feature-icon">
                 <i className="ri-exchange-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-feature-title">Compatible and similar products</h3>
+              <h3 className="lc-feature-title">Compatible and similar products <span className="lc-feature-tag">Premium</span></h3>
               <p className="lc-feature-text">
                 Scan anything and instantly see what works alongside it in your routine
                 and what alternatives exist at different price points. Matched to your
@@ -1425,7 +1466,7 @@ const WaitlistLandingPage = () => {
               <h3 className="lc-feature-title">Your shelf</h3>
               <p className="lc-feature-text">
                 Every product you scan gets added to your digital shelf, a live view
-                of your full routine. Ask Curae AI about anything on it, build routines
+                of your full routine. Ask Curae about anything on it, build routines
                 from products you actually own, and get automatic check-ins once a
                 product has been in your routine long enough to show results.
               </p>
@@ -1435,13 +1476,13 @@ const WaitlistLandingPage = () => {
               <div className="lc-feature-icon">
                 <i className="ri-sparkling-2-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-feature-title">Curae AI</h3>
+              <h3 className="lc-feature-title">Ask Curae</h3>
               <p className="lc-feature-text">
-                Not a chatbot. A skincare companion that already knows your skin. Curae
-                AI comes in already knowing your skin type, concerns, current routine,
+                Not a chatbot. A skincare companion that already knows your skin. It
+                comes in already knowing your skin type, concerns, current routine,
                 and scan history. Ask it anything: 'I'm going to Miami this weekend, is
-                my SPF enough for that humidity?' or 'My skin has been breaking out since
-                I added this serum, what's the likely culprit?' It pulls from your scan
+                my SPF enough for that humidity?' or 'Does this serum fit with the
+                retinol I already use?' It pulls from your scan
                 results, your profile, real-time environment data, and ingredient
                 research. An answer that's actually about your skin.
               </p>

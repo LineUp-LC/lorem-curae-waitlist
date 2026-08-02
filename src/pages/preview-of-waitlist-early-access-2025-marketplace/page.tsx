@@ -1006,7 +1006,7 @@ const MarketplaceWaitlistPage = () => {
             Whether you're just starting or ready to scale
           </h2>
           <p className="lc-section-description">
-            Curae Marketplace welcomes creators at every stage of their journey, from testing your first formulation to building a recognized brand.
+            Curae Marketplace will welcome creators at every stage of their journey, from testing your first formulation to building a recognized brand.
           </p>
         </div>
         
@@ -1052,12 +1052,12 @@ const MarketplaceWaitlistPage = () => {
       {/* Tools Section */}
       <section className="lc-tools-section">
         <div className="lc-section-intro">
-          <span className="lc-section-label">Your Growth Toolkit</span>
+          <span className="lc-section-label">Your Growth Toolkit — On the Roadmap</span>
           <h2 className="lc-section-title">
             Tools that help you stand out
           </h2>
           <p className="lc-section-description">
-            Everything you need to build visibility, tell your story, and grow a loyal customer base.
+            The tools we're building to help you build visibility, tell your story, and grow a loyal customer base.
           </p>
         </div>
         
@@ -1068,7 +1068,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Premium Placement</h3>
-              <p>Gain enhanced visibility within your compatible audience. Get featured in top search results and curated collections, filtered through skin-compatibility, safety, and creator integrity. Be highlighted for the people your products are genuinely right for</p>
+              <p>You'll gain enhanced visibility within your compatible audience. Get featured in top search results and curated collections, filtered through skin-compatibility, safety, and creator integrity. Be highlighted for the people your products are genuinely right for</p>
             </div>
           </div>
           <div className="lc-tool-card">
@@ -1077,7 +1077,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Custom Storefronts</h3>
-              <p>Design your storefront to match your brand identity and values</p>
+              <p>You'll design a storefront that matches your brand identity and values</p>
             </div>
           </div>
           <div className="lc-tool-card">
@@ -1086,7 +1086,7 @@ const MarketplaceWaitlistPage = () => {
             </div>
             <div className="lc-tool-content">
               <h3>Promotional Tools</h3>
-              <p>Run compatibility-first campaigns that reach only users whose skin profiles match your products, transparent, ethical, and built to grow your brand responsibly</p>
+              <p>You'll run compatibility-first campaigns that reach only users whose skin profiles match your products, transparent, ethical, and built to grow your brand responsibly</p>
             </div>
           </div>
           <div className="lc-tool-card">

@@ -125,7 +125,7 @@ export default function SubscriptionPage() {
               >
                 Yearly
                 <span className="ml-2 px-2 py-1 bg-sage-600 text-white rounded-full text-xs font-bold">
-                  Save 25%
+                  Save ~42%
                 </span>
               </button>
             </div>

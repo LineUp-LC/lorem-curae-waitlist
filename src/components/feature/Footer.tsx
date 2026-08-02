@@ -118,7 +118,7 @@ const Footer = () => {
           <div className="flex flex-col items-center space-y-3">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
               <p className="text-xs text-cream-400 text-center">
-                © 2026 Curae. Know what's in every product.
+                © 2026 Lineup Labs LLC. Know what's in every product.
               </p>
               <div className="flex items-center gap-4">
                 <Link to="/privacy" className="text-xs text-cream-400 hover:text-cream-200 transition-colors cursor-pointer">

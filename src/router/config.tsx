@@ -47,7 +47,6 @@ const RetailerReviewsPage = lazy(() => import('../pages/retailer-reviews/page'))
 const ReviewsProductsPage = lazy(() => import('../pages/reviews-products/page'));
 const BadgesPage = lazy(() => import('../pages/badges/page'));
 const SubscriptionPage = lazy(() => import('../pages/subscription/page'));
-const PremiumPackagesPage = lazy(() => import('../pages/premium-packages/page'));
 const LoginPage = lazy(() => import('../pages/auth/login/page'));
 const SignupPage = lazy(() => import('../pages/auth/signup/page'));
 const AuthCallbackPage = lazy(() => import('../pages/auth/callback/page'));
@@ -171,10 +170,6 @@ const routes: RouteObject[] = [
   {
     path: '/subscription',
     element: <SubscriptionPage />,
-  },
-  {
-    path: '/premium-packages',
-    element: <PremiumPackagesPage />,
   },
   {
     path: '/auth/login',
