@@ -27,8 +27,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: August 2, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: August 2, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: August 16, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: August 15, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -53,7 +53,7 @@ const PrivacyPage = () => {
                     <li><strong>Company:</strong> Lineup Labs LLC</li>
                     <li><strong>Founder:</strong> Ethan Jones</li>
                     <li><strong>Location:</strong> Chicago, Illinois, United States</li>
-                    <li><strong>Contact:</strong> <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a></li>
+                    <li><strong>Contact:</strong> <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a></li>
                     <li><strong>Website:</strong> <a href="https://loremcurae.com" target="_blank" rel="noopener noreferrer" className="text-forest-700 hover:underline">loremcurae.com</a></li>
                   </ul>
                 </div>
@@ -75,6 +75,7 @@ const PrivacyPage = () => {
                       <li>Full name and display name</li>
                       <li>Email address</li>
                       <li>Password (stored as a hashed value — we never store plaintext passwords)</li>
+                      <li>Date of birth (collected once during onboarding to confirm you are 18 or older — see Section 10, "Age Requirement and Age Verification")</li>
                     </ul>
 
                     <p className="font-semibold mb-2">Skin Profile Data (collected during onboarding survey):</p>
@@ -288,6 +289,8 @@ const PrivacyPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">6. Data Retention</h2>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed">
                   <li><strong>Account data:</strong> Retained for as long as your account is active. Deleted within 30 days of account deletion request.</li>
+                  <li><strong>Date of birth:</strong> Retained while your account is active to maintain your age verification, and deleted when you delete your account.</li>
+                  <li><strong>Age-verification records for blocked attempts:</strong> The minimal hashed record described in Section 10 is kept only to enforce the age restriction across reinstalls. It self-expires and is deleted after the person would turn 18.</li>
                   <li><strong>Skin profile data:</strong> Retained as long as your account is active. Deleted upon account deletion.</li>
                   <li><strong>Scan data and product interactions:</strong> Retained for as long as your account is active to power your scan history and recommendations.</li>
                   <li><strong>Analytics data:</strong> Aggregated analytics may be retained indefinitely in anonymized form.</li>
@@ -322,7 +325,7 @@ const PrivacyPage = () => {
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li><strong>Access:</strong> Request a copy of the personal data we hold about you</li>
                       <li><strong>Correction:</strong> Request correction of inaccurate personal data</li>
-                      <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
+                      <li><strong>Deletion:</strong> Request deletion of your account and associated data. See <a href="https://loremcurae.com/delete-account" className="text-forest-700 hover:underline">how to delete your account</a>.</li>
                       <li><strong>Portability:</strong> Request your data in a portable format</li>
                       <li><strong>Opt-out:</strong> Opt out of push notifications at any time in device settings</li>
                     </ul>
@@ -349,7 +352,7 @@ const PrivacyPage = () => {
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="leading-relaxed"><strong>To exercise your rights,</strong> contact us at <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a>. We will respond within 30 days.</p>
+                    <p className="leading-relaxed"><strong>To exercise your rights,</strong> contact us at <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a>. We will respond within 30 days.</p>
                   </div>
                 </div>
               </section>
@@ -358,11 +361,13 @@ const PrivacyPage = () => {
 
               {/* Section 10 */}
               <section>
-                <h2 className="text-2xl font-semibold text-forest-900 mb-4">10. Children's Privacy</h2>
+                <h2 className="text-2xl font-semibold text-forest-900 mb-4">10. Age Requirement and Age Verification</h2>
                 <div className="space-y-4 text-gray-700 leading-relaxed">
-                  <p>The Service is not directed to children under the age of 13 in the United States, or under the applicable age of digital consent in your jurisdiction. We do not knowingly collect personal information from children under 13.</p>
-                  <p>If you are between 13 and 17 years of age, you may use the Service only with the involvement and consent of a parent or legal guardian.</p>
-                  <p>If we become aware that we have collected personal information from a child under 13 without parental consent, we will take steps to delete that information promptly. If you believe we may have inadvertently collected information from a child, please contact us at <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a>.</p>
+                  <p>The Service is intended for adults. <strong>You must be at least 18 years old to create an account or use the Service.</strong></p>
+                  <p>To confirm this, we ask for your date of birth during onboarding. If the date you provide indicates you are under 18, you are blocked from creating an account and cannot use the Service.</p>
+                  <p>To keep that block in place if the app is reinstalled, when an under-18 attempt is blocked we store a <strong>one-way SHA-256 hash of a device identifier — never the raw identifier</strong> — together with the submitted date of birth. This minimal record is created before any account exists, is used only to enforce the age restriction, is never used to build a profile or for advertising, and <strong>self-expires</strong> — we delete it after the person would turn 18.</p>
+                  <p>We do not knowingly collect personal information from anyone under 18 except the minimal information described above, and only to enforce this age restriction. The Service is not directed to children under 13, and we do not knowingly permit their use.</p>
+                  <p>If you believe a person under 18 has provided us personal information beyond what is described here, please contact us at <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a> and we will delete it promptly.</p>
                 </div>
               </section>
 
@@ -412,6 +417,8 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com and added a dedicated account-deletion page describing how to request deletion, what is removed, and what is retained.</li>
+                    <li><strong>August 15, 2026:</strong> Disclosed the 18+ age requirement and the date-of-birth age verification collected during onboarding, including the one-way hashed device identifier retained to enforce the restriction for blocked users. Corrected the age policy from 13+ to 18+ to match the app.</li>
                     <li><strong>August 2, 2026:</strong> Added a forward-looking disclosure that we may, on an opt-in basis, share aggregated, anonymized skincare-trend insights with third parties — never individual data, and never a sale of your personal information.</li>
                     <li><strong>July 30, 2026:</strong> Updated the operating entity name to Lineup Labs LLC. Service tier and free-trial terms were also updated (see our Terms of Service).</li>
                   </ul>
@@ -425,7 +432,7 @@ const PrivacyPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">15. Contact Us</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">If you have questions, concerns, or requests regarding this Privacy Policy, please contact us:</p>
                 <div className="bg-gray-50 p-6 rounded-lg text-gray-700 space-y-2">
-                  <p><strong>Email:</strong> <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a></p>
+                  <p><strong>Email:</strong> <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a></p>
                   <p><strong>Website:</strong> <a href="https://loremcurae.com" target="_blank" rel="noopener noreferrer" className="text-forest-700 hover:underline">loremcurae.com</a></p>
                   <p><strong>Mailing Address:</strong> Curae.App, Chicago, Illinois, United States</p>
                 </div>

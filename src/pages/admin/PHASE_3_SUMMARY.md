@@ -208,7 +208,7 @@ export function NewAdminPage() {
     setError(null);
     try {
       const res = await fetch('/api/admin/endpoint', {
-        headers: { 'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET || '' }
+        headers: { 'Authorization': `Bearer ${adminToken}` }
       });
       const result = await res.json();
       setData(result.data);

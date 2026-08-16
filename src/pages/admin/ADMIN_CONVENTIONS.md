@@ -180,7 +180,7 @@ const fetchData = async () => {
   try {
     const response = await fetch('/api/admin/endpoint', {
       headers: {
-        'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET || '',
+        'Authorization': `Bearer ${adminToken}`,
       },
     });
     if (!response.ok) {
@@ -211,7 +211,7 @@ const handleMutation = async (payload: PayloadType) => {
       method: 'POST', // or PUT, DELETE
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET || '',
+        'Authorization': `Bearer ${adminToken}`,
       },
       body: JSON.stringify(payload),
     });
@@ -231,11 +231,11 @@ const handleMutation = async (payload: PayloadType) => {
 ```
 
 ### API Headers
-Always include the admin secret header:
+Always include the admin auth header (the signed-in admin's Supabase session token, validated server-side by `api/_adminAuth.ts` against `SUPABASE_ADMIN_EMAILS`):
 ```tsx
 headers: {
   'Content-Type': 'application/json',
-  'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET || '',
+  'Authorization': `Bearer ${adminToken}`,
 }
 ```
 
