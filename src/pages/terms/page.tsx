@@ -28,7 +28,7 @@ const TermsPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Terms of Service</h1>
-              <p className="text-gray-600 text-lg">Last Updated: August 2, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: August 16, 2026</p>
               <p className="text-gray-500 text-sm mt-1">Effective Date: August 2, 2026</p>
             </header>
 
@@ -56,7 +56,7 @@ const TermsPage = () => {
                   <li><strong>Company:</strong> Lineup Labs LLC</li>
                   <li><strong>Founder:</strong> Ethan Jones</li>
                   <li><strong>Location:</strong> Chicago, Illinois, United States</li>
-                  <li><strong>Contact:</strong> <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a></li>
+                  <li><strong>Contact:</strong> <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a></li>
                   <li><strong>Website:</strong> <a href="https://loremcurae.com" target="_blank" rel="noopener noreferrer" className="text-forest-700 hover:underline">loremcurae.com</a></li>
                 </ul>
               </section>
@@ -95,7 +95,7 @@ const TermsPage = () => {
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li>Maintaining the confidentiality of your account credentials</li>
                       <li>All activity that occurs under your account</li>
-                      <li>Notifying us immediately of any unauthorized use of your account at <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a></li>
+                      <li>Notifying us immediately of any unauthorized use of your account at <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a></li>
                     </ul>
                     <p className="leading-relaxed mt-3">We are not liable for any loss or damage arising from unauthorized use of your account.</p>
                   </div>
@@ -384,7 +384,7 @@ const TermsPage = () => {
                 <div className="space-y-5 text-gray-700">
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">14.1 By You</h3>
-                    <p className="leading-relaxed">You may stop using the Service at any time. You may delete your account through the app settings or by contacting us at <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a>.</p>
+                    <p className="leading-relaxed">You may stop using the Service at any time. You may delete your account through the app settings or by contacting us at <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a>.</p>
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">14.2 By Curae</h3>
@@ -419,7 +419,7 @@ const TermsPage = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">15.2 Informal Resolution</h3>
-                    <p className="leading-relaxed">Before filing any formal dispute, you agree to contact us at <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a> and attempt to resolve the dispute informally. We will attempt to respond within 30 days.</p>
+                    <p className="leading-relaxed">Before filing any formal dispute, you agree to contact us at <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a> and attempt to resolve the dispute informally. We will attempt to respond within 30 days.</p>
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">15.3 Arbitration</h3>
@@ -481,6 +481,7 @@ const TermsPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com.</li>
                     <li><strong>August 2, 2026:</strong> Clarified (Section 7.4) that aggregated, anonymized data derived from User Content — which no longer identifies you — may be shared on an opt-in basis, consistent with our Privacy Policy and our commitment never to sell your User Content.</li>
                     <li><strong>July 30, 2026:</strong> Free tier updated to 15 scans per month; compatibility and conflict detection moved to Premium; added a one-week Premium free trial (once per user, opt-in).</li>
                   </ul>
@@ -508,7 +509,7 @@ const TermsPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">19. Contact Us</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">If you have questions about these Terms, please contact us:</p>
                 <div className="bg-gray-50 p-6 rounded-lg text-gray-700 space-y-2">
-                  <p><strong>Email:</strong> <a href="mailto:lineupdownbiz@gmail.com" className="text-forest-700 hover:underline">lineupdownbiz@gmail.com</a></p>
+                  <p><strong>Email:</strong> <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a></p>
                   <p><strong>Website:</strong> <a href="https://loremcurae.com" target="_blank" rel="noopener noreferrer" className="text-forest-700 hover:underline">loremcurae.com</a></p>
                   <p><strong>Mailing Address:</strong> Curae.App, Chicago, Illinois, United States</p>
                 </div>
