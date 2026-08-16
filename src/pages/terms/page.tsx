@@ -1,8 +1,7 @@
 
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../../components/feature/Navbar';
-import Footer from '../../components/feature/Footer';
+import LegalShell from '../../components/feature/LegalShell';
 
 const TermsPage = () => {
   useEffect(() => {
@@ -20,10 +19,8 @@ const TermsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <Navbar />
-
-      <main className="pt-24 pb-16">
+    <LegalShell>
+      <main className="pt-8 pb-16">
         <div className="max-w-4xl mx-auto px-6 lg:px-12">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
@@ -519,9 +516,7 @@ const TermsPage = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </LegalShell>
   );
 };
 

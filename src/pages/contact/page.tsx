@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import Navbar from '../../components/feature/Navbar';
-import Footer from '../../components/feature/Footer';
+import LegalShell from '../../components/feature/LegalShell';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -52,10 +51,8 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <Navbar />
-      
-      <main className="pt-24 pb-16">
+    <LegalShell>
+      <main className="pt-8 pb-16">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12">
             <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Contact Us</h1>
@@ -239,23 +236,12 @@ const ContactPage = () => {
                     <p className="text-sm text-gray-600">Our assessments use scientifically-backed algorithms and dermatologist expertise to provide personalized recommendations.</p>
                   </div>
                 </div>
-                
-                <div className="mt-6">
-                  <a 
-                    href="/faq" 
-                    className="text-sage-600 hover:text-sage-700 text-sm font-medium transition-colors cursor-pointer"
-                  >
-                    View all FAQs →
-                  </a>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </LegalShell>
   );
 };
 
