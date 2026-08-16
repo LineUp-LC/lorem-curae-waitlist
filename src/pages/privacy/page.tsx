@@ -72,10 +72,11 @@ const PrivacyPage = () => {
 
                     <p className="font-semibold mb-2">Account Information:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
-                      <li>Full name and display name</li>
+                      <li>Full name</li>
                       <li>Email address</li>
                       <li>Password (stored as a hashed value — we never store plaintext passwords)</li>
                       <li>Date of birth (collected once during onboarding to confirm you are 18 or older — see Section 10, "Age Requirement and Age Verification")</li>
+                      <li>An optional profile photo, if you choose to add one (stored while your account is active and deleted when you delete your account)</li>
                     </ul>
 
                     <p className="font-semibold mb-2">Skin Profile Data (collected during onboarding survey):</p>
@@ -91,7 +92,7 @@ const PrivacyPage = () => {
                       <li>Monthly skincare budget</li>
                       <li>Shopping preferences</li>
                       <li>Primary skin goals and ranked goal priorities</li>
-                      <li>Sex at birth (used to provide hormone-relevant product recommendations)</li>
+                      <li>Sex at birth (used to help personalize your product recommendations)</li>
                     </ul>
                     <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded">
                       <p className="font-semibold text-amber-900">This data is health-adjacent and sensitive. We treat it with the highest level of care and never sell it.</p>
@@ -110,6 +111,7 @@ const PrivacyPage = () => {
                       <li>Custom allergens you manually enter</li>
                       <li>Routines and routine steps you create</li>
                       <li>Goals you set and modify</li>
+                      <li>Product reaction reports you choose to flag (which product, what your skin did, when it started, whether it felt severe, and an optional free-text description). This is health-adjacent and treated with the same care as your skin profile.</li>
                     </ul>
                   </div>
 
@@ -132,7 +134,6 @@ const PrivacyPage = () => {
                       <li>Onboarding step completion and drop-off points</li>
                       <li>Scan frequency and patterns</li>
                       <li>Session duration and navigation patterns</li>
-                      <li>Crash reports and error logs</li>
                     </ul>
 
                     <p className="font-semibold mb-2">Analytics Data:</p>
@@ -256,10 +257,11 @@ const PrivacyPage = () => {
                     <p className="font-semibold mb-2">Service Providers:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li><strong>Supabase</strong> — Database hosting, authentication, and backend infrastructure (servers located in the United States)</li>
+                      <li><strong>Google</strong> — Sign-in with Google, if you choose it. Google provides your name and email to create your account; your use of Google sign-in is subject to Google's privacy policy.</li>
                       <li><strong>Anthropic (Claude API)</strong> — AI-powered ingredient analysis and skincare insights (data processed per Anthropic's privacy policy)</li>
                       <li><strong>PostHog</strong> — Analytics and user behavior tracking</li>
                       <li><strong>Resend</strong> — Transactional email delivery</li>
-                      <li><strong>Serper.dev</strong> — Web search for product, retailer, and ingredient research (we send product names and ingredient queries; we do not send your skin profile)</li>
+                      <li><strong>Serper.dev</strong> — Web search for product, retailer, and ingredient research (we send product and ingredient search queries, which may include general skin-type or concern keywords to refine results; we do not send your name, email, or full skin profile)</li>
                       <li><strong>Expo / Expo Application Services (EAS)</strong> — Mobile app distribution and build services</li>
                     </ul>
                     <p className="leading-relaxed mt-3">All service providers are contractually required to handle your data securely and only for the purposes we specify.</p>
@@ -293,7 +295,7 @@ const PrivacyPage = () => {
                   <li><strong>Age-verification records for blocked attempts:</strong> The minimal hashed record described in Section 10 is kept only to enforce the age restriction across reinstalls. It self-expires and is deleted after the person would turn 18.</li>
                   <li><strong>Skin profile data:</strong> Retained as long as your account is active. Deleted upon account deletion.</li>
                   <li><strong>Scan data and product interactions:</strong> Retained for as long as your account is active to power your scan history and recommendations.</li>
-                  <li><strong>Analytics data:</strong> Aggregated analytics may be retained indefinitely in anonymized form.</li>
+                  <li><strong>Analytics data:</strong> Product-usage analytics (via PostHog) may be retained to understand and improve the Service, including in aggregated, anonymized form. You can request deletion of your individual analytics records by contacting us.</li>
                 </ul>
               </section>
 
@@ -396,7 +398,7 @@ const PrivacyPage = () => {
               <section>
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">13. Camera and Microphone Permissions</h2>
                 <div className="space-y-3 text-gray-700 leading-relaxed">
-                  <p><strong>Camera:</strong> Required for product scanning. We access your camera only when you actively initiate a scan. We do not access your camera in the background or for any purpose other than scanning product labels.</p>
+                  <p><strong>Camera:</strong> Required for product scanning. We access your camera only when you actively initiate a scan or choose to take a profile photo. We do not access your camera in the background.</p>
                   <p><strong>Microphone:</strong> We do not request or use microphone access.</p>
                   <p><strong>Photo Library:</strong> We do not access your photo library unless you explicitly choose to upload an image.</p>
                 </div>
@@ -417,7 +419,7 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
-                    <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com and added a dedicated account-deletion page describing how to request deletion, what is removed, and what is retained.</li>
+                    <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com and added a dedicated account-deletion page describing how to request deletion, what is removed, and what is retained. Corrected our data-collection disclosures to match how the app actually behaves: removed a "crash reports" claim (we do not collect crash reports), disclosed product-reaction reports and an optional profile photo, clarified that product searches may include general skin-type or concern keywords, named Google sign-in, and refined the analytics-retention wording.</li>
                     <li><strong>August 15, 2026:</strong> Disclosed the 18+ age requirement and the date-of-birth age verification collected during onboarding, including the one-way hashed device identifier retained to enforce the restriction for blocked users. Corrected the age policy from 13+ to 18+ to match the app.</li>
                     <li><strong>August 2, 2026:</strong> Added a forward-looking disclosure that we may, on an opt-in basis, share aggregated, anonymized skincare-trend insights with third parties — never individual data, and never a sale of your personal information.</li>
                     <li><strong>July 30, 2026:</strong> Updated the operating entity name to Lineup Labs LLC. Service tier and free-trial terms were also updated (see our Terms of Service).</li>
