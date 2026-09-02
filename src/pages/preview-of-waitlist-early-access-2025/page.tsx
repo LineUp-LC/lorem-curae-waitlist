@@ -1451,7 +1451,7 @@ const WaitlistLandingPage = () => {
               <div className="lc-feature-icon">
                 <i className="ri-exchange-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-feature-title">Compatible and similar products <span className="lc-feature-tag">Premium</span></h3>
+              <h3 className="lc-feature-title">Compatible and similar products</h3>
               <p className="lc-feature-text">
                 Scan anything and instantly see what works alongside it in your routine
                 and what alternatives exist at different price points. Matched to your
