@@ -26,7 +26,7 @@ const TermsPage = () => {
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Terms of Service</h1>
               <p className="text-gray-600 text-lg">Last Updated: September 2, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: August 2, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: September 2, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -178,7 +178,8 @@ const TermsPage = () => {
 
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">5.2 Free Trial</h3>
-                    <p className="leading-relaxed">We may offer a one-week free trial of Premium, once per user, opt-in only. Free trial terms will be disclosed at the time of offer. After the free trial ends, you will be charged the applicable subscription fee unless you cancel before the trial period ends.</p>
+                    <p className="leading-relaxed">New accounts receive a one week trial of Curae Premium. The trial starts automatically when you create your account and is available once per user. During the trial you have access to all Premium features.</p>
+                    <p className="leading-relaxed mt-3">We do not ask for a payment method to start the trial. When the trial ends, your account moves to the free tier automatically. You are not charged when the trial starts, and you are not charged when it ends. You will only ever be charged if you choose to subscribe.</p>
                   </div>
 
                   <div>
@@ -208,7 +209,7 @@ const TermsPage = () => {
 
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">5.6 Free Tier</h3>
-                    <p className="leading-relaxed">Curae offers a free tier (up to 15 scans per month, ingredient analysis, allergen warnings, and routine tools). Compatibility, conflict detection, and unlimited scanning are Premium features. We reserve the right to modify the features available in the free tier at any time.</p>
+                    <p className="leading-relaxed">Curae offers a free tier that includes 5 product scans per month, resetting at the start of each calendar month, along with full ingredient analysis, allergen flags, an unlimited product shelf, one fully working routine, conflict detection showing which of your products clash and what those ingredients could cause, and the compatible and similar products list. Premium adds unlimited scanning, multiple named routines with scheduling, recommended actions for resolving a conflict, and routine analysis. We reserve the right to modify the features available in the free tier, and we will give notice before reducing them.</p>
                   </div>
                 </div>
               </section>
@@ -477,10 +478,10 @@ const TermsPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
-                    <li><strong>September 2, 2026:</strong> Named Lineup Labs LLC as the operating entity in the mailing address and removed an individual founder name, so these Terms identify the company that provides the Service. No subscription, pricing, or trial term changed.</li>
+                    <li><strong>September 2, 2026:</strong> Corrected the free tier to 5 scans per month, moved conflict detection and the compatible products list back to the free tier, and corrected the Premium free trial to reflect that it starts automatically on signup, requires no payment method, and lapses to the free tier without a charge. Also named Lineup Labs LLC as the operating entity in the mailing address and removed an individual founder name, so these Terms identify the company that provides the Service.</li>
                     <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com.</li>
                     <li><strong>August 2, 2026:</strong> Clarified (Section 7.4) that aggregated, anonymized data derived from User Content — which no longer identifies you — may be shared on an opt-in basis, consistent with our Privacy Policy and our commitment never to sell your User Content.</li>
-                    <li><strong>July 30, 2026:</strong> Free tier updated to 15 scans per month; compatibility and conflict detection moved to Premium; added a one-week Premium free trial (once per user, opt-in).</li>
+                    <li><strong>July 30, 2026:</strong> Free tier updated to 15 scans per month; compatibility and conflict detection moved to Premium; added a one-week Premium free trial (once per user, opt-in). Superseded September 2, 2026.</li>
                   </ul>
                 </div>
               </section>
