@@ -24,8 +24,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: August 16, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: August 15, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: September 2, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: September 2, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -47,8 +47,8 @@ const PrivacyPage = () => {
                 <h2 className="text-2xl font-semibold text-forest-900 mb-4">1. Who We Are</h2>
                 <div className="space-y-2 text-gray-700 leading-relaxed">
                   <ul className="list-disc pl-6 space-y-2">
-                    <li><strong>Company:</strong> Lineup Labs LLC</li>
-                    <li><strong>Founder:</strong> Ethan Jones</li>
+                    <li><strong>Company:</strong> Lineup Labs LLC, an Illinois limited liability company</li>
+                    <li><strong>Product:</strong> Curae</li>
                     <li><strong>Location:</strong> Chicago, Illinois, United States</li>
                     <li><strong>Contact:</strong> <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a></li>
                     <li><strong>Website:</strong> <a href="https://loremcurae.com" target="_blank" rel="noopener noreferrer" className="text-forest-700 hover:underline">loremcurae.com</a></li>
@@ -182,7 +182,6 @@ const PrivacyPage = () => {
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li>Customize every scan result, recommendation, and insight to your unique skin profile</li>
                       <li>Apply allergen and sensitivity filters to all product recommendations</li>
-                      <li>Match you with reviews from users with similar skin profiles</li>
                     </ul>
                   </div>
 
@@ -266,7 +265,7 @@ const PrivacyPage = () => {
 
                   <div>
                     <p className="font-semibold mb-2">Affiliate Partners:</p>
-                    <p className="leading-relaxed">When you tap "Where to Buy" links, we may earn affiliate commissions from retailers. We share minimal data necessary to track these referrals (typically a product identifier and click event). We do not share your skin profile with retailers.</p>
+                    <p className="leading-relaxed">When you tap a Where to Buy link, you leave Curae and go to a retailer's own website, where that retailer's privacy policy applies. We may record that the tap happened so we can understand which recommendations are useful, and we may earn a commission if you buy. We do not send your skin profile, your allergens, or any part of your health-adjacent data to any retailer or affiliate network.</p>
                   </div>
 
                   <div>
@@ -300,7 +299,23 @@ const PrivacyPage = () => {
 
               {/* Section 7 */}
               <section>
-                <h2 className="text-2xl font-semibold text-forest-900 mb-4">7. Data Security</h2>
+                <h2 className="text-2xl font-semibold text-forest-900 mb-4">7. What We Do Not Collect</h2>
+                <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed">
+                  <li>We do not scan or analyze photographs of your face, your skin, or any part of your body. Curae's camera reads product labels, plus an optional profile photo if you choose to add one.</li>
+                  <li>We do not collect biometric identifiers of any kind, including face geometry or scans of hand or facial geometry.</li>
+                  <li>We do not collect your precise GPS location.</li>
+                  <li>We do not access your microphone.</li>
+                  <li>We do not access your photo library unless you explicitly choose an image to upload.</li>
+                  <li>We do not buy personal information about you from data brokers.</li>
+                  <li>We do not sell your personal information, and we do not share your skin profile with retailers, brands, or advertisers.</li>
+                </ul>
+              </section>
+
+              <hr className="border-gray-200" />
+
+              {/* Section 8 */}
+              <section>
+                <h2 className="text-2xl font-semibold text-forest-900 mb-4">8. Data Security</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">We implement industry-standard security measures to protect your information:</p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed">
                   <li>All data transmitted between the app and our servers is encrypted using TLS/HTTPS</li>
@@ -416,6 +431,7 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>September 2, 2026:</strong> Removed a claim that we match you with reviews from users with similar skin profiles. There is no review feature and no such data, so the statement was not accurate. Added a "What We Do Not Collect" section covering face and body photography, biometric identifiers, GPS location, the microphone, your photo library, and data brokers. Clarified that tapping a Where to Buy link takes you to the retailer's own site under their privacy policy, and that we never send your skin profile or allergens to a retailer or affiliate network. Named Lineup Labs LLC as the operating entity in the mailing address and removed an individual founder name, since this policy names the entity that controls your data. Renumbered the sections to close a numbering gap.</li>
                     <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com and added a dedicated account-deletion page describing how to request deletion, what is removed, and what is retained. Corrected our data-collection disclosures to match how the app actually behaves: removed a "crash reports" claim (we do not collect crash reports), disclosed product-reaction reports and an optional profile photo, clarified that product searches may include general skin-type or concern keywords, named Google sign-in, and refined the analytics-retention wording.</li>
                     <li><strong>August 15, 2026:</strong> Disclosed the 18+ age requirement and the date-of-birth age verification collected during onboarding, including the one-way hashed device identifier retained to enforce the restriction for blocked users. Corrected the age policy from 13+ to 18+ to match the app.</li>
                     <li><strong>August 2, 2026:</strong> Added a forward-looking disclosure that we may, on an opt-in basis, share aggregated, anonymized skincare-trend insights with third parties — never individual data, and never a sale of your personal information.</li>
@@ -433,7 +449,7 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 p-6 rounded-lg text-gray-700 space-y-2">
                   <p><strong>Email:</strong> <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a></p>
                   <p><strong>Website:</strong> <a href="https://loremcurae.com" target="_blank" rel="noopener noreferrer" className="text-forest-700 hover:underline">loremcurae.com</a></p>
-                  <p><strong>Mailing Address:</strong> Curae.App, Chicago, Illinois, United States</p>
+                  <p><strong>Mailing Address:</strong> Lineup Labs LLC, Chicago, Illinois, United States</p>
                 </div>
                 <p className="text-gray-700 leading-relaxed mt-4">We aim to respond to all privacy-related inquiries within 30 days.</p>
               </section>
