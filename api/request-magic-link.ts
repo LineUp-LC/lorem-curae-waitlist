@@ -78,7 +78,6 @@ function signupHtml(opening: string, accessLine: string): string {
 <p>${opening}</p>
 <p>${SCAN_LINE}</p>
 <p>${accessLine}</p>
-<p>Your founding rate is locked — you'll keep it for as long as you stay subscribed.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Confirm your email</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`;
