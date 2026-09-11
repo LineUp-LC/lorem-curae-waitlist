@@ -24,10 +24,14 @@ import { createClient } from '@supabase/supabase-js';
 // ----------------------------------------------------------------------------
 
 const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
-const REDIRECT_URL = process.env.NEXT_PUBLIC_SITE_URL
-  ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-  : 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 const UNSUBSCRIBE_BASE = 'https://fskvzrobcfokezumadbb.supabase.co/functions/v1/unsubscribe';
+
+// FOLLOW-UP EMAILS DO NOT CARRY A SIGN-IN LINK.
+// auth.admin.generateLink CREATES the auth user when none exists. This mailer fires on
+// wave-open / tester-access / creator-tools, which are PER COHORT and IN BULK, so a single
+// wave opening would have minted an account for every member of it. Access being granted
+// is not consent to an account: the person creates one deliberately, at the app.
+const FOLLOWUP_CTA_URL = 'https://loremcurae.com';
 const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscribe';
 
 // ----------------------------------------------------------------------------
@@ -97,13 +101,13 @@ function accessOpenedHtml(bodyLine: string, ctaLabel = "Sign in and scan"): stri
   return `<p>Hi there,</p>
 <p>${bodyLine}</p>
 <p>${SCAN_LINE}</p>
-<p><strong><a href="{{MAGIC_LINK}}">${ctaLabel}</a></strong></p>
+<p><strong><a href="${FOLLOWUP_CTA_URL}">${ctaLabel}</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`;
 }
 
 // ----------------------------------------------------------------------------
-// FOLLOW-UP EMAIL TEMPLATES (with {{MAGIC_LINK}} placeholder)
+// FOLLOW-UP EMAIL TEMPLATES (CTAs point at FOLLOWUP_CTA_URL; no magic link, see above)
 // ----------------------------------------------------------------------------
 
 export const followupTemplates: Record<string, EmailTemplate> = {
@@ -195,7 +199,7 @@ export const followupTemplates: Record<string, EmailTemplate> = {
     html: `<p>Hi there,</p>
 <p>Your access has been upgraded to creator tester. Dashboard, listings, and early marketplace tools are open.</p>
 <p>${SCAN_LINE}</p>
-<p><strong><a href="{{MAGIC_LINK}}">Open the creator dashboard</a></strong></p>
+<p><strong><a href="${FOLLOWUP_CTA_URL}">Open the creator dashboard</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -204,7 +208,7 @@ ${FOOTER}`,
     html: `<p>Hi there,</p>
 <p>Your access has been upgraded to tester. You can scan products and try features before anyone else.</p>
 <p>${SCAN_LINE}</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in and scan</a></strong></p>
+<p><strong><a href="${FOLLOWUP_CTA_URL}">Sign in and scan</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -212,7 +216,7 @@ ${FOOTER}`,
     subject: "Your Curae access changed",
     html: `<p>Hi there,</p>
 <p>Your Curae access has been upgraded. Sign in to see what's available.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${FOLLOWUP_CTA_URL}">Sign in</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -222,7 +226,7 @@ ${FOOTER}`,
     subject: "Your Curae access changed",
     html: `<p>Hi there,</p>
 <p>Your Curae access level has changed. You can still sign in and use the features available at your current level.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${FOLLOWUP_CTA_URL}">Sign in</a></strong></p>
 <p>If you have questions about this change, reply to this email.</p>
 ${SIGN_OFF}
 ${FOOTER}`,
@@ -322,7 +326,8 @@ export interface SendFollowupEmailResult {
 
 /**
  * Sends a follow-up email based on role and event type.
- * Generates a magic link and replaces the {{MAGIC_LINK}} placeholder.
+ * Sends the email. Generates NO magic link and creates NO auth account (see
+ * FOLLOWUP_CTA_URL above); only the unsubscribe token is looked up.
  *
  * @throws Error if template is missing or email fails to send
  */
@@ -358,23 +363,6 @@ export async function sendFollowupEmail(
     },
   });
 
-  // Generate magic link
-  const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-    type: 'magiclink',
-    email: email.trim().toLowerCase(),
-    options: {
-      redirectTo: REDIRECT_URL,
-    },
-  });
-
-  if (linkError || !linkData?.properties?.action_link) {
-    throw new Error(
-      `[followupTemplates] Failed to generate magic link for ${email}: ${linkError?.message || 'No action_link returned'}`
-    );
-  }
-
-  const magicLink = linkData.properties.action_link;
-
   // Fetch unsubscribe token for this user. Falls back to mailto if missing.
   const { data: waitlistRow, error: tokenErr } = await supabase
     .from('waitlist')
@@ -397,7 +385,6 @@ export async function sendFollowupEmail(
 
   // Replace placeholders
   const htmlWithSubstitutions = template.html
-    .replace(/\{\{MAGIC_LINK\}\}/g, magicLink)
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrl);
 
   // Send email via Resend
