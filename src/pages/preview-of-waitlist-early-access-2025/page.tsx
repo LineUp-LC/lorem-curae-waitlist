@@ -1603,10 +1603,9 @@ const WaitlistLandingPage = () => {
         <div className="lc-container">
           <div className="lc-founding-head">
             <span className="lc-section-label">Early access</span>
-            <h2 className="lc-section-title">Lock your rate before launch. Keep it forever.</h2>
+            <h2 className="lc-section-title">Founding member pricing.</h2>
             <p className="lc-section-lead" style={{ maxWidth: '620px', margin: '0 auto' }}>
-              Waitlist members get the founding rate locked to their account
-              for life. Public pricing goes up after launch. Yours never does.
+              Waitlist members join at the founding rate while spots remain.
             </p>
           </div>
 
@@ -1632,7 +1631,6 @@ const WaitlistLandingPage = () => {
                 <span className="lc-price-num">4.99</span>
                 <span className="lc-price-period">/ month</span>
               </div>
-              <div className="lc-price-note">Your price. Locked forever.</div>
             </div>
             <div className="lc-price-card lc-price-card-accent">
               <div className="lc-price-label">Founding rate, annual</div>
@@ -1660,9 +1658,9 @@ const WaitlistLandingPage = () => {
               <div className="lc-perk-icon">
                 <i className="ri-price-tag-3-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-perk-title">Founding rate for life</h3>
+              <h3 className="lc-perk-title">Founding rate</h3>
               <p className="lc-perk-text">
-                Your subscription price never increases. Public pricing changes don't touch your account.
+                The founding rate for waitlist members, while spots remain.
               </p>
             </article>
             <article className="lc-perk">
@@ -1712,7 +1710,7 @@ const WaitlistLandingPage = () => {
         <div className="lc-cta-card">
           <h2 className="lc-cta-title">Join before launch.</h2>
           <p className="lc-cta-sub">
-            One email. Your founding rate locked the moment you sign up, if spots remain.
+            One email. Founding rate while spots remain.
           </p>
 
           <div className="lc-form-wrapper">
