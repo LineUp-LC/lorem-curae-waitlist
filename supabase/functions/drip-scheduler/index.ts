@@ -26,7 +26,6 @@ const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscrib
 type DripEventType =
   | 'welcome'
   | 'scan_walkthrough'
-  | 'founding_rate_urgency'
   | 'scan_deep_dive'
   | 're_engagement';
 
@@ -34,7 +33,6 @@ type DripEventType =
 // welcome is handled by the signup flow, not the scheduler.
 const DAY_OFFSET_TO_EVENT: Record<number, DripEventType> = {
   3: 'scan_walkthrough',
-  7: 'founding_rate_urgency',
   14: 'scan_deep_dive',
   30: 're_engagement',
 };
@@ -70,16 +68,6 @@ ${FOOTER}`,
 <p><strong>2. Scores every ingredient against your skin profile.</strong> Each one is marked safe, caution, or avoid — with the specific reason. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
 <p><strong>3. Surfaces where to buy.</strong> Retailer options appear immediately, each with a trust score so you know who's legit.</p>
 <p>No guessing at INCI lists. No copying names into Google.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
-${SIGN_OFF}
-${FOOTER}`,
-  },
-  founding_rate_urgency: {
-    subject: 'Your founding rate is still locked',
-    html: `<p>Hi there,</p>
-<p>Your spot on the Curae waitlist is still held, and your founding rate is still locked.</p>
-<p>Founding members keep the founding rate for as long as they stay subscribed — it doesn't renew at the standard price later.</p>
-<p>{{SLOTS_REMAINING}} founding spots remain.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
