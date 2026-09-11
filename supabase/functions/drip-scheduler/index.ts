@@ -23,6 +23,13 @@ const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 const UNSUBSCRIBE_BASE = 'https://fskvzrobcfokezumadbb.supabase.co/functions/v1/unsubscribe';
 const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscribe';
 
+// DRIP EMAILS DO NOT CARRY A SIGN-IN LINK.
+// auth.admin.generateLink CREATES the auth user when none exists, so generating one per
+// recipient minted real accounts as a side effect of sending marketing email. A drip
+// points at the public site. Only the waitlist app's type='login' path, where an account
+// IS the intent, still generates a link.
+const DRIP_CTA_URL = 'https://loremcurae.com';
+
 type DripEventType =
   | 'welcome'
   | 'scan_walkthrough'
@@ -56,7 +63,7 @@ const dripTemplates: Record<DripEventType, DripTemplate> = {
 <p>Curae starts with a scan.</p>
 <p>Point your camera at any product. We identify it, then score every ingredient against your skin profile, verified across multiple sources. You get back a safety rating, an ingredient-by-ingredient breakdown, and where to buy. Conflict detection and the compatible products list are included free. Premium adds the recommended action for resolving a conflict.</p>
 <p>That's it. No questionnaires, no advisor chats — scan, read, decide.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Scan your first product when we launch</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -68,7 +75,7 @@ ${FOOTER}`,
 <p><strong>2. Scores every ingredient against your skin profile.</strong> Each one is marked safe, caution, or avoid — with the specific reason. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
 <p><strong>3. Surfaces where to buy.</strong> Retailer options appear immediately, each with a trust score so you know who's legit.</p>
 <p>No guessing at INCI lists. No copying names into Google.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -81,7 +88,7 @@ ${FOOTER}`,
 <p><strong>Ask Curae, trained on your skin profile and routine.</strong> Ask it whether a new product fits alongside what you already use. It answers in context — not generic advice.</p>
 <p><strong>Your Shelf.</strong> Every product you scan is saved. Check compatibility across your whole routine in one view.</p>
 <p>Each one is something the scan opens up. No scan, no context — that's why the scan is the whole point.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -90,7 +97,7 @@ ${FOOTER}`,
     html: `<p>Hi there,</p>
 <p>Your Curae spot is still held. You signed up to scan products and see which ingredients actually work for your skin — that's still what we're building.</p>
 <p>If you'd like to stay on the list, no action needed. If you'd rather let your spot go, the unsubscribe link below does it in one click.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -103,18 +110,6 @@ ${FOOTER}`,
 interface SupabaseAdminClient {
   // deno-lint-ignore no-explicit-any
   from: (t: string) => any;
-  auth: {
-    admin: {
-      generateLink: (opts: {
-        type: 'magiclink';
-        email: string;
-        options?: { redirectTo?: string };
-      }) => Promise<{
-        data: { properties?: { action_link?: string } } | null;
-        error: { message?: string } | null;
-      }>;
-    };
-  };
 }
 
 interface SignupRow {
@@ -149,20 +144,6 @@ async function fetchCohort(
   return (data as SignupRow[]) ?? [];
 }
 
-async function generateMagicLink(
-  supabase: SupabaseAdminClient,
-  email: string,
-): Promise<string> {
-  const { data, error } = await supabase.auth.admin.generateLink({
-    type: 'magiclink',
-    email: email.trim().toLowerCase(),
-    options: { redirectTo: REDIRECT_URL },
-  });
-  if (error || !data?.properties?.action_link) {
-    throw new Error(`generateLink failed: ${error?.message || 'no action_link'}`);
-  }
-  return data.properties.action_link;
-}
 
 async function fetchSlotsRemaining(
   supabase: SupabaseAdminClient,
@@ -186,7 +167,6 @@ async function fetchSlotsRemaining(
 async function sendDripEmail(
   to: string,
   dripEvent: DripEventType,
-  magicLink: string,
   slotsRemaining: string,
   unsubscribeUrl: string,
   resendApiKey: string,
@@ -195,7 +175,6 @@ async function sendDripEmail(
   if (!template) throw new Error(`Unknown drip event: ${dripEvent}`);
 
   const html = template.html
-    .replace(/\{\{MAGIC_LINK\}\}/g, magicLink)
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrl)
     .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining);
 
@@ -326,9 +305,8 @@ serve(async (_req: Request) => {
         // Attempt send.
         let sendError: string | null = null;
         try {
-          const magicLink = await generateMagicLink(supabase, user.email);
           const unsubscribeUrl = `${UNSUBSCRIBE_BASE}?token=${user.unsubscribe_token}`;
-          await sendDripEmail(user.email, dripEvent, magicLink, slotsRemaining, unsubscribeUrl, resendApiKey);
+          await sendDripEmail(user.email, dripEvent, slotsRemaining, unsubscribeUrl, resendApiKey);
         } catch (err) {
           sendError = (err as Error).message;
         }
