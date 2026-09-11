@@ -12,6 +12,14 @@ const DEFAULT_REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callb
 const UNSUBSCRIBE_BASE = 'https://fskvzrobcfokezumadbb.supabase.co/functions/v1/unsubscribe';
 const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscribe';
 
+// SIGNUP EMAILS DO NOT CARRY A SIGN-IN LINK, AND THAT IS THE POINT.
+// auth.admin.generateLink CREATES the auth user when none exists, so calling it to
+// send a waitlist email minted a real account as a side effect: 18 of them, for people
+// who only typed an email into a marketing form. A signup email therefore points at the
+// public site and nothing else. Only type='login', where an account IS the intent,
+// still generates a link. Do not reintroduce {{MAGIC_LINK}} into a signup template.
+const SIGNUP_CTA_URL = 'https://loremcurae.com';
+
 function buildUnsubscribeUrl(token?: string | null): string {
   if (token) return `${UNSUBSCRIBE_BASE}?token=${token}`;
   return UNSUBSCRIBE_URL_FALLBACK;
@@ -73,12 +81,16 @@ ${SIGN_OFF}
 ${FOOTER}`;
 }
 
+// NO SIGN-IN CTA HERE, DELIBERATELY. This used to read "Confirm your email" over a
+// {{MAGIC_LINK}}, which is an account-shaped action on an email where no account should
+// exist - and generating that link is what minted one. There is nothing to confirm: the
+// waitlist row is already written by /api/signup before this email is sent.
 function signupHtml(opening: string, accessLine: string): string {
   return `<p>Hi there,</p>
 <p>${opening}</p>
 <p>${SCAN_LINE}</p>
 <p>${accessLine}</p>
-<p><strong><a href="{{MAGIC_LINK}}">Confirm your email</a></strong></p>
+<p><strong><a href="${SIGNUP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`;
 }
@@ -445,8 +457,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // -------------------------------------------------------------------------
-    // STEP: Generate magic link
+    // STEP: Resolve the email CTA
+    //
+    // LOGIN generates a real magic link (an account is the intent). SIGNUP does
+    // NOT - generateLink would create the auth user as a side effect. See
+    // SIGNUP_CTA_URL above.
     // -------------------------------------------------------------------------
+    let finalMagicLink = SIGNUP_CTA_URL;
+
+    if (type === 'login') {
     console.log(`[request-magic-link] Generating magic link...`);
 
     // Only allow redirectTo values that originate from this app (same Origin as
@@ -489,8 +508,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // the project's Site URL as redirect_to. Rewrite it to the correct value.
     const rewrittenUrl = new URL(magicLink);
     rewrittenUrl.searchParams.set('redirect_to', resolvedRedirectTo);
-    const finalMagicLink = rewrittenUrl.toString();
+    finalMagicLink = rewrittenUrl.toString();
     console.log(`[request-magic-link] finalMagicLink redirect_to: ${resolvedRedirectTo}`);
+    } else {
+      console.log(`[request-magic-link] signup: no magic link, no auth account minted`);
+    }
 
     // -------------------------------------------------------------------------
     // STEP: Select email template
