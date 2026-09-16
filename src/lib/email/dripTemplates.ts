@@ -8,17 +8,18 @@
 // Placeholders substituted by the sender at send time:
 //   {{MAGIC_LINK}}        — per-user magic link
 //   {{UNSUBSCRIBE_URL}}   — per-user unsubscribe URL
-//   {{SLOTS_REMAINING}}   — founding-rate slots left (founding_rate_urgency only);
-//                            wired in drip-scheduler via the founding_member_slots
-//                            view (column: slots_remaining). Falls back to
-//                            "A limited number of" if the view query fails.
+//   {{SLOTS_REMAINING}}   - founding-rate slots left, from the founding_member_slots
+//                           view (column: slots_remaining), falling back to "A limited
+//                           number of" when that query fails. NO TEMPLATE USES IT TODAY:
+//                           the day-7 founding_rate_urgency email was removed because its
+//                           whole body was a price promise nothing honours. The scheduler
+//                           still fetches the count, so a future template can use it.
 //
 // ============================================================================
 
 export type DripEventType =
   | 'welcome'              // after first login or waitlist confirmation
   | 'scan_walkthrough'     // day 3, no login
-  | 'founding_rate_urgency'// day 7, unconverted
   | 'scan_deep_dive'       // day 14
   | 're_engagement';       // day 30, inactive
 
@@ -64,17 +65,6 @@ ${FOOTER}`,
 <p><strong>2. Scores every ingredient against your skin profile.</strong> Each one is marked safe, caution, or avoid — with the specific reason. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
 <p><strong>3. Surfaces where to buy.</strong> Retailer options appear immediately, each with a trust score so you know who's legit.</p>
 <p>No guessing at INCI lists. No copying names into Google.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
-${SIGN_OFF}
-${FOOTER}`,
-  },
-
-  founding_rate_urgency: {
-    subject: "Your founding rate is still locked",
-    html: `<p>Hi there,</p>
-<p>Your spot on the Curae waitlist is still held, and your founding rate is still locked.</p>
-<p>Founding members keep the founding rate for as long as they stay subscribed — it doesn't renew at the standard price later.</p>
-<p>{{SLOTS_REMAINING}} founding spots remain.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
