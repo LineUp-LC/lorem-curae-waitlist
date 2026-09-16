@@ -138,7 +138,7 @@ const TermsPage = () => {
 
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">4.3 Ingredient Analysis Accuracy</h3>
-                    <p className="leading-relaxed mb-3">Curae uses AI technology and established cosmetic ingredient databases (including EU Cosmetics Regulation safety tiers) to analyze ingredients. While we strive for accuracy:</p>
+                    <p className="leading-relaxed mb-3">Curae uses AI technology to analyze ingredients against Curae's own safety-tier rules, which are informed by EU Cosmetics Regulation Annex II and III, dermatological consensus, and other public ingredient-safety references. While we strive for accuracy:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li>Ingredient lists on product labels may be incomplete, illegible, or outdated</li>
                       <li>AI analysis may contain errors or omissions</li>

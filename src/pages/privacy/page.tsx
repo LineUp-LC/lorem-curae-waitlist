@@ -76,6 +76,11 @@ const PrivacyPage = () => {
                       <li>An optional profile photo, if you choose to add one (stored while your account is active and deleted when you delete your account)</li>
                     </ul>
 
+                    <p className="font-semibold mb-2">Founding Member Program (Optional):</p>
+                    <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
+                      <li>If you opt in to receive personal texts from our founder as a founding member, we collect the phone number you provide for that purpose. It is used only to send you those texts and is never sold or shared with third parties.</li>
+                    </ul>
+
                     <p className="font-semibold mb-2">Skin Profile Data (collected during onboarding survey):</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
                       <li>Skin type (e.g., dry, oily, combination, normal, sensitive)</li>
