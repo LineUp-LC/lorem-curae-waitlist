@@ -61,8 +61,8 @@ const dripTemplates: Record<DripEventType, DripTemplate> = {
     subject: "Here's how Curae works",
     html: `<p>Hi there,</p>
 <p>Curae starts with a scan.</p>
-<p>Point your camera at any product. We identify it, then score every ingredient against your skin profile, verified across multiple sources. You get back a safety rating, an ingredient-by-ingredient breakdown, and where to buy. Conflict detection and the compatible products list are included free. Premium adds the recommended action for resolving a conflict.</p>
-<p>That's it. No questionnaires, no advisor chats — scan, read, decide.</p>
+<p>Point your camera at any product. We identify it, then read the ingredient list and check every ingredient against your skin profile. You get back an ingredient-by-ingredient breakdown, what we know about each one, and where to buy. Conflict detection and the compatible products list are included free. Premium adds the recommended action for resolving a conflict.</p>
+<p>You set up your skin profile once, when you join. After that it is scan, read, decide.</p>
 <p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
@@ -70,10 +70,10 @@ ${FOOTER}`,
   scan_walkthrough: {
     subject: 'What happens when you scan a product',
     html: `<p>Hi there,</p>
-<p>A scan takes about three seconds. Here's what it does:</p>
-<p><strong>1. Identifies the product.</strong> Camera reads the label or barcode. You don't type anything.</p>
-<p><strong>2. Scores every ingredient against your skin profile.</strong> Each one is marked safe, caution, or avoid — with the specific reason. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
-<p><strong>3. Surfaces where to buy.</strong> Retailer options appear immediately, each with a trust score so you know who's legit.</p>
+<p>Here's what a scan does:</p>
+<p><strong>1. Identifies the product.</strong> Point the camera at the label or the barcode. If the label is hard to read, we ask you to confirm the name rather than guess it.</p>
+<p><strong>2. Checks every ingredient against your skin profile.</strong> Each one is marked safe, caution or avoid, with the reason. Where we do not have research behind an ingredient yet, we say so instead of guessing. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
+<p><strong>3. Surfaces where to buy.</strong> Retailer options, so you can see who stocks it and at what price.</p>
 <p>No guessing at INCI lists. No copying names into Google.</p>
 <p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
@@ -82,11 +82,11 @@ ${FOOTER}`,
   scan_deep_dive: {
     subject: 'What a scan actually unlocks',
     html: `<p>Hi there,</p>
-<p>A scan isn't just a safety rating. Here's what it opens up:</p>
+<p>A scan isn't just a verdict on one product. Here's what it opens up:</p>
 <p><strong>Compatible products.</strong> Once we know what's in your current product, we can surface alternatives that actually fit — same function, ingredients your skin tolerates.</p>
-<p><strong>Where to buy, with retailer trust scores.</strong> You see who stocks it, at what price, and whether they're a legit source for that brand. No counterfeit roulette.</p>
-<p><strong>Ask Curae, trained on your skin profile and routine.</strong> Ask it whether a new product fits alongside what you already use. It answers in context — not generic advice.</p>
-<p><strong>Your Shelf.</strong> Every product you scan is saved. Check compatibility across your whole routine in one view.</p>
+<p><strong>Where to buy.</strong> You see who stocks it and at what price, in one place instead of five tabs.</p>
+<p><strong>Ask Curae, which knows your skin profile and your shelf.</strong> Ask it whether a new product fits alongside what you already use. It answers in context, not generic advice.</p>
+<p><strong>Your Shelf.</strong> Add any product you scan to your shelf, then check compatibility across your whole routine in one view.</p>
 <p>Each one is something the scan opens up. No scan, no context — that's why the scan is the whole point.</p>
 <p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
