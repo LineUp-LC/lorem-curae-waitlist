@@ -24,8 +24,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: September 2, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: September 2, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: September 18, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: September 18, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -76,9 +76,11 @@ const PrivacyPage = () => {
                       <li>An optional profile photo, if you choose to add one (stored while your account is active and deleted when you delete your account)</li>
                     </ul>
 
-                    <p className="font-semibold mb-2">Founding Member Program (Optional):</p>
+                    <p className="font-semibold mb-2">Waitlist and Text Updates (optional):</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
-                      <li>If you opt in to receive personal texts from our founder as a founding member, we collect the phone number you provide for that purpose. It is used only to send you those texts and is never sold or shared with third parties.</li>
+                      <li>Your email address, when you join the waitlist on loremcurae.com</li>
+                      <li><strong>Your phone number, only if you choose to give it.</strong> Founding members are offered the option to receive occasional text updates directly from the founder. Giving a number is entirely optional, you can decline the offer, and you can ask us to remove it at any time by emailing ethanjones@loremcurae.com.</li>
+                      <li>We use your phone number only to send you those updates. <strong>We do not use it for advertising, we do not share it with advertisers or data brokers, and we never sell it.</strong></li>
                     </ul>
 
                     <p className="font-semibold mb-2">Skin Profile Data (collected during onboarding survey):</p>
@@ -152,13 +154,32 @@ const PrivacyPage = () => {
                     <h3 className="text-xl font-medium text-forest-800 mb-3">2.3 Camera and Image Data</h3>
                     <p className="leading-relaxed mb-3">Curae requires camera access to scan skincare product labels. When you scan a product:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
-                      <li>Your camera captures an image of the product label</li>
-                      <li>The image is processed to extract ingredient information</li>
-                      <li>Images are transmitted securely to our servers for processing</li>
-                      <li><strong>We do not store raw product scan images on our servers after processing is complete</strong></li>
+                      <li>Your camera captures an image of the product label. Some scans capture two images: the front of the product and the ingredient list.</li>
+                      <li><strong>The image or images are sent to Anthropic (Claude API), our AI processing provider, to read the ingredient list.</strong> Your skin profile is sent with them so the reading is specific to your skin rather than generic. Section 2.4 lists everything that is sent.</li>
+                      <li><strong>We do not store raw product scan images on our own servers after processing is complete.</strong> Anthropic's handling of what we send is covered in Section 5 and Section 6.</li>
                       <li>An account is required to use scan features</li>
                       <li>Camera access is only activated when you initiate a scan — we never access your camera in the background</li>
                     </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-medium text-forest-800 mb-3">2.4 What We Send to Our AI Provider</h3>
+                    <p className="leading-relaxed mb-3">A scan involves <strong>two separate sends</strong> to Anthropic (Claude API), and it is worth being exact about both.</p>
+                    <p className="leading-relaxed mb-3"><strong>First, to read the label.</strong> The photograph or photographs, plus your skin type, skin concerns, allergens and ingredient sensitivities, skin tone, and product preferences.</p>
+                    <p className="leading-relaxed mb-3"><strong>Second, to write your personalized reading.</strong> This one happens <strong>automatically</strong>, without you tapping anything, whenever a scan produces a readable ingredient list. It also happens when you ask Curae a question about a product, check a product against your routine, or open an ingredient for detail. It sends a fuller version of your profile:</p>
+                    <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-3">
+                      <li>Skin type, skin concerns, and sensitivity level</li>
+                      <li>Allergens you flagged, and separately, other ingredients you asked us to avoid</li>
+                      <li>Where you gave more detail about a concern: your acne type, uneven tone type, sensitivity type, aging concerns, and scarring type</li>
+                      <li>Biological sex, if you answered that question</li>
+                      <li>Skin tone, product preferences, your main skin goal, and how experienced you are with skincare</li>
+                      <li>Lifestyle factors you selected, such as sleep, stress, diet, or water intake</li>
+                      <li>Your local climate, season, and UV level, <strong>only if</strong> you turned on climate-aware results</li>
+                    </ul>
+                    <p className="leading-relaxed mb-3">It also sends what the reading is about: the scanned product and its scores, the <strong>names of the products on your shelf</strong>, and any conflicts we found between them. If you use Ask Curae, the ingredient lists of your shelf products are sent too, so it can answer questions about them.</p>
+                    <p className="leading-relaxed mb-3"><strong>We do not send your name, email address, date of birth, or account identifier in either send.</strong> Anthropic receives a skin profile, not an identified person.</p>
+                    <p className="leading-relaxed mb-3"><strong>What you can turn off.</strong> Product preferences and climate-aware results each have a switch in the app, and turning either off removes that data from what we send. The rest is what the reading is built from. If you would rather it were not sent, the scan features are the part to avoid using.</p>
+                    <p className="leading-relaxed">Anthropic processes this on our behalf under its commercial terms. How long it holds it is covered in Section 6.</p>
                   </div>
                 </div>
               </section>
@@ -259,7 +280,7 @@ const PrivacyPage = () => {
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li><strong>Supabase</strong> — Database hosting, authentication, and backend infrastructure (servers located in the United States)</li>
                       <li><strong>Google</strong> — Sign-in with Google, if you choose it. Google provides your name and email to create your account; your use of Google sign-in is subject to Google's privacy policy.</li>
-                      <li><strong>Anthropic (Claude API)</strong> — AI-powered ingredient analysis and skincare insights (data processed per Anthropic's privacy policy)</li>
+                      <li><strong>Anthropic (Claude API)</strong> — AI-powered ingredient analysis and skincare insights. We send product scan images, your skin profile, and details of the products on your shelf; we do not send your name, email address, date of birth, or account identifier. <strong>Section 2.4 lists exactly what is sent</strong>, and Section 6 covers how long it is held.</li>
                       <li><strong>PostHog</strong> — Analytics and user behavior tracking</li>
                       <li><strong>Resend</strong> — Transactional email delivery</li>
                       <li><strong>Serper.dev</strong> — Web search for product, retailer, and ingredient research (we send product and ingredient search queries, which may include general skin-type or concern keywords to refine results; we do not send your name, email, or full skin profile)</li>
@@ -297,6 +318,8 @@ const PrivacyPage = () => {
                   <li><strong>Skin profile data:</strong> Retained as long as your account is active. Deleted upon account deletion.</li>
                   <li><strong>Scan data and product interactions:</strong> Retained for as long as your account is active to power your scan history and recommendations.</li>
                   <li><strong>Analytics data:</strong> Product-usage analytics (via PostHog) may be retained to understand and improve the Service, including in aggregated, anonymized form. You can request deletion of your individual analytics records by contacting us.</li>
+                  <li><strong>Waitlist email and phone number:</strong> Retained while you remain on the waitlist. Removed when you ask us to remove you, or when the waitlist closes and you have not become an account holder. A phone number given for text updates is deleted when you ask us to stop texting you.</li>
+                  <li><strong>Data sent to AI processing providers:</strong> Scan images <strong>and the profile and product details sent with them</strong> are held by Anthropic only for as long as its commercial terms require, for processing and abuse monitoring. <strong>Deleting your Curae account removes the data we hold. It does not retroactively delete copies a processing provider may still hold inside its own retention window.</strong></li>
                 </ul>
               </section>
 
@@ -436,6 +459,7 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>September 18, 2026:</strong> Clarified that product scan images are sent to Anthropic (Claude API) for analysis, and that your skin profile is sent with them. Added Section 2.4, which lists in full what each of the two sends contains, including the automatic personalized reading, the additional profile detail it carries, and the shelf product information sent with it. Added a retention line for data held by AI processing providers, including that deleting your account does not retroactively delete copies a provider still holds inside its own retention window. Disclosed the optional phone number collected for founding-member text updates, which had not previously been described, and added its retention terms.</li>
                     <li><strong>September 2, 2026:</strong> Removed a claim that we match you with reviews from users with similar skin profiles. There is no review feature and no such data, so the statement was not accurate. Added a "What We Do Not Collect" section covering face and body photography, biometric identifiers, GPS location, the microphone, your photo library, and data brokers. Clarified that tapping a Where to Buy link takes you to the retailer's own site under their privacy policy, and that we never send your skin profile or allergens to a retailer or affiliate network. Named Lineup Labs LLC as the operating entity in the mailing address and removed an individual founder name, since this policy names the entity that controls your data. Renumbered the sections to close a numbering gap.</li>
                     <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com and added a dedicated account-deletion page describing how to request deletion, what is removed, and what is retained. Corrected our data-collection disclosures to match how the app actually behaves: removed a "crash reports" claim (we do not collect crash reports), disclosed product-reaction reports and an optional profile photo, clarified that product searches may include general skin-type or concern keywords, named Google sign-in, and refined the analytics-retention wording.</li>
                     <li><strong>August 15, 2026:</strong> Disclosed the 18+ age requirement and the date-of-birth age verification collected during onboarding, including the one-way hashed device identifier retained to enforce the restriction for blocked users. Corrected the age policy from 13+ to 18+ to match the app.</li>
