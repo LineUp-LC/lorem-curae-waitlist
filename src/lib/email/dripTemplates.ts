@@ -5,8 +5,20 @@
 // Copy for the time-based drip campaign. Scheduler not wired yet — templates
 // live here so the scheduler (separate task) can import them unchanged.
 //
+// DRIP EMAILS DO NOT CARRY A SIGN-IN LINK, and that is load-bearing.
+// auth.admin.generateLink CREATES the auth user when none exists, so generating
+// one per recipient minted real accounts as a side effect of sending marketing
+// email. Drips point at the public site instead. Only the waitlist app's
+// type='login' path, where an account IS the intent, still generates a link.
+//
+// This file DIVERGED from the deployed scheduler and was corrected 2026-09-18.
+// The scheduler dropped {{MAGIC_LINK}} for the reason above; this copy kept it,
+// so anything importing these templates would have sent either a literal
+// "{{MAGIC_LINK}}" or re-introduced the account-minting bug. The two are now
+// identical. Both are still hand-kept in sync -- see the header of
+// supabase/functions/drip-scheduler/index.ts.
+//
 // Placeholders substituted by the sender at send time:
-//   {{MAGIC_LINK}}        — per-user magic link
 //   {{UNSUBSCRIBE_URL}}   — per-user unsubscribe URL
 //   {{SLOTS_REMAINING}}   - founding-rate slots left, from the founding_member_slots
 //                           view (column: slots_remaining), falling back to "A limited
@@ -36,6 +48,10 @@ const FOOTER = `<p style="color:#888;font-size:12px;margin-top:32px;">Curae · <
 
 const SIGN_OFF = `<p>— Ethan Jones<br/>Founder, Curae</p>`;
 
+// Every drip CTA points here. Must stay identical to DRIP_CTA_URL in
+// supabase/functions/drip-scheduler/index.ts.
+const DRIP_CTA_URL = 'https://loremcurae.com';
+
 // ----------------------------------------------------------------------------
 // TEMPLATES
 // ----------------------------------------------------------------------------
@@ -52,7 +68,7 @@ export const dripTemplates: Record<DripEventType, DripTemplate> = {
 <p>Curae starts with a scan.</p>
 <p>Point your camera at any product. We identify it, then score every ingredient against your skin profile, verified across multiple sources. You get back a safety rating, an ingredient-by-ingredient breakdown, and where to buy. Conflict detection and the compatible products list are included free. Premium adds the recommended action for resolving a conflict.</p>
 <p>That's it. No questionnaires, no advisor chats — scan, read, decide.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Scan your first product when we launch</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -65,7 +81,7 @@ ${FOOTER}`,
 <p><strong>2. Scores every ingredient against your skin profile.</strong> Each one is marked safe, caution, or avoid — with the specific reason. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
 <p><strong>3. Surfaces where to buy.</strong> Retailer options appear immediately, each with a trust score so you know who's legit.</p>
 <p>No guessing at INCI lists. No copying names into Google.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -79,7 +95,7 @@ ${FOOTER}`,
 <p><strong>Ask Curae, trained on your skin profile and routine.</strong> Ask it whether a new product fits alongside what you already use. It answers in context — not generic advice.</p>
 <p><strong>Your Shelf.</strong> Every product you scan is saved. Check compatibility across your whole routine in one view.</p>
 <p>Each one is something the scan opens up. No scan, no context — that's why the scan is the whole point.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -89,7 +105,7 @@ ${FOOTER}`,
     html: `<p>Hi there,</p>
 <p>Your Curae spot is still held. You signed up to scan products and see which ingredients actually work for your skin — that's still what we're building.</p>
 <p>If you'd like to stay on the list, no action needed. If you'd rather let your spot go, the unsubscribe link below does it in one click.</p>
-<p><strong><a href="{{MAGIC_LINK}}">Sign in</a></strong></p>
+<p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },

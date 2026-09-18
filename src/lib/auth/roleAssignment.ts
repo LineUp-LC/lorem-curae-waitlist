@@ -79,6 +79,18 @@ export function determineUserRole(waitlist: WaitlistRecord): UserRole {
   }
 
   // Priority 2: Tester segmentation
+  //
+  // KNOWN DEFECT, LOGGED 2026-09-18, DELIBERATELY NOT FIXED HERE.
+  // This reads wants_tester_access, which is the PERSON's request. So asking to
+  // test currently grants the tester role. Asking and being chosen are
+  // different facts, and they disagree in both directions: 5 of 21 signups have
+  // asked, and none of them has been selected.
+  //
+  // public.waitlist.is_tester (migration 20260918_add_waitlist_is_tester.sql)
+  // is the admin decision and is the correct input here. Switching this line to
+  // read it changes who gets which role, and therefore which follow-up email
+  // grant-access sends -- that is a behaviour change with its own blast radius,
+  // not a rider on the admin page that introduced the column. Its own change.
   if (waitlist.wants_tester_access) {
     return waitlist.is_creator ? "tester_creator" : "tester_consumer";
   }
