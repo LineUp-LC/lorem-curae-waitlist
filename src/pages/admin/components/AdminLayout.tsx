@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext, type FormEvent } from 'react';
 import { Outlet } from 'react-router-dom';
+import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../../../lib/supabase';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
@@ -145,10 +146,29 @@ function AdminLoginForm() {
 // Admin Layout Component
 // ============================================================================
 
-type AuthStatus = 'loading' | 'unauthenticated' | 'authenticated';
+// A SESSION IS NOT ADMIN ACCESS, and the shell used to treat them as the same
+// thing. /api/request-magic-link only checks that the address is on the
+// WAITLIST, so any waitlist member with an account could sign in and render
+// the whole console. Nothing leaked, because every data call goes through
+// validateAdminRequest and 401s, but drawing the console for them is wrong.
+//
+// Admin membership lives in SUPABASE_ADMIN_EMAILS, which is server-side only
+// and deliberately unreadable from the browser, so the shell has to ask.
+//
+// 'forbidden' and 'error' are separate on purpose. A check that could not RUN
+// is not a "no": it must not silently pass, and it must not show a login form
+// to someone who is already signed in.
+type AuthStatus =
+  | 'loading'
+  | 'unauthenticated'
+  | 'authorized'
+  | 'forbidden'
+  | 'error';
 
 export function AdminLayout() {
   const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
+  const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
+  const [recheck, setRecheck] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -159,20 +179,53 @@ export function AdminLayout() {
     return false;
   });
 
-  // Session check on mount + react to magic link sign-ins
+  // Session check on mount + react to magic link sign-ins, then ask the server
+  // whether that session is an ADMIN session.
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthStatus(session ? 'authenticated' : 'unauthenticated');
-    });
+    let cancelled = false;
+
+    const resolve = async (session: Session | null) => {
+      if (!session) {
+        if (!cancelled) {
+          setSignedInEmail(null);
+          setAuthStatus('unauthenticated');
+        }
+        return;
+      }
+
+      if (!cancelled) {
+        setSignedInEmail(session.user.email ?? null);
+        setAuthStatus('loading');
+      }
+
+      try {
+        const res = await fetch('/api/admin?action=whoami', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (cancelled) return;
+        if (res.ok) setAuthStatus('authorized');
+        else if (res.status === 401) setAuthStatus('forbidden');
+        else setAuthStatus('error');
+      } catch {
+        if (!cancelled) setAuthStatus('error');
+      }
+    };
+
+    void supabase.auth.getSession().then(({ data: { session } }) => resolve(session));
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthStatus(session ? 'authenticated' : 'unauthenticated');
+      // Not awaited, and it touches no Supabase client method of its own, so
+      // the auth lock is never held across this work.
+      void resolve(session);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [recheck]);
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -199,6 +252,72 @@ export function AdminLayout() {
   // Unauthenticated — show magic link login form
   if (authStatus === 'unauthenticated') {
     return <AdminLoginForm />;
+  }
+
+  // Signed in, but not an admin. Deliberately not the login form: they are
+  // already signed in, and offering the form again would read as a failed
+  // sign-in rather than the refusal it is.
+  if (authStatus === 'forbidden') {
+    return (
+      <div className="min-h-screen bg-sage-50/50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white rounded-xl border border-sage-100 p-8 text-center">
+          <h1 className="text-xl font-semibold text-sage-800 mb-2">
+            Not an admin account
+          </h1>
+          <p className="text-sm text-sage-500 mb-6">
+            {signedInEmail ? (
+              <>
+                You are signed in as{' '}
+                <span className="font-medium text-sage-700">{signedInEmail}</span>, which
+                does not have admin access.
+              </>
+            ) : (
+              'This account does not have admin access.'
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={() => void supabase.auth.signOut()}
+            className="px-4 py-2 text-sm font-medium text-sage-700 bg-sage-100 rounded-lg hover:bg-sage-200 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // The check could not run. Not a refusal, and not a pass.
+  if (authStatus === 'error') {
+    return (
+      <div className="min-h-screen bg-sage-50/50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white rounded-xl border border-sage-100 p-8 text-center">
+          <h1 className="text-xl font-semibold text-sage-800 mb-2">
+            Could not check admin access
+          </h1>
+          <p className="text-sm text-sage-500 mb-6">
+            You are signed in, but we could not reach the server to confirm
+            whether this account is an admin. This is not a refusal.
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setRecheck((n) => n + 1)}
+              className="px-4 py-2 text-sm font-medium text-white bg-forest-600 rounded-lg hover:bg-forest-700 transition-colors"
+            >
+              Try again
+            </button>
+            <button
+              type="button"
+              onClick={() => void supabase.auth.signOut()}
+              className="px-4 py-2 text-sm font-medium text-sage-700 bg-sage-100 rounded-lg hover:bg-sage-200 transition-colors"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Authenticated — render existing layout unchanged

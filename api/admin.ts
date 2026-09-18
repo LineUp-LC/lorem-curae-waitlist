@@ -14,6 +14,7 @@ import type { DripEventType } from '../src/lib/email/dripTemplates.js';
 // Use ?action=<actionName> or { action: "<actionName>" } in body.
 //
 // Available actions:
+//   - whoami (GET) - is this session an admin? Used by the admin shell gate
 //   - healthCheck (GET)
 //   - getStats (GET)
 //   - getUser (GET) - requires ?email=
@@ -902,6 +903,20 @@ async function handleResendDripEmail(supabase: SupabaseClient, req: VercelReques
   return res.status(200).json({ sent: true, log_updated: true, drip: updated });
 }
 
+// Answers one question: is the caller's session an admin?
+//
+// It does no work of its own. validateAdminRequest has already decided by the
+// time this runs, so REACHING this handler at all is the answer, and a
+// non-admin gets the same 401 every other action gives.
+//
+// It exists because SUPABASE_ADMIN_EMAILS is server-side only and the browser
+// cannot read it, so the admin shell has no way to know whether a session is
+// an admin session without asking. healthCheck was the alternative and counts
+// a table to answer a question about identity.
+function handleWhoami(res: VercelResponse) {
+  return res.status(200).json({ admin: true });
+}
+
 function getStubResponse(action: string): Record<string, unknown> {
   const stubs: Record<string, Record<string, unknown>> = {
     'admin-activity': { events: [] },
@@ -945,6 +960,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'getStats':
         if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
         return handleGetStats(supabase, res);
+
+      case 'whoami':
+        if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+        return handleWhoami(res);
 
       case 'getUser':
         if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
