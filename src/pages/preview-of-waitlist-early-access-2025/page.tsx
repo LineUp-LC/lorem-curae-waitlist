@@ -1318,7 +1318,7 @@ const WaitlistLandingPage = () => {
             <span className="lc-section-label">How it works</span>
             <h2 className="lc-section-title">Scan. Analyze. Know.</h2>
             <p className="lc-section-lead">
-              Three steps, under ten seconds, no manual product lookup.
+              Three steps, one photo, no manual product lookup.
             </p>
           </div>
 
@@ -1399,9 +1399,9 @@ const WaitlistLandingPage = () => {
                   <span className="lc-tier-verdict">Watch how your skin responds.</span>
                 </div>
                 <p className="lc-tier-text">
-                  Known sensitizers, AHAs/BHAs, retinol, sulfates, comedogenics. Usable
-                  for many, but patch test first and introduce slowly if your skin is
-                  reactive.
+                  Known sensitizers, AHAs/BHAs, retinol, sulfates, formaldehyde
+                  releasers permitted under EU Annex V. Usable for many, but patch
+                  test first and introduce slowly if your skin is reactive.
                 </p>
               </div>
             </div>
@@ -1411,11 +1411,12 @@ const WaitlistLandingPage = () => {
               <div className="lc-tier-body">
                 <div className="lc-tier-heading">
                   <span className="lc-tier-label avoid">Avoid</span>
-                  <span className="lc-tier-verdict">Don't put this on your skin.</span>
+                  <span className="lc-tier-verdict">Worth avoiding on your skin.</span>
                 </div>
                 <p className="lc-tier-text">
-                  EU-banned substances, formaldehyde releasers, MI/MCI, heavy metals.
-                  These don't clear the bar for safe topical use.
+                  Substances banned under EU Annex II, free formaldehyde,
+                  quaternium-15, and MI/MCI. Each one traces to a named entry in the
+                  regulation, not to our opinion.
                 </p>
               </div>
             </div>
@@ -1518,10 +1519,12 @@ const WaitlistLandingPage = () => {
               <div className="lc-feature-icon">
                 <i className="ri-user-heart-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-feature-title">Skin-profile-aware ratings</h3>
+              <h3 className="lc-feature-title">Flagged for your skin, not for everyone</h3>
               <p className="lc-feature-text">
-                Same ingredient, different verdict depending on your skin. Not a
-                universal score. Yours.
+                An ingredient rates the same for everyone, because chemistry does not
+                change per person. What changes is which ones get flagged for you:
+                your allergens, your concerns, and what does not suit your skin type.
+                Two people scanning the same bottle see different things called out.
               </p>
             </article>
 
@@ -1531,9 +1534,10 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Deterministic safety rules</h3>
               <p className="lc-feature-text">
-                No opaque AI verdicts. Every call traces back to a specific rule: EU
-                Annex II, formaldehyde releasers, MI/MCI, heavy metals, documented
-                sensitizers. Auditable.
+                Where a rule exists, it names a source: an entry in the EU Cosmetics
+                Regulation, a CIR safety review, or an FDA rule. A verdict can be
+                checked rather than trusted. Ingredients we have not
+                researched yet are labelled as such, not guessed at.
               </p>
             </article>
 

@@ -18,7 +18,7 @@ const ContactPage = () => {
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Get in touch with Curae. Contact our customer support team for questions about skincare, products, orders, or technical assistance.');
+      metaDescription.setAttribute('content', 'Get in touch with Curae. Questions about your account, your skin profile, a scan result, or technical assistance.');
     }
     
     const metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -222,18 +222,23 @@ const ContactPage = () => {
                 <h3 className="text-xl font-semibold text-forest-900 mb-6">Frequently Asked Questions</h3>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-forest-900 mb-2">How do I track my order?</h4>
-                    <p className="text-sm text-gray-600">You can track your order status in your account dashboard or through the tracking link sent to your email.</p>
+                    <h4 className="font-medium text-forest-900 mb-2">Does Curae sell skincare products?</h4>
+                    <p className="text-sm text-gray-600">No. Curae does not sell or ship anything. We read the ingredient list on a product you already have, or one you are standing in front of, and tell you how it lines up with your skin profile. Where to Buy links take you to a retailer's own site.</p>
                   </div>
-                  
+
                   <div>
-                    <h4 className="font-medium text-forest-900 mb-2">Can I modify my skincare routine?</h4>
-                    <p className="text-sm text-gray-600">Yes! Visit your My Skin page to update your routine, preferences, and skin goals at any time.</p>
+                    <h4 className="font-medium text-forest-900 mb-2">Can I change my skin profile after onboarding?</h4>
+                    <p className="text-sm text-gray-600">Yes. Open Curae, go to Profile, and edit your skin type, concerns, allergens, sensitivities and goals at any time. Changes apply to your next scan.</p>
                   </div>
-                  
+
                   <div>
-                    <h4 className="font-medium text-forest-900 mb-2">How accurate are the skin assessments?</h4>
-                    <p className="text-sm text-gray-600">Our assessments use scientifically-backed algorithms and dermatologist expertise to provide personalized recommendations.</p>
+                    <h4 className="font-medium text-forest-900 mb-2">Does Curae analyze my face or skin?</h4>
+                    <p className="text-sm text-gray-600">No. Curae never scans your face and never asks for a selfie. The camera is used only to read a product label. What Curae knows about your skin is what you told it during onboarding.</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-forest-900 mb-2">How accurate is the ingredient analysis?</h4>
+                    <p className="text-sm text-gray-600">Curae reads the printed ingredient list and checks it against published regulatory sources, including the EU Cosmetics Regulation annexes, and against the profile you gave us. It can misread a label, and an ingredient list tells us what is in a product but not how much. Curae is not medical advice and is not a substitute for a qualified healthcare professional.</p>
                   </div>
                 </div>
               </div>

@@ -37,8 +37,8 @@ export const competitors = [
     isUs: true,
     bullets: [
       "Camera scan identifies any product in seconds.",
-      "Every verdict is scored against your specific skin profile.",
-      "Deterministic rules: EU Annex II, formaldehyde releasers, MI/MCI, heavy metals.",
+      "Flags what matters for your profile: your allergens, concerns and skin type.",
+      "Ingredient rules name a source: an EU annex entry, a CIR review, or an FDA rule.",
       "Unknown products auto-catalog for the next person who scans them.",
     ],
   },
