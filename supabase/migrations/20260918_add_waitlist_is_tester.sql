@@ -39,8 +39,14 @@
 ALTER TABLE public.waitlist
   ADD COLUMN IF NOT EXISTS is_tester BOOLEAN NOT NULL DEFAULT false;
 
+-- Text below is the text that ACTUALLY RAN against production on 2026-09-18,
+-- read back from pg_attribute/col_description and copied here verbatim. The
+-- file originally carried a differently-worded version of the same statement,
+-- so a replay would have produced a different comment from the live one. Rule
+-- 27: the migration that ran and the migration on disk must be the same
+-- statements.
 COMMENT ON COLUMN public.waitlist.is_tester IS
-  'Admin-assigned: this person has been selected as a tester. Distinct from wants_tester_access, which is the person''s own request and must never be overwritten to record this decision.';
+  'Admin decision that this person IS a tester. Distinct from wants_tester_access, which is the user''s own request. Never overwrite the request with the decision.';
 
 -- VERIFY (expect is_tester present, boolean, NOT NULL, default false):
 --   select column_name, data_type, is_nullable, column_default
