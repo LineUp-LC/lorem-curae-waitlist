@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StatCard } from '../components/StatCard';
 import { getAdminToken } from '@/lib/adminAuth';
+import { MAX_FOUNDING_MEMBERS, MAX_FOUNDING_MEMBER_CREATORS } from '@/lib/foundingMembers';
 
 // Types for API response
 interface DayCount {
@@ -108,14 +109,14 @@ export default function WaitlistAnalyticsPage() {
     },
     {
       title: 'Founding Members',
-      value: analytics ? `${formatNumber(analytics.founding_member_count)} / 1,000` : '—',
-      description: 'General founding pool (cap 1,000)',
+      value: analytics ? `${formatNumber(analytics.founding_member_count)} / ${formatNumber(MAX_FOUNDING_MEMBERS)}` : '—',
+      description: `General founding pool (cap ${formatNumber(MAX_FOUNDING_MEMBERS)})`,
       isLoading: loading,
     },
     {
       title: 'Founding Creators',
-      value: analytics ? `${formatNumber(analytics.founding_member_creator_count)} / 20` : '—',
-      description: 'Creator founding pool (cap 20)',
+      value: analytics ? `${formatNumber(analytics.founding_member_creator_count)} / ${formatNumber(MAX_FOUNDING_MEMBER_CREATORS)}` : '—',
+      description: `Creator founding pool (cap ${formatNumber(MAX_FOUNDING_MEMBER_CREATORS)})`,
       isLoading: loading,
     },
     {

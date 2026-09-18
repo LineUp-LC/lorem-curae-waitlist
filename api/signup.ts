@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { MAX_FOUNDING_MEMBERS, MAX_FOUNDING_MEMBER_CREATORS } from '../src/lib/foundingMembers.js';
 
 // ----------------------------------------------------------------------------
 // API HANDLER - Waitlist Signup
@@ -59,8 +60,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     // STEP: Check founding member caps (separate pools)
     // -------------------------------------------------------------------------
-    const MAX_FOUNDING_MEMBERS = 1000;          // General founding members
-    const MAX_FOUNDING_MEMBER_CREATORS = 25;   // Founding member creators (separate pool)
+    // MAX_FOUNDING_MEMBERS is imported -- see src/lib/foundingMembers.ts for why it is
+    // not declared here any more. It is a SYNC PAIR with the founding_member_slots view.
     const MAX_TESTER_CREATORS = 10;
     const MAX_TESTER_CONSUMERS = 20;
 
@@ -70,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let foundingCreatorCapReached = false;
 
     if (isCreator) {
-      // Creator signup: check founding member creator pool (cap 20)
+      // Creator signup: check the founding member creator pool
       const { count, error: countError } = await supabase
         .from('waitlist')
         .select('*', { count: 'exact', head: true })
@@ -83,7 +84,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       foundingCreatorCapReached = (count ?? 0) >= MAX_FOUNDING_MEMBER_CREATORS;
     } else {
-      // Non-creator signup: check general founding member pool (cap 50)
+      // Non-creator signup: check the general founding member pool
       const { count, error: countError } = await supabase
         .from('waitlist')
         .select('*', { count: 'exact', head: true })
@@ -195,6 +196,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // -------------------------------------------------------------------------
     // STEP: Text opt-in offer for first 100 signups
+    // THE 100 BELOW IS THE TEXT POOL, NOT THE FOUNDING CAP. They are unrelated and
+    // coincidentally equal since 2026-09-18, when the founding cap moved 1000 -> 100.
+    // This one is text_opt_in_config.slots_remaining: a mutable counter, decremented on
+    // accept, that cascades to the next person when someone declines. The founding cap is
+    // MAX_FOUNDING_MEMBERS (src/lib/foundingMembers.ts) and the founding_member_slots view.
+    // Do not merge them, and do not replace either number with the other constant.
     // -------------------------------------------------------------------------
     // Fire-and-forget: do not block or fail the signup response if this errors.
     // NOTE: Sent immediately — a proper 24h delay queue is deferred (no
@@ -210,6 +217,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
           const position = (priorCount ?? 0) + 1;
 
+          // NOT the founding cap. This gates the TEXT offer, whose real bound is
+          // text_opt_in_config.slots_remaining (100). The offer is deliberately
+          // allowed to cascade past position 100 when someone declines, so this
+          // outer filter stays at 1000 on purpose. Do not "align" it with
+          // MAX_FOUNDING_MEMBERS -- they are different pools.
           if (position <= 1000) {
             const { data: config } = await supabase
               .from('text_opt_in_config')

@@ -200,6 +200,12 @@ const templates: Record<string, EmailTemplate> = {
   text_opt_in_offer: {
     subject: "A personal note from Ethan — you're in the first 100",
     html: `<p>Hi there,</p>
+// THE 100 BELOW IS THE TEXT POOL, NOT THE FOUNDING CAP. They are unrelated and
+// coincidentally equal since 2026-09-18, when the founding cap moved 1000 -> 100.
+// This one is text_opt_in_config.slots_remaining: a mutable counter, decremented on
+// accept, that cascades to the next person when someone declines. The founding cap is
+// MAX_FOUNDING_MEMBERS (src/lib/foundingMembers.ts) and the founding_member_slots view.
+// Do not merge them, and do not replace either number with the other constant.
 <p>You're one of our first 100 founding members on Curae.</p>
 <p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="{{CLAIM_URL}}">Claim your spot</a></strong></p>

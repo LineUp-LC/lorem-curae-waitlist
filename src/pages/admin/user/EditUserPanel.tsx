@@ -1,5 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { getAdminToken } from '@/lib/adminAuth';
+import { MAX_FOUNDING_MEMBERS, MAX_FOUNDING_MEMBER_CREATORS } from '@/lib/foundingMembers';
 
 interface UserData {
   email: string;
@@ -255,7 +256,7 @@ export function EditUserPanel({ user, onUserUpdated }: EditUserPanelProps) {
               </label>
             </div>
             <p className="text-xs text-sage-500 ml-7">
-              Founding members receive priority access and special benefits (general pool, cap 1,000)
+              Founding members receive priority access and special benefits (general pool, cap {MAX_FOUNDING_MEMBERS})
             </p>
           </div>
 
@@ -275,7 +276,7 @@ export function EditUserPanel({ user, onUserUpdated }: EditUserPanelProps) {
               </label>
             </div>
             <p className="text-xs text-sage-500 ml-7">
-              Creator founding members receive priority creator access and exclusive creator benefits (separate pool, cap 20)
+              Creator founding members receive priority creator access and exclusive creator benefits (separate pool, cap {MAX_FOUNDING_MEMBER_CREATORS})
             </p>
           </div>
         </div>

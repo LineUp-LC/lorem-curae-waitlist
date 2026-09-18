@@ -31,8 +31,9 @@ import type { UserRole, FollowupEventType } from '../src/lib/email/followupTempl
 // ============================================================================
 
 // Constants
-const MAX_FOUNDING_MEMBERS = 50;
-const MAX_FOUNDING_MEMBER_CREATORS = 20;
+// The founding caps used to be declared here too, at 50 and 20, and were never read --
+// declared, unused, and disagreeing with the values api/signup.ts actually enforces.
+// Removed 2026-09-18. The live cap is MAX_FOUNDING_MEMBERS in src/lib/foundingMembers.ts.
 const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
 const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 

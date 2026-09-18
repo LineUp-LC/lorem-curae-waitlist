@@ -191,6 +191,9 @@ export default function MemberPage() {
               Personal texts from Ethan
             </p>
             <p className="text-sage-800 text-sm mb-4">
+              {/* The 100 here is the TEXT pool (text_opt_in_config.slots_remaining), not the
+                  founding cap. They are coincidentally equal since 2026-09-18. The founding
+                  number on this page is `data.slotsRemaining`, from founding_member_slots. */}
               You're one of our first 100 founding members. Drop your number and I'll text you directly.
             </p>
             <div className="space-y-2">
