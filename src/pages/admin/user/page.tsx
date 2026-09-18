@@ -12,6 +12,7 @@ interface WaitlistUser {
   wave_number: number | null;
   status: string;
   is_founding_member: boolean;
+  is_founding_member_creator: boolean;
   created_at: string;
 }
 

@@ -35,11 +35,11 @@
   "name": "react",
   "private": true,
   "scripts": {
-    "build": "vite build",
+    "build": "npm run type-check && vite build",
     "dev": "vite",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit --project tsconfig.app.json"
+    "type-check": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p api/tsconfig.json"
   },
   "type": "module",
   "version": "0.0.0"
