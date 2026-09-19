@@ -32,7 +32,6 @@ import type { DripEventType } from '../src/lib/email/dripTemplates.js';
 //   - anonymizeUser (POST)
 //   - regenerateToken (POST)
 //   - resendDripEmail (POST) - repairs ONE failed drip_send_log row
-//   - resendAllFailedDrips (POST) - repairs EVERY repairable failed row; dry-run by default
 //
 // ============================================================================
 
@@ -94,6 +93,38 @@ function createSupabaseClient(url: string, key: string): SupabaseClient {
 // Helper: Validate email format
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ============================================================================
+// STATUS-CHANGE NOTIFICATIONS
+// ============================================================================
+//
+// AN EMAIL FAILURE NEVER FAILS THE ACTION THAT CAUSED IT. Promoting forty people
+// into a wave is a database change that succeeded; one bounced address does not
+// undo it, and reporting the whole promotion as failed would invite an admin to run
+// it again. Every outcome is caught and RETURNED instead, so the caller can see
+// exactly who was told and who was not.
+//
+// Deliverability is not decided here. sendFollowupEmail owns the unsubscribe guard
+// and the once-per-instance dedupe, so this reports "skipped" rather than deciding
+// it -- one place where that judgement lives.
+
+interface NotifyOutcome { email: string; event: string; status: 'sent' | 'skipped' | 'failed'; reason?: string }
+
+async function notifyStatusChange(
+  row: WaitlistRow,
+  eventType: FollowupEventType,
+  vars?: Record<string, string | number>,
+): Promise<NotifyOutcome> {
+  try {
+    const r = await sendFollowupEmail(row.email, determineUserRole(row), eventType, vars);
+    if (r.skipped) return { email: row.email, event: eventType, status: 'skipped', reason: r.skippedReason };
+    return { email: row.email, event: eventType, status: 'sent' };
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    console.error(JSON.stringify({ level: 'error', event: 'status_change_email_failed', eventType, reason }));
+    return { email: row.email, event: eventType, status: 'failed', reason };
+  }
 }
 
 // ============================================================================
@@ -208,6 +239,16 @@ async function handleUpdateUser(supabase: SupabaseClient, req: VercelRequest, re
     });
   }
 
+  // READ BEFORE WRITING. A status-change email is a statement about a TRANSITION,
+  // so it cannot be derived from the new row alone: "you have moved from Wave 1 to
+  // Wave 3" needs the 1, and re-saving a form with an unchanged wave must send
+  // nothing at all.
+  const { data: prior } = await supabase
+    .from('waitlist')
+    .select('id, email, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access, is_tester')
+    .eq('email', trimmedEmail)
+    .maybeSingle();
+
   const { data, error } = await supabase
     .from('waitlist')
     .update(updates)
@@ -218,7 +259,36 @@ async function handleUpdateUser(supabase: SupabaseClient, req: VercelRequest, re
   if (error) return res.status(500).json({ error: 'Failed to update user' });
   if (!data) return res.status(404).json({ error: 'User not found' });
 
-  return res.status(200).json({ updated: true, user: data });
+  // Notify on what actually changed. Without a prior row there is no transition to
+  // describe, so nothing is sent -- silence is the honest answer to "we do not know
+  // what this was before".
+  const emails: NotifyOutcome[] = [];
+  if (prior) {
+    const before = prior as unknown as WaitlistRow & { is_tester: boolean };
+    const after = data as unknown as WaitlistRow & { is_tester: boolean };
+
+    // Selected as a tester. One direction only: un-selecting someone is not news we
+    // have copy for, and "you are no longer a tester" is a decision, not a rider.
+    if (!before.is_tester && after.is_tester) {
+      emails.push(await notifyStatusChange(after, 'tester_selected'));
+    }
+
+    if (before.wave_number !== after.wave_number && after.wave_number != null) {
+      if (before.wave_number == null) {
+        emails.push(await notifyStatusChange(after, 'wave_assigned', { WAVE: after.wave_number }));
+      } else {
+        // Sent on BACKWARD moves too. Going quiet on bad news is worse, and
+        // role_downgraded_generic already sets that precedent. The template is
+        // neutral precisely so it reads correctly either way.
+        emails.push(await notifyStatusChange(after, 'wave_changed', {
+          PREVIOUS_WAVE: before.wave_number,
+          WAVE: after.wave_number,
+        }));
+      }
+    }
+  }
+
+  return res.status(200).json({ updated: true, user: data, emails });
 }
 
 async function handleDeleteUser(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
@@ -247,14 +317,25 @@ async function handleOpenWave(supabase: SupabaseClient, req: VercelRequest, res:
     .from('waitlist')
     .update({ wave_number, status: 'active' })
     .eq('status', 'waiting_for_next_wave')
-    .select('id');
+    .select('*');
 
   if (error) return res.status(500).json({ error: 'Failed to open wave' });
+
+  // Everyone here came OUT of the holding pool, so this is an assignment rather
+  // than a move: they had no wave to be moved from.
+  const emails: NotifyOutcome[] = [];
+  for (const row of (data || []) as unknown as WaitlistRow[]) {
+    emails.push(await notifyStatusChange(row, 'wave_assigned', { WAVE: wave_number }));
+  }
 
   return res.status(200).json({
     success: true,
     wave_number,
     users_moved: data?.length || 0,
+    emails_sent: emails.filter((e) => e.status === 'sent').length,
+    emails_skipped: emails.filter((e) => e.status === 'skipped').length,
+    emails_failed: emails.filter((e) => e.status === 'failed').length,
+    emails,
   });
 }
 
@@ -284,9 +365,24 @@ async function handlePromoteWave(supabase: SupabaseClient, req: VercelRequest, r
 
   if (error) return res.status(500).json({ error: 'Failed to promote users' });
 
+  // PARTIAL FAILURE IS REPORTED PER PERSON, not collapsed into a count. The promotion
+  // has already committed by this point, so a failure here means "promoted but not
+  // told" -- a state an admin has to be able to see and act on, and one that a bare
+  // success count would hide. Re-running is safe: the promotion matches nobody the
+  // second time (they are no longer waiting), and the dedupe in followup_send_log
+  // stops anyone already told from being told twice.
+  const notifications: NotifyOutcome[] = [];
+  for (const row of (promotedUsers || []) as unknown as WaitlistRow[]) {
+    notifications.push(await notifyStatusChange(row, 'wave_assigned', { WAVE: target_wave }));
+  }
+
   return res.status(200).json({
     promoted_count: promotedUsers?.length || 0,
     promoted_users: promotedUsers || [],
+    emails_sent: notifications.filter((e) => e.status === 'sent').length,
+    emails_skipped: notifications.filter((e) => e.status === 'skipped').length,
+    emails_failed: notifications.filter((e) => e.status === 'failed').length,
+    notifications,
   });
 }
 
@@ -938,111 +1034,6 @@ async function sendAndRecordDrip(
   return { kind: 'sent', drip: updated as Record<string, unknown> };
 }
 
-// ----------------------------------------------------------------------------
-// Bulk repair: every repairable failed row, across every user.
-//
-// RESUMABLE BY CONSTRUCTION. A successful send flips its row out of `failed`,
-// which is the same predicate that selects candidates, so re-running picks up
-// exactly what is left. That matters because this can be cut off by the
-// function timeout part-way through, and each send+update is committed on its
-// own rather than as one batch.
-//
-// dryRun is the default. Sending 16 real emails to real people should be a
-// second, deliberate call, not the thing that happens if a body is missing.
-// ----------------------------------------------------------------------------
-async function handleResendAllFailedDrips(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
-  const resendApiKey = process.env.RESEND_API_KEY;
-  if (!resendApiKey) return res.status(500).json({ error: 'Email service not configured' });
-
-  const body = req.body || {};
-  const dryRun = body.dryRun !== false;
-  const limit = Math.min(Number(body.limit) || 25, 50);
-
-  const { data: rows, error: rowsErr } = await supabase
-    .from('drip_send_log')
-    .select('id, drip_event, user_id, waitlist!inner(email, unsubscribed_at, unsubscribe_token)')
-    .eq('status', 'failed')
-    .order('sent_at', { ascending: true })
-    .limit(limit);
-
-  if (rowsErr) return res.status(500).json({ error: 'Failed to read the delivery log' });
-
-  type Candidate = {
-    id: string;
-    drip_event: string;
-    waitlist: { email: string; unsubscribed_at: string | null; unsubscribe_token: string | null };
-  };
-  const all = (rows ?? []) as unknown as Candidate[];
-
-  const results: Array<{ email: string; drip_event: string; status: string; reason?: string }> = [];
-  const sendable: Candidate[] = [];
-
-  for (const row of all) {
-    const w = row.waitlist;
-    if (!RESENDABLE_DRIP_EVENTS.has(row.drip_event)) {
-      results.push({ email: w.email, drip_event: row.drip_event, status: 'skipped', reason: 'retired, no template' });
-      continue;
-    }
-    if (w.unsubscribed_at) {
-      results.push({ email: w.email, drip_event: row.drip_event, status: 'skipped', reason: 'unsubscribed' });
-      continue;
-    }
-    sendable.push(row);
-  }
-
-  if (dryRun) {
-    return res.status(200).json({
-      dry_run: true,
-      would_send: sendable.length,
-      skipped: results.length,
-      candidates: sendable.map((r) => ({ email: r.waitlist.email, drip_event: r.drip_event })),
-      results,
-    });
-  }
-
-  const slotsRemaining = await fetchSlotsRemaining(supabase);
-  let sent = 0;
-  let failed = 0;
-
-  for (const row of sendable) {
-    const outcome = await sendAndRecordDrip(
-      supabase,
-      resendApiKey,
-      row.waitlist,
-      row.drip_event as DripEventType,
-      row.id,
-      slotsRemaining,
-    );
-
-    if (outcome.kind === 'send_failed') {
-      failed++;
-      results.push({ email: row.waitlist.email, drip_event: row.drip_event, status: 'failed', reason: outcome.error });
-    } else if (outcome.kind === 'sent_log_stale') {
-      sent++;
-      results.push({
-        email: row.waitlist.email,
-        drip_event: row.drip_event,
-        status: 'sent',
-        reason: 'sent, but the log row did not update',
-      });
-    } else {
-      sent++;
-      results.push({ email: row.waitlist.email, drip_event: row.drip_event, status: 'sent' });
-    }
-
-    // Gentle on the Resend rate limit. A bulk run is not time-critical.
-    await new Promise((r) => setTimeout(r, 150));
-  }
-
-  return res.status(200).json({
-    dry_run: false,
-    attempted: sendable.length,
-    sent,
-    failed,
-    skipped: results.filter((r) => r.status === 'skipped').length,
-    results,
-  });
-}
 
 // Answers one question: is the caller's session an admin?
 //
@@ -1171,9 +1162,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         return handleResendDripEmail(supabase, req, res);
 
-      case 'resendAllFailedDrips':
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-        return handleResendAllFailedDrips(supabase, req, res);
 
       // Merged from api/admin/* files
       case 'summary':

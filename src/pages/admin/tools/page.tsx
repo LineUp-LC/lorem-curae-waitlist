@@ -1,5 +1,4 @@
 import { BulkDeleteFallbackPanel } from './BulkDeleteFallbackPanel';
-import { ResendFailedDripsPanel } from './ResendFailedDripsPanel';
 
 export default function AdminToolsPage() {
   return (
@@ -33,9 +32,6 @@ export default function AdminToolsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bulk Delete Fallback Users */}
         <BulkDeleteFallbackPanel />
-
-        {/* Resend every repairable failed drip send */}
-        <ResendFailedDripsPanel />
       </div>
     </div>
   );
