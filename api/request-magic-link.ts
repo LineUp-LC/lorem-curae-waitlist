@@ -72,6 +72,19 @@ const SIGN_OFF = `<p>— Ethan Jones<br/>Founder, Curae</p>`;
 
 const LOGIN_SUBJECT = "Your Curae sign-in link";
 
+// 1st, 2nd, 3rd, 4th ... and the 11/12/13 exception, which is the whole reason this is
+// a function rather than an inline suffix lookup.
+function ordinal(n: number): string {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
+
 function loginHtml(): string {
   return `<p>Hi there,</p>
 <p>Here's your sign-in link.</p>
@@ -85,11 +98,14 @@ ${FOOTER}`;
 // {{MAGIC_LINK}}, which is an account-shaped action on an email where no account should
 // exist - and generating that link is what minted one. There is nothing to confirm: the
 // waitlist row is already written by /api/signup before this email is sent.
+// {{POSITION_BLOCK}} is a WHOLE PARAGRAPH, not a bare number, so that a rank we could
+// not compute degrades to an email with one fewer line rather than to "You're
+// undefined on the list." The caller substitutes an empty string when the count fails.
 function signupHtml(opening: string, accessLine: string): string {
   return `<p>Hi there,</p>
 <p>${opening}</p>
 <p>${SCAN_LINE}</p>
-<p>${accessLine}</p>
+{{POSITION_BLOCK}}<p>${accessLine}</p>
 <p><strong><a href="${SIGNUP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
 ${FOOTER}`;
@@ -131,11 +147,17 @@ const templates: Record<string, EmailTemplate> = {
   tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Founding Member ----
+  // NO WAVE LINE HERE, DELIBERATELY. Founding and waves are competing ideas: founding
+  // should read as "you are in first", not "you are in group one of several", and
+  // pairing them dilutes both. The previous copy said "no waves, no waiting", which
+  // also contradicted the database -- every founding member carries wave_number = 1.
+  // "From day one" went with it: there is no launch date, so it promised a moment we
+  // could not name. What replaces it is a promise tied to an event we control.
   founding_member_signup: {
     subject: "Welcome to Curae — founding member",
     html: signupHtml(
       "You're a founding member of Curae.",
-      "You have priority access from day one — no waves, no waiting.",
+      "Founding members go in first, and your place is held. We'll email you when access opens.",
     ),
   },
   founding_member_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
@@ -145,7 +167,7 @@ const templates: Record<string, EmailTemplate> = {
     subject: "Welcome to Curae — founding creator",
     html: signupHtml(
       "You're a founding creator on Curae.",
-      "You have priority access to every creator tool from day one — dashboard, listings, analytics.",
+      "Founding creators go in first, with the dashboard, listings and analytics. We’ll email you when access opens.",
     ),
   },
   founding_member_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
@@ -155,7 +177,7 @@ const templates: Record<string, EmailTemplate> = {
     subject: "Welcome — founding creator tester",
     html: signupHtml(
       "You're a founding creator tester on Curae.",
-      "You have priority access to every creator tool plus experimental features before anyone else.",
+      "Founding creator testers go in first, with every creator tool plus experimental features ahead of general access. We’ll email you when access opens.",
     ),
   },
   founding_member_tester_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
@@ -165,7 +187,7 @@ const templates: Record<string, EmailTemplate> = {
     subject: "Welcome — founding tester",
     html: signupHtml(
       "You're a founding tester on Curae.",
-      "You have priority access from day one plus experimental features before anyone else.",
+      "Founding testers go in first, and you'll get experimental features ahead of general access. We'll email you when access opens.",
     ),
   },
   founding_member_tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
@@ -440,7 +462,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: waitlist, error: waitlistError } = await supabase
       .from('waitlist')
-      .select('wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token')
+      .select('wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token, created_at')
       .eq('email', trimmedEmail)
       .maybeSingle();
 
@@ -538,8 +560,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     console.log(`[request-magic-link] Sending email for role: ${role}...`);
 
+    // RANK IS COMPUTED, NOT READ FROM waitlist_position.
+    //
+    // assign_waitlist_position() is MAX(waitlist_position) + 1 at insert and is never
+    // recomputed, so a deletion leaves a permanent gap and nobody advances. The column
+    // is therefore an ID, not a rank: it already overstates by one (21 people occupy
+    // positions 2..22, because position 1 was deleted), and the drift grows with every
+    // deletion. Counting rows that joined earlier is the number the reader means.
+    //
+    // A FAILED COUNT SENDS NO POSITION LINE rather than a wrong one. The placeholder is
+    // a whole paragraph for exactly this reason.
+    let positionBlock = '';
+    if (type === 'signup' && waitlist?.created_at) {
+      const { count: priorCount, error: rankErr } = await supabase
+        .from('waitlist')
+        .select('id', { count: 'exact', head: true })
+        .lt('created_at', waitlist.created_at as string);
+      if (rankErr) {
+        console.warn(JSON.stringify({
+          level: 'warn',
+          event: 'signup_rank_count_failed',
+          error: rankErr.message,
+        }));
+      } else if (priorCount !== null) {
+        positionBlock = `<p>You\u2019re <strong>${ordinal(priorCount + 1)}</strong> on the list.</p>`;
+      }
+    }
+
     const htmlWithSubstitutions = template.html
       .replace(/\{\{MAGIC_LINK\}\}/g, finalMagicLink)
+      .replace(/\{\{POSITION_BLOCK\}\}/g, positionBlock)
       .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, buildUnsubscribeUrl(waitlist?.unsubscribe_token));
 
     const emailResponse = await fetch('https://api.resend.com/emails', {

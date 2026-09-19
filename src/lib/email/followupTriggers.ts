@@ -58,6 +58,8 @@ function createAdminClient() {
 
 export interface BatchSendResult {
   sent: number;
+  /** Already logged as sent for this template, so nothing was re-sent. */
+  skipped: number;
   failed: number;
   errors: Array<{ email: string; error: string }>;
 }
@@ -102,7 +104,7 @@ export async function onTesterAccessOpenedBatch(): Promise<BatchSendResult> {
     throw new Error(`[followupTriggers] Failed to fetch testers: ${error.message}`);
   }
 
-  const results: BatchSendResult = { sent: 0, failed: 0, errors: [] };
+  const results: BatchSendResult = { sent: 0, skipped: 0, failed: 0, errors: [] };
 
   console.log(`[followupTriggers] Found ${testers?.length || 0} testers to notify`);
 
@@ -110,8 +112,8 @@ export async function onTesterAccessOpenedBatch(): Promise<BatchSendResult> {
     const role: UserRole = tester.is_creator ? 'tester_creator' : 'tester_consumer';
 
     try {
-      await sendFollowupEmail(tester.email, role, 'tester_access_opened');
-      results.sent++;
+      const r = await sendFollowupEmail(tester.email, role, 'tester_access_opened');
+      if (r.skipped) results.skipped++; else results.sent++;
     } catch (err) {
       results.failed++;
       results.errors.push({
@@ -177,14 +179,14 @@ export async function onCreatorWaveOpenedBatch(waveNumber: 1 | 2 | 3): Promise<B
   }
 
   const role: UserRole = `creator_c${waveNumber}` as UserRole;
-  const results: BatchSendResult = { sent: 0, failed: 0, errors: [] };
+  const results: BatchSendResult = { sent: 0, skipped: 0, failed: 0, errors: [] };
 
   console.log(`[followupTriggers] Found ${creators?.length || 0} creators in wave C${waveNumber}`);
 
   for (const creator of creators || []) {
     try {
-      await sendFollowupEmail(creator.email, role, 'creator_tools_opened');
-      results.sent++;
+      const r = await sendFollowupEmail(creator.email, role, 'creator_tools_opened');
+      if (r.skipped) results.skipped++; else results.sent++;
     } catch (err) {
       results.failed++;
       results.errors.push({
@@ -248,14 +250,14 @@ export async function onConsumerWaveOpenedBatch(
   }
 
   const role: UserRole = `consumer_wave_${waveNumber}` as UserRole;
-  const results: BatchSendResult = { sent: 0, failed: 0, errors: [] };
+  const results: BatchSendResult = { sent: 0, skipped: 0, failed: 0, errors: [] };
 
   console.log(`[followupTriggers] Found ${consumers?.length || 0} consumers in wave ${waveNumber}`);
 
   for (const consumer of consumers || []) {
     try {
-      await sendFollowupEmail(consumer.email, role, 'consumer_wave_opened');
-      results.sent++;
+      const r = await sendFollowupEmail(consumer.email, role, 'consumer_wave_opened');
+      if (r.skipped) results.skipped++; else results.sent++;
     } catch (err) {
       results.failed++;
       results.errors.push({

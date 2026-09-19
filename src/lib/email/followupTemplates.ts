@@ -322,6 +322,10 @@ export interface SendFollowupEmailResult {
   templateKey: string;
   emailId?: string;
   error?: string;
+  /** True when a log row already existed for this user+template, so nothing was sent. */
+  skipped?: boolean;
+  /** Why it was skipped. Present only alongside `skipped`. */
+  skippedReason?: string;
 }
 
 /**
@@ -363,10 +367,10 @@ export async function sendFollowupEmail(
     },
   });
 
-  // Fetch unsubscribe token for this user. Falls back to mailto if missing.
+  // Fetch the id + unsubscribe token for this user. Falls back to mailto if missing.
   const { data: waitlistRow, error: tokenErr } = await supabase
     .from('waitlist')
-    .select('unsubscribe_token')
+    .select('id, unsubscribe_token')
     .eq('email', email.trim().toLowerCase())
     .maybeSingle();
 
@@ -377,6 +381,52 @@ export async function sendFollowupEmail(
       email: email.substring(0, 3) + '***',
       error: tokenErr.message,
     }));
+  }
+
+  // ---------------------------------------------------------------------------
+  // DEDUPE. Without this, running onConsumerWaveOpenedBatch twice emails every
+  // recipient twice, and nothing records that the first run happened -- "your
+  // access is open" arriving twice reads as a system that does not know what it
+  // has told you.
+  //
+  // Keyed on template_key, not event_type: 'consumer_wave_opened' fires once per
+  // wave a person is in, so someone moved from wave 2 to wave 1 must still be
+  // told that wave 1 opened.
+  //
+  // A FAILED LOOKUP DOES NOT SEND. The drip scheduler takes the same position
+  // for the same reason: if we cannot tell whether this was already sent, the
+  // safe answer is to stop, because the cost of a duplicate is higher than the
+  // cost of a retry. It throws rather than returning, so the batch counts it as
+  // a failure and surfaces it instead of silently skipping.
+  // ---------------------------------------------------------------------------
+  const userId = (waitlistRow as { id?: string } | null)?.id;
+  if (!userId) {
+    throw new Error(
+      `[followupTemplates] No waitlist row for ${email.substring(0, 3)}***, so the send cannot be logged. Not sending.`
+    );
+  }
+
+  const { data: priorSend, error: logLookupErr } = await supabase
+    .from('followup_send_log')
+    .select('id, status')
+    .eq('user_id', userId)
+    .eq('template_key', templateKey)
+    .maybeSingle();
+
+  if (logLookupErr) {
+    throw new Error(
+      `[followupTemplates] Could not read followup_send_log for ${templateKey}: ${logLookupErr.message}. Not sending.`
+    );
+  }
+
+  if (priorSend && (priorSend as { status: string }).status === 'sent') {
+    console.log(JSON.stringify({
+      level: 'info',
+      event: 'followup_email_skipped_already_sent',
+      email: email.substring(0, 3) + '***',
+      templateKey,
+    }));
+    return { success: true, templateKey, skipped: true, skippedReason: 'already_sent' };
   }
 
   const unsubscribeUrl = waitlistRow?.unsubscribe_token
@@ -402,14 +452,50 @@ export async function sendFollowupEmail(
     }),
   });
 
+  // SEND FIRST, THEN WRITE THE LOG -- never the other way round. Logging before
+  // the send would, on a failure, leave a row claiming we told them something we
+  // did not. UPSERT rather than insert: a previous attempt may have left a
+  // `failed` row on the same (user_id, template_key), and a retry has to be able
+  // to overwrite it.
+  const recordSend = async (status: 'sent' | 'failed', errorText: string | null) => {
+    const { error: logErr } = await supabase
+      .from('followup_send_log')
+      .upsert(
+        {
+          user_id: userId,
+          event_type: eventType,
+          template_key: templateKey,
+          status,
+          error_text: errorText,
+          sent_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,template_key' },
+      );
+    if (logErr) {
+      // Announced, never swallowed. A send that happened but was not recorded is
+      // the state that produces a duplicate on the next run, so it must be
+      // visible even though it is too late to prevent.
+      console.error(JSON.stringify({
+        level: 'error',
+        event: 'followup_log_write_failed',
+        email: email.substring(0, 3) + '***',
+        templateKey,
+        status,
+        error: logErr.message,
+      }));
+    }
+  };
+
   if (!emailResponse.ok) {
     const errorText = await emailResponse.text();
+    await recordSend('failed', `Resend ${emailResponse.status}: ${errorText}`);
     throw new Error(
       `[followupTemplates] Failed to send follow-up email to ${email}: ${emailResponse.status} ${errorText}`
     );
   }
 
   const emailResult = await emailResponse.json();
+  await recordSend('sent', null);
 
   // Log success (structured for Vercel logs)
   console.log(JSON.stringify({
