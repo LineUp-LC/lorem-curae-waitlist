@@ -45,22 +45,34 @@ CREATE TABLE IF NOT EXISTS public.followup_send_log (
                                  'creator_tools_opened',
                                  'consumer_wave_opened',
                                  'role_upgraded',
-                                 'role_downgraded'
+                                 'role_downgraded',
+                                 'tester_selected',
+                                 'wave_assigned',
+                                 'wave_changed'
                              )),
-    -- The resolved template, e.g. 'consumer_wave_1_opened'. event_type alone does
-    -- not identify WHICH wave opened, so without this the log cannot answer "has
-    -- this person been told about wave 2" after they moved wave.
+    -- The resolved template, e.g. 'consumer_wave_1_opened' or 'wave_assigned'.
+    -- Informational: it says WHICH email, not which instance of it.
     template_key TEXT        NOT NULL,
+    -- What "already sent" is judged on. It is template_key plus the template vars,
+    -- e.g. 'wave_assigned|WAVE=3' or 'wave_changed|PREVIOUS_WAVE=1,WAVE=3'.
+    --
+    -- THE VARS HAVE TO BE IN THE KEY. wave_assigned is ONE template covering every
+    -- wave, so keying on the template alone would mean a person assigned to a wave,
+    -- returned to the holding pool, and assigned again is told once. That is the
+    -- same mistake the seven hardcoded consumer_wave_N templates were avoiding, and
+    -- it reappears the moment one template serves many values.
+    dedupe_key   TEXT        NOT NULL,
     sent_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     status       TEXT        NOT NULL CHECK (status IN ('sent', 'failed')),
     error_text   TEXT        NULL
 );
 
--- One send per user per template, ever. Keyed on template_key rather than
--- event_type: 'consumer_wave_opened' fires once per wave a person is in, and
--- someone moved from wave 2 to wave 1 should still be told wave 1 opened.
-CREATE UNIQUE INDEX IF NOT EXISTS followup_send_log_user_template_unique
-    ON public.followup_send_log (user_id, template_key);
+-- One send per user per INSTANCE, ever. Not per event_type:
+-- 'consumer_wave_opened' fires once per wave a person is in, so someone moved from
+-- wave 2 to wave 1 must still be told that wave 1 opened. And not per template
+-- either, for the reason on dedupe_key above.
+CREATE UNIQUE INDEX IF NOT EXISTS followup_send_log_user_dedupe_unique
+    ON public.followup_send_log (user_id, dedupe_key);
 
 CREATE INDEX IF NOT EXISTS followup_send_log_user_id_idx
     ON public.followup_send_log (user_id);
@@ -79,4 +91,4 @@ GRANT ALL ON public.followup_send_log TO service_role;
 -- VERIFY the unique index exists (expect 1):
 --   select count(*) from pg_indexes
 --    where tablename = 'followup_send_log'
---      and indexname = 'followup_send_log_user_template_unique';
+--      and indexname = 'followup_send_log_user_dedupe_unique';

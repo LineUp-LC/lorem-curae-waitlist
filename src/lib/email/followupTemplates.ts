@@ -72,7 +72,12 @@ export type FollowupEventType =
   | 'creator_tools_opened'
   | 'consumer_wave_opened'
   | 'role_upgraded'
-  | 'role_downgraded';
+  | 'role_downgraded'
+  // Status-change events. These announce a change in STANDING, not access:
+  // nothing is open yet, so none of them carries a sign-in CTA.
+  | 'tester_selected'
+  | 'wave_assigned'
+  | 'wave_changed';
 
 /** Email template structure */
 interface EmailTemplate {
@@ -96,6 +101,18 @@ const SCAN_LINE =
 const FOOTER = `<p style="color:#888;font-size:12px;margin-top:32px;">Curae · <a href="{{UNSUBSCRIBE_URL}}" style="color:#888;">Unsubscribe</a> · <a href="https://loremcurae.com/privacy" style="color:#888;">Privacy</a></p>`;
 
 const SIGN_OFF = `<p>— Ethan Jones<br/>Founder, Curae</p>`;
+
+// Status-change mail, as distinct from access-opened mail. accessOpenedHtml ends in
+// "Sign in and scan", which is wrong for an email whose whole point is that there is
+// nothing to sign into yet. These end on the public site instead.
+function statusChangeHtml(...bodyLines: string[]): string {
+  const body = bodyLines.map((line) => `<p>${line}</p>`).join("\n");
+  return `<p>Hi there,</p>
+${body}
+<p><strong><a href="${FOLLOWUP_CTA_URL}">See what we are building</a></strong></p>
+${SIGN_OFF}
+${FOOTER}`;
+}
 
 function accessOpenedHtml(bodyLine: string, ctaLabel = "Sign in and scan"): string {
   return `<p>Hi there,</p>
@@ -193,6 +210,45 @@ export const followupTemplates: Record<string, EmailTemplate> = {
     html: accessOpenedHtml("Your Wave 7 access is live."),
   },
 
+  // ---- Status changes (standing, not access) ----
+  //
+  // {{WAVE}} and {{PREVIOUS_WAVE}} are substituted by sendFollowupEmail from its
+  // `vars` argument. Seven hardcoded copies is what the existing
+  // consumer_wave_N_opened set does, and it does not scale here: wave_changed needs
+  // TWO numbers, which is 49 templates.
+  tester_selected: {
+    subject: "You're in as a Curae tester",
+    html: statusChangeHtml(
+      "You've been picked as a Curae tester.",
+      SCAN_LINE,
+      "Testers go in ahead of general access and see new features first.",
+      "We'll email you when tester access opens. Nothing to do until then.",
+    ),
+  },
+
+  // Deliberately says "picked", not "you asked for this": is_tester is OUR decision
+  // and can be set for someone who never requested it. No wave line, because testers
+  // bypass waves, and no position, because position reads as irrelevant once you do.
+  wave_assigned: {
+    subject: "You're in Wave {{WAVE}}",
+    html: statusChangeHtml(
+      "You're in Wave {{WAVE}}.",
+      SCAN_LINE,
+      "Your place is held. We'll email you when Wave {{WAVE}} opens.",
+    ),
+  },
+
+  // NEUTRAL ON PURPOSE. A move can be backward, and a template that congratulates
+  // would be wrong half the time. We still send it: going quiet on bad news is worse,
+  // and role_downgraded_generic already sets that precedent.
+  wave_changed: {
+    subject: "Your wave has changed",
+    html: statusChangeHtml(
+      "You've moved from Wave {{PREVIOUS_WAVE}} to Wave {{WAVE}}.",
+      "Your place in Wave {{WAVE}} is held. We'll email you when it opens.",
+    ),
+  },
+
   // ---- Role Upgrades (NON-FOUNDING ONLY) ----
   role_upgraded_to_tester_creator: {
     subject: "You're now a creator tester",
@@ -288,6 +344,12 @@ export function getFollowupTemplateKey(
     return 'role_downgraded_generic';
   }
 
+  // Status changes are the same message whatever the role: they report a change in
+  // standing, and the role is not what changed.
+  if (eventType === 'tester_selected') return 'tester_selected';
+  if (eventType === 'wave_assigned') return 'wave_assigned';
+  if (eventType === 'wave_changed') return 'wave_changed';
+
   return null;
 }
 
@@ -338,7 +400,15 @@ export interface SendFollowupEmailResult {
 export async function sendFollowupEmail(
   email: string,
   role: UserRole,
-  eventType: FollowupEventType
+  eventType: FollowupEventType,
+  /**
+   * Placeholder values for templates that carry them, e.g. { WAVE: 3 }. Substituted
+   * into both the subject and the body, and folded into the dedupe key so that
+   * "once per user per template" becomes "once per user per INSTANCE" -- otherwise
+   * being assigned a wave twice would send once, which is the same mistake the
+   * seven hardcoded wave templates were avoiding.
+   */
+  vars?: Record<string, string | number>,
 ): Promise<SendFollowupEmailResult> {
   const { supabaseUrl, supabaseServiceRoleKey, resendApiKey } = getRequiredEnvVars();
 
@@ -430,16 +500,29 @@ export async function sendFollowupEmail(
     );
   }
 
+  // THE DEDUPE KEY IS THE TEMPLATE PLUS ITS VARIABLES, not the template alone.
+  //
+  // wave_assigned is ONE template for every wave, so keying on it alone would mean a
+  // person assigned to a wave, returned to the holding pool, and assigned again is
+  // told once. Folding the vars in makes it "once per user per instance":
+  // wave_assigned|WAVE=3, and wave_changed|PREVIOUS_WAVE=1,WAVE=3.
+  //
+  // Sorted, so two calls with the same values in a different key order produce the
+  // same string and cannot both send.
+  const dedupeKey = vars && Object.keys(vars).length > 0
+    ? `${templateKey}|${Object.keys(vars).sort().map((k) => `${k}=${vars[k]}`).join(",")}`
+    : templateKey;
+
   const { data: priorSend, error: logLookupErr } = await supabase
     .from('followup_send_log')
     .select('id, status')
     .eq('user_id', userId)
-    .eq('template_key', templateKey)
+    .eq('dedupe_key', dedupeKey)
     .maybeSingle();
 
   if (logLookupErr) {
     throw new Error(
-      `[followupTemplates] Could not read followup_send_log for ${templateKey}: ${logLookupErr.message}. Not sending.`
+      `[followupTemplates] Could not read followup_send_log for ${dedupeKey}: ${logLookupErr.message}. Not sending.`
     );
   }
 
@@ -457,9 +540,33 @@ export async function sendFollowupEmail(
     ? `${UNSUBSCRIBE_BASE}?token=${waitlistRow.unsubscribe_token}`
     : UNSUBSCRIBE_URL_FALLBACK;
 
-  // Replace placeholders
-  const htmlWithSubstitutions = template.html
+  // Replace placeholders. Template vars go into BOTH the subject and the body --
+  // wave_assigned's subject is "You're in Wave {{WAVE}}", and a subject line that
+  // shipped the raw placeholder would be the most visible possible failure.
+  const applyVars = (text: string): string => {
+    if (!vars) return text;
+    let out = text;
+    for (const [k, v] of Object.entries(vars)) {
+      out = out.split(`{{${k}}}`).join(String(v));
+    }
+    return out;
+  };
+
+  const subjectWithSubstitutions = applyVars(template.subject);
+  const htmlWithSubstitutions = applyVars(template.html)
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrl);
+
+  // A placeholder that survived substitution means a caller omitted a var. Refuse
+  // rather than send "You are in Wave {{WAVE}}" -- and refuse BEFORE the send, which
+  // is the only point at which it is still preventable.
+  const unresolved = [subjectWithSubstitutions, htmlWithSubstitutions]
+    .join(" ")
+    .match(/\{\{(?!UNSUBSCRIBE_URL)[A-Z_]+\}\}/g);
+  if (unresolved) {
+    throw new Error(
+      `[followupTemplates] ${templateKey} has unresolved placeholders ${[...new Set(unresolved)].join(", ")}. Not sending.`
+    );
+  }
 
   // Send email via Resend
   const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -471,7 +578,7 @@ export async function sendFollowupEmail(
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: email.trim().toLowerCase(),
-      subject: template.subject,
+      subject: subjectWithSubstitutions,
       html: htmlWithSubstitutions,
     }),
   });
@@ -489,11 +596,12 @@ export async function sendFollowupEmail(
           user_id: userId,
           event_type: eventType,
           template_key: templateKey,
+          dedupe_key: dedupeKey,
           status,
           error_text: errorText,
           sent_at: new Date().toISOString(),
         },
-        { onConflict: 'user_id,template_key' },
+        { onConflict: 'user_id,dedupe_key' },
       );
     if (logErr) {
       // Announced, never swallowed. A send that happened but was not recorded is
