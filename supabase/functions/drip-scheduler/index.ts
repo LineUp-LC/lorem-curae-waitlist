@@ -36,13 +36,28 @@ type DripEventType =
   | 'scan_deep_dive'
   | 're_engagement';
 
-// Day offset (in days since created_at) → drip event.
-// welcome is handled by the signup flow, not the scheduler.
-const DAY_OFFSET_TO_EVENT: Record<number, DripEventType> = {
-  3: 'scan_walkthrough',
-  14: 'scan_deep_dive',
-  30: 're_engagement',
-};
+// ALL THREE TIME-BASED DRIPS ARE RETIRED (2026-09-18, founder decision).
+//
+// They toured features of an app nobody can access yet. Someone who signed up in
+// April receiving a scanning walkthrough today, with no app to scan in, reads as a
+// sequence running on autopilot, which is what it was.
+//
+// The waitlist sequence is now STATUS-CHANGE, not cadence: signup confirms position,
+// and everything after it fires when something actually changes (tester selected,
+// wave assigned, wave opened). Those live in src/lib/email/followupTemplates.ts, are
+// event-driven, and are recorded in followup_send_log.
+//
+// re_engagement was retired with the other two rather than repurposed as a holding
+// note. A holding note needs something to say, and every state that can change now
+// has its own email, so it would have been no-news on a schedule. That is worse than
+// silence.
+//
+// THE MAP IS EMPTIED RATHER THAN THE FUNCTION DELETED. The cohort query, the
+// idempotency check and the unsubscribe guard are the working parts of any future
+// scheduled send, and the pg_cron job now simply finds nothing to do. Re-add an entry
+// here to bring one back. The templates below are kept for reference; nothing reads
+// them while this map is empty.
+const DAY_OFFSET_TO_EVENT: Record<number, DripEventType> = {};
 
 // ----------------------------------------------------------------------------
 // TEMPLATES (mirrors src/lib/email/dripTemplates.ts — keep in sync)

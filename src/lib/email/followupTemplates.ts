@@ -370,7 +370,7 @@ export async function sendFollowupEmail(
   // Fetch the id + unsubscribe token for this user. Falls back to mailto if missing.
   const { data: waitlistRow, error: tokenErr } = await supabase
     .from('waitlist')
-    .select('id, unsubscribe_token')
+    .select('id, unsubscribe_token, unsubscribed_at')
     .eq('email', email.trim().toLowerCase())
     .maybeSingle();
 
@@ -399,6 +399,30 @@ export async function sendFollowupEmail(
   // cost of a retry. It throws rather than returning, so the batch counts it as
   // a failure and surfaces it instead of silently skipping.
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // UNSUBSCRIBE GUARD. The drip scheduler has always had one; this path never
+  // did, so every follow-up was exempt from an opt-out the footer offers.
+  //
+  // ACCESS OPENING IS NOT AN EXCEPTION, and it is the one that will be argued
+  // for. "They would want to hear this one" is the reasoning behind every email
+  // someone opted out of, and it is not ours to overrule: they chose. Nothing is
+  // lost that cannot be recovered -- access is on their account, so opening the
+  // app still gets them in. What we give up is telling them sooner.
+  //
+  // DELIBERATELY NOT LOGGED. A log row is the record of a SEND, and keying the
+  // skip would permanently block the email if they later resubscribe. Leaving
+  // the log untouched means a resubscribed user gets it on the next run.
+  // ---------------------------------------------------------------------------
+  if ((waitlistRow as { unsubscribed_at?: string | null } | null)?.unsubscribed_at) {
+    console.log(JSON.stringify({
+      level: 'info',
+      event: 'followup_email_skipped_unsubscribed',
+      email: email.substring(0, 3) + '***',
+      templateKey,
+    }));
+    return { success: true, templateKey, skipped: true, skippedReason: 'unsubscribed' };
+  }
+
   const userId = (waitlistRow as { id?: string } | null)?.id;
   if (!userId) {
     throw new Error(
