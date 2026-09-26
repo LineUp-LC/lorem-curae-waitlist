@@ -33,7 +33,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     // STEP: Validate request body
     // -------------------------------------------------------------------------
-    const { email, segment, wants_tester_access, is_creator } = req.body || {};
+    // C13 (2026-09-26): creator signups are closed. Curae has no creator product (apps/mobile/PRODUCT.md),
+    // so an `is_creator` in the request body is ignored and every signup is a consumer signup. The
+    // column and the admin checkbox stay; they no longer change a role or an email.
+    const { email, segment, wants_tester_access } = req.body || {};
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -65,7 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const MAX_TESTER_CREATORS = 10;
     const MAX_TESTER_CONSUMERS = 20;
 
-    const isCreator = is_creator === true;
+    const isCreator = false;
 
     let foundingCapReached = false;
     let foundingCreatorCapReached = false;

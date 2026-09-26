@@ -31,11 +31,7 @@ function buildUnsubscribeUrl(token?: string | null): string {
 
 type UserRole =
   | 'founding_member'
-  | 'tester_creator'
   | 'tester_consumer'
-  | 'creator_c1'
-  | 'creator_c2'
-  | 'creator_c3'
   | `consumer_wave_${1 | 2 | 3 | 4 | 5 | 6 | 7}`
   | 'user';
 
@@ -126,16 +122,6 @@ const templates: Record<string, EmailTemplate> = {
   },
   non_tester_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
-  // ---- Tester Creator ----
-  tester_creator_signup: {
-    subject: "You're on the creator tester list",
-    html: signupHtml(
-      "You're on the creator tester list.",
-      "When tester access opens, you'll be among the first creators in — your feedback will shape the tools we ship.",
-    ),
-  },
-  tester_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
-
   // ---- Tester Consumer ----
   tester_consumer_signup: {
     subject: "You're on the tester list",
@@ -162,26 +148,6 @@ const templates: Record<string, EmailTemplate> = {
   },
   founding_member_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
-  // ---- Founding Member Creator ----
-  founding_member_creator_signup: {
-    subject: "Welcome to Curae — founding creator",
-    html: signupHtml(
-      "You're a founding creator on Curae.",
-      "Founding creators go in first, with the dashboard, listings and analytics. We’ll email you when access opens.",
-    ),
-  },
-  founding_member_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
-
-  // ---- Founding Member Tester Creator ----
-  founding_member_tester_creator_signup: {
-    subject: "Welcome — founding creator tester",
-    html: signupHtml(
-      "You're a founding creator tester on Curae.",
-      "Founding creator testers go in first, with every creator tool plus experimental features ahead of general access. We’ll email you when access opens.",
-    ),
-  },
-  founding_member_tester_creator_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
-
   // ---- Founding Member Tester Consumer ----
   founding_member_tester_consumer_signup: {
     subject: "Welcome — founding tester",
@@ -191,32 +157,6 @@ const templates: Record<string, EmailTemplate> = {
     ),
   },
   founding_member_tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
-
-  // ---- Creator Waves (wave number is access timing only) ----
-  creator_c1_signup: {
-    subject: "You're on the Curae creator waitlist",
-    html: signupHtml(
-      "You're on the Curae creator waitlist — Wave C1.",
-      "C1 is the first creator wave in. We'll email you when access opens.",
-    ),
-  },
-  creator_c1_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
-  creator_c2_signup: {
-    subject: "You're on the Curae creator waitlist",
-    html: signupHtml(
-      "You're on the Curae creator waitlist — Wave C2.",
-      "We'll email you when Wave C2 access opens.",
-    ),
-  },
-  creator_c2_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
-  creator_c3_signup: {
-    subject: "You're on the Curae creator waitlist",
-    html: signupHtml(
-      "You're on the Curae creator waitlist — Wave C3.",
-      "We'll email you when Wave C3 access opens.",
-    ),
-  },
-  creator_c3_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Founder text opt-in offer (sent via api/text-opt-in.ts cascade + api/signup.ts trigger) ----
   text_opt_in_offer: {
@@ -301,11 +241,7 @@ ${FOOTER}`,
 
 const signupTemplates: Record<UserRole, string> = {
   founding_member: 'founding_member_signup',
-  tester_creator: 'tester_creator_signup',
   tester_consumer: 'tester_consumer_signup',
-  creator_c1: 'creator_c1_signup',
-  creator_c2: 'creator_c2_signup',
-  creator_c3: 'creator_c3_signup',
   consumer_wave_1: 'consumer_wave_1_signup',
   consumer_wave_2: 'consumer_wave_2_signup',
   consumer_wave_3: 'consumer_wave_3_signup',
@@ -318,11 +254,7 @@ const signupTemplates: Record<UserRole, string> = {
 
 const loginTemplates: Record<UserRole, string> = {
   founding_member: 'founding_member_login',
-  tester_creator: 'tester_creator_login',
   tester_consumer: 'tester_consumer_login',
-  creator_c1: 'creator_c1_login',
-  creator_c2: 'creator_c2_login',
-  creator_c3: 'creator_c3_login',
   consumer_wave_1: 'consumer_wave_1_login',
   consumer_wave_2: 'consumer_wave_2_login',
   consumer_wave_3: 'consumer_wave_3_login',
@@ -341,15 +273,10 @@ function determineUserRole(waitlist: WaitlistRecord): UserRole {
   if (waitlist.is_founding_member) {
     return 'founding_member';
   }
+  // C13 (2026-09-26): there is no creator product, so `is_creator` no longer changes the role or
+  // the email. A row flagged creator gets the consumer email for its standing.
   if (waitlist.wants_tester_access) {
-    return waitlist.is_creator ? 'tester_creator' : 'tester_consumer';
-  }
-  if (waitlist.is_creator && waitlist.creator_wave_number) {
-    switch (waitlist.creator_wave_number) {
-      case 1: return 'creator_c1';
-      case 2: return 'creator_c2';
-      case 3: return 'creator_c3';
-    }
+    return 'tester_consumer';
   }
   if (waitlist.wave_number) {
     return `consumer_wave_${waitlist.wave_number}` as UserRole;
@@ -364,14 +291,8 @@ function getTemplateKey(
 ): string {
   // Founding members have special handling
   if (role === 'founding_member' && waitlist) {
-    if (waitlist.wants_tester_access && waitlist.is_creator) {
-      return type === 'signup' ? 'founding_member_tester_creator_signup' : 'founding_member_tester_creator_login';
-    }
-    if (waitlist.wants_tester_access && !waitlist.is_creator) {
+    if (waitlist.wants_tester_access) {
       return type === 'signup' ? 'founding_member_tester_consumer_signup' : 'founding_member_tester_consumer_login';
-    }
-    if (waitlist.is_creator) {
-      return type === 'signup' ? 'founding_member_creator_signup' : 'founding_member_creator_login';
     }
   }
   return type === 'signup' ? signupTemplates[role] : loginTemplates[role];

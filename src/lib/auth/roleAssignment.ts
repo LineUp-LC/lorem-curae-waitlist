@@ -4,11 +4,12 @@
 //
 // Role Hierarchy (highest to lowest priority):
 //   1. founding_member     - Overrides all other roles
-//   2. tester_creator      - Creator who opted into testing
-//   3. tester_consumer     - Consumer who opted into testing
-//   4. creator_c1/c2/c3    - Creator waves (marketplace access)
-//   5. consumer_wave_1-7   - Consumer waves (phased rollout)
-//   6. user                - Default role (no special access)
+//   2. tester_consumer     - Opted into testing
+//   3. consumer_wave_1-7   - Consumer waves (phased rollout)
+//   4. user                - Default role (no special access)
+//
+// C13 (2026-09-26): the creator roles and the creator/marketplace flags were removed. Curae has
+// no creator product (apps/mobile/PRODUCT.md).
 //
 // ============================================================================
 
@@ -23,11 +24,7 @@ import type { UserRole as FollowupUserRole } from "../email/followupTemplates";
 /** Valid user roles in the system */
 export type UserRole =
   | "founding_member"
-  | "tester_creator"
   | "tester_consumer"
-  | "creator_c1"
-  | "creator_c2"
-  | "creator_c3"
   | `consumer_wave_${1 | 2 | 3 | 4 | 5 | 6 | 7}`
   | "user";
 
@@ -53,8 +50,6 @@ export interface UserProfile {
 
 /** Feature flags for UI gating */
 export interface FeatureFlags {
-  showCreatorTools: boolean;
-  showMarketplaceTools: boolean;
   showEarlyFeatures: boolean;
 }
 
@@ -67,10 +62,9 @@ export interface FeatureFlags {
  *
  * Priority order:
  *   1. Founding member status (overrides everything)
- *   2. Tester access preference (creator vs consumer)
- *   3. Creator wave assignment (C1, C2, C3)
- *   4. Consumer wave assignment (1-7)
- *   5. Default to "user"
+ *   2. Tester access preference
+ *   3. Consumer wave assignment (1-7)
+ *   4. Default to "user"
  */
 export function determineUserRole(waitlist: WaitlistRecord): UserRole {
   // Priority 1: Founding Members override everything
@@ -92,22 +86,10 @@ export function determineUserRole(waitlist: WaitlistRecord): UserRole {
   // grant-access sends -- that is a behaviour change with its own blast radius,
   // not a rider on the admin page that introduced the column. Its own change.
   if (waitlist.wants_tester_access) {
-    return waitlist.is_creator ? "tester_creator" : "tester_consumer";
+    return "tester_consumer";
   }
 
-  // Priority 3: Creator waves (C1, C2, C3)
-  if (waitlist.is_creator && waitlist.creator_wave_number) {
-    switch (waitlist.creator_wave_number) {
-      case 1:
-        return "creator_c1";
-      case 2:
-        return "creator_c2";
-      case 3:
-        return "creator_c3";
-    }
-  }
-
-  // Priority 4: Consumer waves (1-7)
+  // Priority 3: Consumer waves (1-7)
   if (waitlist.wave_number) {
     return `consumer_wave_${waitlist.wave_number}` as UserRole;
   }
@@ -192,29 +174,12 @@ export async function handleAuthCallback(
  */
 export function getFeatureFlags(profile: UserProfile): FeatureFlags {
   const flags: FeatureFlags = {
-    showCreatorTools: false,
-    showMarketplaceTools: false,
     showEarlyFeatures: false,
   };
 
   switch (profile.role) {
     case "founding_member":
       flags.showEarlyFeatures = true;
-      break;
-
-    case "tester_creator":
-      flags.showCreatorTools = true;
-      flags.showMarketplaceTools = true;
-      break;
-
-    case "creator_c1":
-    case "creator_c2":
-      flags.showMarketplaceTools = true;
-      break;
-
-    case "creator_c3":
-      flags.showMarketplaceTools = true;
-      flags.showCreatorTools = true; // Phase 8 tools
       break;
 
     case "tester_consumer":

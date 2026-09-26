@@ -6,7 +6,7 @@
 //
 // Usage:
 //   import { onTesterAccessOpened } from '@/lib/email/followupTriggers';
-//   await onTesterAccessOpened({ email: 'user@example.com', role: 'tester_creator' });
+//   await onTesterAccessOpened({ email: 'user@example.com', role: 'tester_consumer' });
 //
 // CRITICAL: Founding Member roles are NEVER assigned automatically.
 // The onRoleChanged() function will throw an error if you attempt to
@@ -70,13 +70,13 @@ export interface BatchSendResult {
 
 /**
  * Sends follow-up email when tester access opens for a single user.
- * Valid for: tester_creator, tester_consumer
+ * Valid for: tester_consumer (C13: there are no creator roles)
  */
 export async function onTesterAccessOpened(user: FollowupUser): Promise<void> {
-  if (user.role !== 'tester_creator' && user.role !== 'tester_consumer') {
+  if (user.role !== 'tester_consumer') {
     throw new Error(
       `[followupTriggers] onTesterAccessOpened() called with invalid role "${user.role}". ` +
-      `Expected "tester_creator" or "tester_consumer".`
+      `Expected "tester_consumer".`
     );
   }
 
@@ -96,7 +96,7 @@ export async function onTesterAccessOpenedBatch(): Promise<BatchSendResult> {
   // Fetch all testers (non-founding members with wants_tester_access)
   const { data: testers, error } = await supabase
     .from('waitlist')
-    .select('email, is_creator, is_founding_member')
+    .select('email, is_founding_member')
     .eq('wants_tester_access', true)
     .eq('is_founding_member', false);
 
@@ -109,7 +109,7 @@ export async function onTesterAccessOpenedBatch(): Promise<BatchSendResult> {
   console.log(`[followupTriggers] Found ${testers?.length || 0} testers to notify`);
 
   for (const tester of testers || []) {
-    const role: UserRole = tester.is_creator ? 'tester_creator' : 'tester_consumer';
+    const role: UserRole = 'tester_consumer';
 
     try {
       const r = await sendFollowupEmail(tester.email, role, 'tester_access_opened');
@@ -121,79 +121,6 @@ export async function onTesterAccessOpenedBatch(): Promise<BatchSendResult> {
         error: err instanceof Error ? err.message : String(err),
       });
       console.error(`[followupTriggers] Failed to send to ${tester.email}:`, err);
-    }
-  }
-
-  console.log(`[followupTriggers] Batch complete: ${results.sent} sent, ${results.failed} failed`);
-
-  return results;
-}
-
-// ----------------------------------------------------------------------------
-// TRIGGER: CREATOR TOOLS OPENED
-// ----------------------------------------------------------------------------
-
-/**
- * Sends follow-up email when creator tools open for a single user.
- * Valid for: creator_c1, creator_c2, creator_c3, founding_member_creator, founding_member_tester_creator
- */
-export async function onCreatorToolsOpened(user: FollowupUser): Promise<void> {
-  const validRoles: UserRole[] = [
-    'creator_c1',
-    'creator_c2',
-    'creator_c3',
-    'founding_member_creator',
-    'founding_member_tester_creator',
-  ];
-
-  if (!validRoles.includes(user.role)) {
-    throw new Error(
-      `[followupTriggers] onCreatorToolsOpened() called with invalid role "${user.role}". ` +
-      `Expected one of: ${validRoles.join(', ')}.`
-    );
-  }
-
-  await sendFollowupEmail(user.email, user.role, 'creator_tools_opened');
-}
-
-/**
- * Batch sends creator tools opened emails to all creators in a specific wave.
- * Only sends to non-founding, non-tester creators in the specified wave.
- */
-export async function onCreatorWaveOpenedBatch(waveNumber: 1 | 2 | 3): Promise<BatchSendResult> {
-  const supabase = createAdminClient();
-
-  console.log(`[followupTriggers] Fetching creators for wave C${waveNumber}...`);
-
-  // Fetch all creators in this wave (non-founding, non-tester)
-  const { data: creators, error } = await supabase
-    .from('waitlist')
-    .select('email')
-    .eq('is_creator', true)
-    .eq('creator_wave_number', waveNumber)
-    .eq('is_founding_member', false)
-    .eq('wants_tester_access', false);
-
-  if (error) {
-    throw new Error(`[followupTriggers] Failed to fetch creators for wave C${waveNumber}: ${error.message}`);
-  }
-
-  const role: UserRole = `creator_c${waveNumber}` as UserRole;
-  const results: BatchSendResult = { sent: 0, skipped: 0, failed: 0, errors: [] };
-
-  console.log(`[followupTriggers] Found ${creators?.length || 0} creators in wave C${waveNumber}`);
-
-  for (const creator of creators || []) {
-    try {
-      const r = await sendFollowupEmail(creator.email, role, 'creator_tools_opened');
-      if (r.skipped) results.skipped++; else results.sent++;
-    } catch (err) {
-      results.failed++;
-      results.errors.push({
-        email: creator.email,
-        error: err instanceof Error ? err.message : String(err),
-      });
-      console.error(`[followupTriggers] Failed to send to ${creator.email}:`, err);
     }
   }
 
@@ -287,16 +214,10 @@ const ROLE_HIERARCHY: Record<UserRole, number> = {
   consumer_wave_3: 5,
   consumer_wave_2: 6,
   consumer_wave_1: 7,
-  creator_c3: 8,
-  creator_c2: 9,
-  creator_c1: 10,
   tester_consumer: 11,
-  tester_creator: 12,
   // Founding roles are highest but cannot be auto-assigned
   founding_member: 100,
-  founding_member_creator: 100,
   founding_member_tester_consumer: 100,
-  founding_member_tester_creator: 100,
 };
 
 /**

@@ -28,7 +28,7 @@ const UNSUBSCRIBE_BASE = 'https://fskvzrobcfokezumadbb.supabase.co/functions/v1/
 
 // FOLLOW-UP EMAILS DO NOT CARRY A SIGN-IN LINK.
 // auth.admin.generateLink CREATES the auth user when none exists. This mailer fires on
-// wave-open / tester-access / creator-tools, which are PER COHORT and IN BULK, so a single
+// wave-open / tester-access, which are PER COHORT and IN BULK, so a single
 // wave opening would have minted an account for every member of it. Access being granted
 // is not consent to an account: the person creates one deliberately, at the app.
 const FOLLOWUP_CTA_URL = 'https://loremcurae.com';
@@ -41,14 +41,8 @@ const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscrib
 /** All valid user roles in the system */
 export type UserRole =
   | 'founding_member'
-  | 'founding_member_creator'
-  | 'founding_member_tester_creator'
   | 'founding_member_tester_consumer'
-  | 'tester_creator'
   | 'tester_consumer'
-  | 'creator_c1'
-  | 'creator_c2'
-  | 'creator_c3'
   | 'consumer_wave_1'
   | 'consumer_wave_2'
   | 'consumer_wave_3'
@@ -61,15 +55,12 @@ export type UserRole =
 /** Founding roles that can NEVER be auto-assigned */
 export const FOUNDING_ROLES: readonly UserRole[] = [
   'founding_member',
-  'founding_member_creator',
-  'founding_member_tester_creator',
   'founding_member_tester_consumer',
 ] as const;
 
 /** Follow-up event types */
 export type FollowupEventType =
   | 'tester_access_opened'
-  | 'creator_tools_opened'
   | 'consumer_wave_opened'
   | 'role_upgraded'
   | 'role_downgraded'
@@ -129,54 +120,10 @@ ${FOOTER}`;
 
 export const followupTemplates: Record<string, EmailTemplate> = {
   // ---- Tester Access Opened ----
-  tester_creator_access_opened: {
-    subject: "Your creator tester access is open",
-    html: accessOpenedHtml(
-      "Your creator tester access is live. Dashboard, listings, and early marketplace tools are open — your feedback shapes what we ship next.",
-      "Open the creator dashboard",
-    ),
-  },
   tester_consumer_access_opened: {
     subject: "Your tester access is open",
     html: accessOpenedHtml(
       "Your tester access is live. You can scan products and try features before anyone else.",
-    ),
-  },
-
-  // ---- Creator Tools Opened ----
-  creator_c1_tools_opened: {
-    subject: "Your Wave C1 creator tools are ready",
-    html: accessOpenedHtml(
-      "Your Wave C1 creator access is live. Dashboard, listings, and marketplace tools are open.",
-      "Open the creator dashboard",
-    ),
-  },
-  creator_c2_tools_opened: {
-    subject: "Your Wave C2 creator tools are ready",
-    html: accessOpenedHtml(
-      "Your Wave C2 creator access is live.",
-      "Open the creator dashboard",
-    ),
-  },
-  creator_c3_tools_opened: {
-    subject: "Your Wave C3 creator tools are ready",
-    html: accessOpenedHtml(
-      "Your Wave C3 creator access is live.",
-      "Open the creator dashboard",
-    ),
-  },
-  founding_member_creator_tools_opened: {
-    subject: "Your founding creator tools are ready",
-    html: accessOpenedHtml(
-      "Your founding creator tools are live. You have priority access to everything we're building for creators.",
-      "Open the creator dashboard",
-    ),
-  },
-  founding_member_tester_creator_tools_opened: {
-    subject: "Your founding creator tester tools are ready",
-    html: accessOpenedHtml(
-      "Your founding creator tester tools are live — full access plus experimental features first.",
-      "Open the creator dashboard",
     ),
   },
 
@@ -250,15 +197,6 @@ export const followupTemplates: Record<string, EmailTemplate> = {
   },
 
   // ---- Role Upgrades (NON-FOUNDING ONLY) ----
-  role_upgraded_to_tester_creator: {
-    subject: "You're now a creator tester",
-    html: `<p>Hi there,</p>
-<p>Your access has been upgraded to creator tester. Dashboard, listings, and early marketplace tools are open.</p>
-<p>${SCAN_LINE}</p>
-<p><strong><a href="${FOLLOWUP_CTA_URL}">Open the creator dashboard</a></strong></p>
-${SIGN_OFF}
-${FOOTER}`,
-  },
   role_upgraded_to_tester_consumer: {
     subject: "You're now a tester",
     html: `<p>Hi there,</p>
@@ -303,18 +241,7 @@ export function getFollowupTemplateKey(
 ): string | null {
   // Tester access opened
   if (eventType === 'tester_access_opened') {
-    if (role === 'tester_creator') return 'tester_creator_access_opened';
     if (role === 'tester_consumer') return 'tester_consumer_access_opened';
-    return null;
-  }
-
-  // Creator tools opened
-  if (eventType === 'creator_tools_opened') {
-    if (role === 'creator_c1') return 'creator_c1_tools_opened';
-    if (role === 'creator_c2') return 'creator_c2_tools_opened';
-    if (role === 'creator_c3') return 'creator_c3_tools_opened';
-    if (role === 'founding_member_creator') return 'founding_member_creator_tools_opened';
-    if (role === 'founding_member_tester_creator') return 'founding_member_tester_creator_tools_opened';
     return null;
   }
 
@@ -332,7 +259,6 @@ export function getFollowupTemplateKey(
 
   // Role upgraded (NEVER to founding roles)
   if (eventType === 'role_upgraded') {
-    if (role === 'tester_creator') return 'role_upgraded_to_tester_creator';
     if (role === 'tester_consumer') return 'role_upgraded_to_tester_consumer';
     // For other non-founding upgrades, use generic
     if (!FOUNDING_ROLES.includes(role)) return 'role_upgraded_generic';
