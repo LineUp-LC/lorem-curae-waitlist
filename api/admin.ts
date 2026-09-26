@@ -728,19 +728,14 @@ interface WaitlistRow {
 
 function determineUserRole(row: WaitlistRow): UserRole {
   if (row.is_founding_member) return 'founding_member';
-  if (row.wants_tester_access) return row.is_creator ? 'tester_creator' : 'tester_consumer';
-  if (row.is_creator && row.creator_wave_number) {
-    if (row.creator_wave_number === 1) return 'creator_c1';
-    if (row.creator_wave_number === 2) return 'creator_c2';
-    if (row.creator_wave_number === 3) return 'creator_c3';
-  }
+  // C13 (2026-09-26): no creator roles. `is_creator` no longer changes a role or an email.
+  if (row.wants_tester_access) return 'tester_consumer';
   if (row.wave_number) return `consumer_wave_${row.wave_number}` as UserRole;
   return 'user';
 }
 
 function getEventType(role: UserRole): FollowupEventType | null {
-  if (role === 'tester_creator' || role === 'tester_consumer') return 'tester_access_opened';
-  if (role === 'creator_c1' || role === 'creator_c2' || role === 'creator_c3') return 'creator_tools_opened';
+  if (role === 'tester_consumer') return 'tester_access_opened';
   if (role.startsWith('consumer_wave_')) return 'consumer_wave_opened';
   return null;
 }
