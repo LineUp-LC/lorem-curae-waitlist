@@ -1270,7 +1270,7 @@ const WaitlistLandingPage = () => {
 
           <div className="lc-hero-headline-wrap" style={{ '--i': 1 } as React.CSSProperties}>
             <h1 className="lc-headline">
-              Know if it's right for your skin. Not just what's in it.
+              Skincare doesn't have to be complicated. It just has to be you.
             </h1>
             <p className="lc-hero-brandline">
               The layer of intelligence between you and every skincare product you'll ever buy.
@@ -1279,7 +1279,7 @@ const WaitlistLandingPage = () => {
 
           <div className="lc-hero-sub-wrap" style={{ '--i': 2 } as React.CSSProperties}>
             <p className="lc-subhead">
-              Scan any skincare product. Curae reads every ingredient against your skin type, concerns and allergens, then keeps re-checking as brands quietly reformulate.
+              Scan any skincare product. Curae reads every ingredient against your skin type, concerns and allergens, then tells you plainly what it found.
             </p>
           </div>
 
@@ -1316,7 +1316,7 @@ const WaitlistLandingPage = () => {
         <div className="lc-container">
           <div className="lc-section-intro">
             <span className="lc-section-label">How it works</span>
-            <h2 className="lc-section-title">Scan. Analyze. Know.</h2>
+            <h2 className="lc-section-title">Scan. Check. Know.</h2>
             <p className="lc-section-lead">
               Three steps, one photo, no manual product lookup.
             </p>
@@ -1330,9 +1330,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-step-title">Scan</h3>
               <p className="lc-step-body">
-                Point your camera at any skincare product. Curae identifies it in
-                seconds. No barcode required. Products not yet in the database get
-                added automatically for the next person who scans them.
+                Point your camera at the ingredient label. Curae reads every ingredient on it.
               </p>
             </article>
 
@@ -1341,11 +1339,9 @@ const WaitlistLandingPage = () => {
               <div className="lc-step-icon">
                 <i className="ri-flask-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-step-title">Analyze</h3>
+              <h3 className="lc-step-title">Check</h3>
               <p className="lc-step-body">
-                Every ingredient is scored against your skin profile. Not a universal
-                rating. Yours. Based on your skin type, concerns, sensitivities, and
-                what's already in your routine.
+                Every ingredient is checked against your profile: your skin type, concerns, allergens, and what's already on your shelf.
               </p>
             </article>
 
@@ -1356,70 +1352,9 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-step-title">Know</h3>
               <p className="lc-step-body">
-                Safe, Caution, or Avoid. Every ingredient. With the specific reason
-                it landed there for your skin, not a generic hazard score.
+                You see what was flagged for you and why, in plain words.
               </p>
             </article>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= SAFETY TIERS ================= */}
-      <section className="lc-section lc-section-cream">
-        <div className="lc-container-narrow">
-          <div className="lc-section-intro">
-            <span className="lc-section-label">The tier system</span>
-            <h2 className="lc-section-title">Three verdicts. No guessing.</h2>
-            <p className="lc-section-lead">
-              Every ingredient gets one of three tiers. Deterministic rules, not a
-              black-box score. And the verdict changes based on <em>your</em> skin.
-            </p>
-          </div>
-
-          <div className="lc-tiers">
-            <div className="lc-tier-row safe">
-              <div className="lc-tier-dot safe" aria-hidden="true"></div>
-              <div className="lc-tier-body">
-                <div className="lc-tier-heading">
-                  <span className="lc-tier-label safe">Safe</span>
-                  <span className="lc-tier-verdict">Use freely.</span>
-                </div>
-                <p className="lc-tier-text">
-                  Matches your profile. No flags against EU Annex II, no known sensitizers
-                  for your concerns, no conflicts with the rest of your routine.
-                </p>
-              </div>
-            </div>
-
-            <div className="lc-tier-row caution">
-              <div className="lc-tier-dot caution" aria-hidden="true"></div>
-              <div className="lc-tier-body">
-                <div className="lc-tier-heading">
-                  <span className="lc-tier-label caution">Caution</span>
-                  <span className="lc-tier-verdict">Watch how your skin responds.</span>
-                </div>
-                <p className="lc-tier-text">
-                  Known sensitizers, AHAs/BHAs, retinol, sulfates, formaldehyde
-                  releasers permitted under EU Annex V. Usable for many, but patch
-                  test first and introduce slowly if your skin is reactive.
-                </p>
-              </div>
-            </div>
-
-            <div className="lc-tier-row avoid">
-              <div className="lc-tier-dot avoid" aria-hidden="true"></div>
-              <div className="lc-tier-body">
-                <div className="lc-tier-heading">
-                  <span className="lc-tier-label avoid">Avoid</span>
-                  <span className="lc-tier-verdict">Worth avoiding on your skin.</span>
-                </div>
-                <p className="lc-tier-text">
-                  Substances banned under EU Annex II, free formaldehyde,
-                  quaternium-15, and MI/MCI. Each one traces to a named entry in the
-                  regulation, not to our opinion.
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -1431,7 +1366,7 @@ const WaitlistLandingPage = () => {
             <span className="lc-section-label">Core features</span>
             <h2 className="lc-section-title">What a scan unlocks</h2>
             <p className="lc-section-lead">
-              Every scan opens a complete intelligence layer, not just an ingredient list.
+              Every scan does more than list ingredients.
             </p>
           </div>
 
@@ -1442,9 +1377,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Where to buy</h3>
               <p className="lc-feature-text">
-                Every scan surfaces where to buy, filtered by price, retailer trust
-                score, and shipping speed. Ranked using your scan history, budget, and
-                onboarding data. Not a generic search result.
+                See where to buy it, with shops ordered by price, trust and delivery.
               </p>
             </article>
 
@@ -1454,9 +1387,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Compatible and similar products</h3>
               <p className="lc-feature-text">
-                Scan anything and instantly see what works alongside it in your routine
-                and what alternatives exist at different price points. Matched to your
-                skin profile, not a universal compatibility list.
+                See what works alongside it in your routine, matched to your profile.
               </p>
             </article>
 
@@ -1466,10 +1397,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Your shelf</h3>
               <p className="lc-feature-text">
-                Every product you scan gets added to your digital shelf, a live view
-                of your full routine. Ask Curae about anything on it, build routines
-                from products you actually own, and get automatic check-ins once a
-                product has been in your routine long enough to show results.
+                Save what you scan to your shelf. Build routines from products you actually own, and get a check-in after you've used one for a while.
               </p>
             </article>
 
@@ -1479,13 +1407,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Ask Curae</h3>
               <p className="lc-feature-text">
-                Not a chatbot. A skincare companion that already knows your skin. It
-                comes in already knowing your skin type, concerns, current routine,
-                and scan history. Ask it anything: 'I'm going to Miami this weekend, is
-                my SPF enough for that humidity?' or 'Does this serum fit with the
-                retinol I already use?' It pulls from your scan
-                results, your profile, real-time environment data, and ingredient
-                research. An answer that's actually about your skin.
+                Ask Curae already knows your profile and what's on your shelf. Ask it things like 'Does this serum fit with the retinol I already use?' and get an answer about your skin.
               </p>
             </article>
           </div>
@@ -1510,8 +1432,7 @@ const WaitlistLandingPage = () => {
               </div>
               <h3 className="lc-feature-title">Camera-first identification</h3>
               <p className="lc-feature-text">
-                Point at any product. Curae identifies it in seconds. Unknown products
-                auto-catalog for the next person.
+                Point your camera at the label. Products Curae hasn't seen yet are read straight from the label.
               </p>
             </article>
 
@@ -1527,30 +1448,6 @@ const WaitlistLandingPage = () => {
                 Two people scanning the same bottle see different things called out.
               </p>
             </article>
-
-            <article className="lc-feature-card">
-              <div className="lc-feature-icon">
-                <i className="ri-book-2-line" aria-hidden="true"></i>
-              </div>
-              <h3 className="lc-feature-title">Deterministic safety rules</h3>
-              <p className="lc-feature-text">
-                Where a rule exists, it names a source: an entry in the EU Cosmetics
-                Regulation, a CIR safety review, or an FDA rule. A verdict can be
-                checked rather than trusted. Ingredients we have not
-                researched yet are labelled as such, not guessed at.
-              </p>
-            </article>
-
-            <article className="lc-feature-card lc-feature-offset">
-              <div className="lc-feature-icon">
-                <i className="ri-pulse-line" aria-hidden="true"></i>
-              </div>
-              <h3 className="lc-feature-title">Behavioral personalization</h3>
-              <p className="lc-feature-text">
-                Curae learns from every scan, tap, and save. Gets sharper about what
-                you care about without asking you to fill in a survey.
-              </p>
-            </article>
           </div>
         </div>
       </section>
@@ -1564,38 +1461,12 @@ const WaitlistLandingPage = () => {
               <span className="lc-diff-numeral" aria-hidden="true">01</span>
               <span className="lc-section-label lc-section-label-dark">Why we exist</span>
               <h2 className="lc-section-title lc-section-title-dark lc-diff-headline">
-                Scanning ingredients isn't new. Scanning them <em>for your skin</em> is.
+                An ingredient list, read for you.
               </h2>
               <p className="lc-section-lead lc-section-lead-dark">
-                Every other tool hands everyone the same verdict. Yuka, Think Dirty,
-                INCI Decoder, EWG: same score, every user. We don't. Your skin type,
-                concerns, and sensitivities change the answer. Every scan.
+                Curae checks every ingredient against your skin type, concerns and allergens, and against what's already on your shelf. Two people scanning the same bottle see different things called out.
               </p>
             </div>
-
-            <ul className="lc-comparison-list">
-              {competitors.map((c) => (
-                <li
-                  key={c.name}
-                  className={`lc-comparison-item ${c.isUs ? 'lc-us' : ''}`}
-                >
-                  <span
-                    className={c.isUs ? 'lc-icon-check' : 'lc-icon-x'}
-                    aria-hidden="true"
-                  >
-                    {c.isUs ? '✓' : '✕'}
-                  </span>
-                  <div>
-                    <strong>{c.name}</strong>
-                    <div className="bullets">
-                      {c.bullets.map((b, i) => (
-                        <div key={i}>{b}</div>
-                      ))}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </section>
@@ -1609,7 +1480,7 @@ const WaitlistLandingPage = () => {
             <span className="lc-section-label">Early access</span>
             <h2 className="lc-section-title">Founding member pricing.</h2>
             <p className="lc-section-lead" style={{ maxWidth: '620px', margin: '0 auto' }}>
-              Waitlist members join at the founding rate while spots remain.
+              Founding members keep today's Premium price for as long as they stay subscribed. Free to start: 5 scans a month.
             </p>
           </div>
 
@@ -1629,7 +1500,7 @@ const WaitlistLandingPage = () => {
 
           <div className={`lc-price-row${slotData && !slotData.slots_available ? ' lc-price-row-muted' : ''}`}>
             <div className="lc-price-card">
-              <div className="lc-price-label">Founding rate</div>
+              <div className="lc-price-label">Premium, monthly</div>
               <div className="lc-price-amount">
                 <span className="lc-price-currency">$</span>
                 <span className="lc-price-num">4.99</span>
@@ -1637,7 +1508,7 @@ const WaitlistLandingPage = () => {
               </div>
             </div>
             <div className="lc-price-card lc-price-card-accent">
-              <div className="lc-price-label">Founding rate, annual</div>
+              <div className="lc-price-label">Premium, annual</div>
               <div className="lc-price-amount">
                 <span className="lc-price-currency">$</span>
                 <span className="lc-price-num">34.99</span>
@@ -1662,9 +1533,9 @@ const WaitlistLandingPage = () => {
               <div className="lc-perk-icon">
                 <i className="ri-price-tag-3-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-perk-title">Founding rate</h3>
+              <h3 className="lc-perk-title">Today's price, kept</h3>
               <p className="lc-perk-text">
-                The founding rate for waitlist members, while spots remain.
+                Keep today's Premium price for as long as you stay subscribed.
               </p>
             </article>
             <article className="lc-perk">
@@ -1689,9 +1560,9 @@ const WaitlistLandingPage = () => {
               <div className="lc-perk-icon">
                 <i className="ri-chat-voice-line" aria-hidden="true"></i>
               </div>
-              <h3 className="lc-perk-title">Direct line to founders</h3>
+              <h3 className="lc-perk-title">Direct line to the founder</h3>
               <p className="lc-perk-text">
-                Your feedback shapes what we build next. Email us, and a founder replies.
+                Your feedback shapes what we build next. Email us, and the founder replies.
               </p>
             </article>
           </div>
@@ -1703,7 +1574,7 @@ const WaitlistLandingPage = () => {
         <div className="lc-container-narrow">
           <span className="lc-section-label">Built by founding members</span>
           <p className="lc-builder-lead">
-            Most apps pretend they have everything. We won't. Curae is new, and our catalog grows from real scans by real people. As a founding member, every product you scan makes Curae smarter for everyone who comes after you.
+            Curae is new, and our catalog grows from real scans by real people. As a founding member, your scans help build it for everyone who comes after you.
           </p>
           <p className="lc-builder-emphasis">You're not a user. You're a builder.</p>
         </div>
@@ -1714,7 +1585,7 @@ const WaitlistLandingPage = () => {
         <div className="lc-cta-card">
           <h2 className="lc-cta-title">Join before launch.</h2>
           <p className="lc-cta-sub">
-            One email. Founding rate while spots remain.
+            One email. Today's price, kept, while spots remain.
           </p>
 
           <div className="lc-form-wrapper">
