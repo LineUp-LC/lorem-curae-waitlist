@@ -1460,7 +1460,7 @@ const WaitlistLandingPage = () => {
               <h2 className="lc-section-title lc-section-title-dark lc-diff-headline">
                 An ingredient list, read for you.
               </h2>
-              <p className="lc-section-lead lc-section-lead-dark">
+              <p className="lc-section-lead lc-section-lead-dark" style={{ maxWidth: '720px' }}>
                 Curae checks every ingredient against your skin type, concerns and allergens, and against what's already on your shelf. So two people scanning the same bottle see different things called out.
               </p>
             </div>
