@@ -91,7 +91,7 @@ const SCAN_LINE =
 
 const FOOTER = `<p style="color:#888;font-size:12px;margin-top:32px;">Curae · <a href="{{UNSUBSCRIBE_URL}}" style="color:#888;">Unsubscribe</a> · <a href="https://loremcurae.com/privacy" style="color:#888;">Privacy</a></p>`;
 
-const SIGN_OFF = `<p>— Ethan Jones<br/>Founder, Curae</p>`;
+const SIGN_OFF = `<p>Ethan Jones<br/>Founder, Curae</p>`;
 
 // Status-change mail, as distinct from access-opened mail. accessOpenedHtml ends in
 // "Sign in and scan", which is wrong for an email whose whole point is that there is

@@ -64,7 +64,7 @@ const SCAN_LINE =
 
 const FOOTER = `<p style="color:#888;font-size:12px;margin-top:32px;">Curae · <a href="{{UNSUBSCRIBE_URL}}" style="color:#888;">Unsubscribe</a> · <a href="https://loremcurae.com/privacy" style="color:#888;">Privacy</a></p>`;
 
-const SIGN_OFF = `<p>— Ethan Jones<br/>Founder, Curae</p>`;
+const SIGN_OFF = `<p>Ethan Jones<br/>Founder, Curae</p>`;
 
 const LOGIN_SUBJECT = "Your Curae sign-in link";
 
@@ -97,12 +97,20 @@ ${FOOTER}`;
 // {{POSITION_BLOCK}} is a WHOLE PARAGRAPH, not a bare number, so that a rank we could
 // not compute degrades to an email with one fewer line rather than to "You're
 // undefined on the list." The caller substitutes an empty string when the count fails.
-function signupHtml(opening: string, accessLine: string): string {
+// A tester template leaves out the early-access line (they already asked for it).
+function signupHtml(opening: string, accessLine: string, isTester = false): string {
+  const waitLines = [
+    ...(isTester ? [] : ['Want early access? Reply "tester" to this email.']),
+    'Follow along: @curae.app on TikTok and Instagram.',
+    "Reply to this email with what you want Curae to check, or a feature you'd want at launch or later. I read every one.",
+  ];
+  const waitBlock = waitLines.map((line, i) => `${i + 1}. ${line}`).join('<br/>');
   return `<p>Hi there,</p>
 <p>${opening}</p>
 <p>${SCAN_LINE}</p>
 {{POSITION_BLOCK}}<p>${accessLine}</p>
-<p><strong><a href="${SIGNUP_CTA_URL}">See what we are building</a></strong></p>
+<p><strong>While you wait:</strong></p>
+<p>${waitBlock}</p>
 ${SIGN_OFF}
 ${FOOTER}`;
 }
@@ -128,6 +136,7 @@ const templates: Record<string, EmailTemplate> = {
     html: signupHtml(
       "You're on the tester list.",
       "When tester access opens, you'll be able to scan products and try features before anyone else.",
+      true,
     ),
   },
   tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
@@ -140,7 +149,7 @@ const templates: Record<string, EmailTemplate> = {
   // "From day one" went with it: there is no launch date, so it promised a moment we
   // could not name. What replaces it is a promise tied to an event we control.
   founding_member_signup: {
-    subject: "Welcome to Curae — founding member",
+    subject: "Welcome to Curae, founding member",
     html: signupHtml(
       "You're a founding member of Curae.",
       "Founding members go in first, and your place is held. We'll email you when access opens.",
@@ -150,17 +159,18 @@ const templates: Record<string, EmailTemplate> = {
 
   // ---- Founding Member Tester Consumer ----
   founding_member_tester_consumer_signup: {
-    subject: "Welcome — founding tester",
+    subject: "Welcome, founding tester",
     html: signupHtml(
       "You're a founding tester on Curae.",
       "Founding testers go in first, and you'll get experimental features ahead of general access. We'll email you when access opens.",
+      true,
     ),
   },
   founding_member_tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
 
   // ---- Founder text opt-in offer (sent via api/text-opt-in.ts cascade + api/signup.ts trigger) ----
   text_opt_in_offer: {
-    subject: "A personal note from Ethan — you're in the first 100",
+    subject: "A personal note from Ethan, you're in the first 100",
     html: `<p>Hi there,</p>
 // THE 100 BELOW IS THE TEXT POOL, NOT THE FOUNDING CAP. They are unrelated and
 // coincidentally equal since 2026-09-18, when the founding cap moved 1000 -> 100.
@@ -169,9 +179,9 @@ const templates: Record<string, EmailTemplate> = {
 // MAX_FOUNDING_MEMBERS (src/lib/foundingMembers.ts) and the founding_member_slots view.
 // Do not merge them, and do not replace either number with the other constant.
 <p>You're one of our first 100 founding members on Curae.</p>
-<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+<p>I personally text the first 100. It's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="{{CLAIM_URL}}">Claim your spot</a></strong></p>
-<p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
+<p>This offer expires in 48 hours. If you'd rather not, no worries, just ignore this email.</p>
 ${SIGN_OFF}
 ${FOOTER}`,
   },
@@ -180,7 +190,7 @@ ${FOOTER}`,
   consumer_wave_1_signup: {
     subject: "You're on the Curae waitlist",
     html: signupHtml(
-      "You're on the Curae waitlist — Wave 1.",
+      "You're on the Curae waitlist, Wave 1.",
       "Wave 1 is the first group in. We'll email you when access opens.",
     ),
   },
@@ -188,7 +198,7 @@ ${FOOTER}`,
   consumer_wave_2_signup: {
     subject: "You're on the Curae waitlist",
     html: signupHtml(
-      "You're on the Curae waitlist — Wave 2.",
+      "You're on the Curae waitlist, Wave 2.",
       "We'll email you when Wave 2 access opens.",
     ),
   },
@@ -196,7 +206,7 @@ ${FOOTER}`,
   consumer_wave_3_signup: {
     subject: "You're on the Curae waitlist",
     html: signupHtml(
-      "You're on the Curae waitlist — Wave 3.",
+      "You're on the Curae waitlist, Wave 3.",
       "We'll email you when Wave 3 access opens.",
     ),
   },
@@ -204,7 +214,7 @@ ${FOOTER}`,
   consumer_wave_4_signup: {
     subject: "You're on the Curae waitlist",
     html: signupHtml(
-      "You're on the Curae waitlist — Wave 4.",
+      "You're on the Curae waitlist, Wave 4.",
       "We'll email you when Wave 4 access opens.",
     ),
   },
@@ -212,7 +222,7 @@ ${FOOTER}`,
   consumer_wave_5_signup: {
     subject: "You're on the Curae waitlist",
     html: signupHtml(
-      "You're on the Curae waitlist — Wave 5.",
+      "You're on the Curae waitlist, Wave 5.",
       "We'll email you when Wave 5 access opens.",
     ),
   },
@@ -220,7 +230,7 @@ ${FOOTER}`,
   consumer_wave_6_signup: {
     subject: "You're on the Curae waitlist",
     html: signupHtml(
-      "You're on the Curae waitlist — Wave 6.",
+      "You're on the Curae waitlist, Wave 6.",
       "We'll email you when Wave 6 access opens.",
     ),
   },
@@ -228,7 +238,7 @@ ${FOOTER}`,
   consumer_wave_7_signup: {
     subject: "You're on the Curae waitlist",
     html: signupHtml(
-      "You're on the Curae waitlist — Wave 7.",
+      "You're on the Curae waitlist, Wave 7.",
       "We'll email you when Wave 7 access opens.",
     ),
   },
