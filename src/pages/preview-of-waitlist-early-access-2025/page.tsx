@@ -829,7 +829,6 @@ const WaitlistLandingPage = () => {
 
         @media (min-width: 900px) {
           .lc-diff-grid {
-            grid-template-columns: 1fr 1fr;
             gap: 4rem;
           }
         }
@@ -1444,7 +1443,6 @@ const WaitlistLandingPage = () => {
                 An ingredient rates the same for everyone, because chemistry does not
                 change per person. What changes is which ones get flagged for you:
                 your allergens, your concerns, and what does not suit your skin type.
-                Two people scanning the same bottle see different things called out.
               </p>
             </article>
           </div>
@@ -1463,7 +1461,7 @@ const WaitlistLandingPage = () => {
                 An ingredient list, read for you.
               </h2>
               <p className="lc-section-lead lc-section-lead-dark">
-                Curae checks every ingredient against your skin type, concerns and allergens, and against what's already on your shelf. Two people scanning the same bottle see different things called out.
+                Curae checks every ingredient against your skin type, concerns and allergens, and against what's already on your shelf. So two people scanning the same bottle see different things called out.
               </p>
             </div>
           </div>
