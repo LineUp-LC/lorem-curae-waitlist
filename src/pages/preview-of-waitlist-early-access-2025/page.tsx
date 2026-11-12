@@ -1228,6 +1228,24 @@ const WaitlistLandingPage = () => {
 
         .lc-footer-links a:hover { color: #E8A888; }
 
+        .lc-footer-social {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
+          margin-top: 1rem;
+        }
+
+        .lc-footer-social a {
+          color: rgba(250, 248, 245, 0.55);
+          text-decoration: none;
+          font-size: 17px;
+          line-height: 1;
+          transition: color 0.2s ease;
+        }
+
+        .lc-footer-social a:hover { color: #E8A888; }
+
         .lc-footer-sep {
           color: rgba(250, 248, 245, 0.2);
         }
@@ -1607,6 +1625,14 @@ const WaitlistLandingPage = () => {
           <Link to="/privacy">Privacy</Link>
           <span className="lc-footer-sep">·</span>
           <Link to="/contact">Contact</Link>
+        </div>
+        <div className="lc-footer-social">
+          <a href="https://www.tiktok.com/@curae.app" target="_blank" rel="noopener noreferrer" aria-label="Curae on TikTok">
+            <i className="ri-tiktok-line" aria-hidden="true"></i>
+          </a>
+          <a href="https://www.instagram.com/curae.app/" target="_blank" rel="noopener noreferrer" aria-label="Curae on Instagram">
+            <i className="ri-instagram-line" aria-hidden="true"></i>
+          </a>
         </div>
         <p className="lc-footer-copy">© {new Date().getFullYear()} Curae</p>
       </footer>
