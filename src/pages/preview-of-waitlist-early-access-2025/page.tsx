@@ -5,7 +5,6 @@ import SupabaseWaitlistForm from '../../components/SupabaseWaitlistForm';
 import WaitlistStatus from '../../components/WaitlistStatus';
 import MagicLinkLogin from '../../components/MagicLinkLogin';
 import AuthCallback from '../../components/AuthCallback';
-import { competitors } from '../../data/competitors';
 import { supabase } from '../../lib/supabase';
 
 /**
