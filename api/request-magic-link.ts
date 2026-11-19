@@ -1,5 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import {
+  FOUNDING_WELCOME_HTML,
+  FOUNDING_WELCOME_LOGO_URL,
+  foundingPositionBlock,
+} from './_emails/foundingWelcome.js';
 
 console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 
@@ -115,29 +120,13 @@ ${SIGN_OFF}
 ${FOOTER}`;
 }
 
-// The founding member welcome. Its {{POSITION_BLOCK}} is built in the handler with
+// The founding member welcome is the approved branded design in
+// api/_emails/foundingWelcome.ts. Its {{POSITION_BLOCK}} is built in the handler with
 // founding-only wording, and unlike the other templates it falls back to a rank-free
-// paragraph instead of an empty string when the count fails.
+// paragraph instead of an empty string when the count fails. It carries its own
+// sign-off and footer, so SIGN_OFF and FOOTER are not appended.
 function foundingWelcomeHtml(): string {
-  return `<p>Skincare doesn't have to be complicated. It just has to be you.</p>
-<p>Hi there,</p>
-<p>You're officially on the Curae founding member list. Welcome in!</p>
-<p>We've all been there. A product is trending, the reviews look promising, and suddenly it's in your cart. But is it actually a good fit for your skin?</p>
-<p>That's the question we're making easier to answer.</p>
-<p>With Curae, you'll be able to scan a skincare product, explore what's inside, and see how its ingredients align with your skin's needs.</p>
-<p>Because your skincare decisions should be about your skin, not for your socials.</p>
-<p>Your spot is secured.</p>
-{{POSITION_BLOCK}}<p><strong>Want to get involved before launch?</strong></p>
-<ul>
-<li><strong>Get early access:</strong> Reply TESTER to be considered for our testing group.</li>
-<li><strong>Follow the journey:</strong> Find us at <strong>@curae.app</strong> on Instagram and TikTok.</li>
-<li><strong>Help shape Curae:</strong> Hit reply and tell us what you wish you knew before buying a skincare product, or a feature you'd want at launch or later. I read every one.</li>
-</ul>
-<p>We're building Curae for people who want to understand what they're putting on their skin, without all the guesswork.</p>
-<p>Glad you're here.</p>
-${SIGN_OFF}
-<p><em>Know what's in it, and if it fits you, before it touches your skin.</em></p>
-${FOOTER}`;
+  return FOUNDING_WELCOME_HTML.replace(/\{\{LOGO_URL\}\}/g, FOUNDING_WELCOME_LOGO_URL);
 }
 
 // ----------------------------------------------------------------------------
@@ -518,9 +507,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // A FAILED COUNT SENDS NO POSITION LINE rather than a wrong one. The placeholder is
     // a whole paragraph for exactly this reason.
     const isFoundingWelcome = templateKey === 'founding_member_signup';
-    let positionBlock = isFoundingWelcome
-      ? `<p>You’ll be among the first to hear when access opens.</p>`
-      : '';
+    let positionBlock = isFoundingWelcome ? foundingPositionBlock(null) : '';
     if (type === 'signup' && waitlist?.created_at) {
       let rankQuery = supabase
         .from('waitlist')
@@ -537,7 +524,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }));
       } else if (priorCount !== null) {
         positionBlock = isFoundingWelcome
-          ? `<p>You\u2019re #${priorCount + 1} on the founding member list, and you\u2019ll be among the first to hear when access opens.</p>`
+          ? foundingPositionBlock(priorCount + 1)
           : `<p>You\u2019re <strong>${ordinal(priorCount + 1)}</strong> on the list.</p>`;
       }
     }
