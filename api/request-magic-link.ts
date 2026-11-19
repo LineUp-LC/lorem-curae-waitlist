@@ -522,10 +522,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? `<p>You’ll be among the first to hear when access opens.</p>`
       : '';
     if (type === 'signup' && waitlist?.created_at) {
-      const { count: priorCount, error: rankErr } = await supabase
+      let rankQuery = supabase
         .from('waitlist')
         .select('id', { count: 'exact', head: true })
         .lt('created_at', waitlist.created_at as string);
+      // The founding email says "on the founding member list", so it ranks among founding members only.
+      if (isFoundingWelcome) rankQuery = rankQuery.eq('is_founding_member', true);
+      const { count: priorCount, error: rankErr } = await rankQuery;
       if (rankErr) {
         console.warn(JSON.stringify({
           level: 'warn',
