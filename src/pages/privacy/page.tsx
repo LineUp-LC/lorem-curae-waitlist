@@ -24,8 +24,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: September 18, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: September 18, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: November 21, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: November 21, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -71,8 +71,8 @@ const PrivacyPage = () => {
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
                       <li>Full name</li>
                       <li>Email address</li>
-                      <li>Password (stored as a hashed value — we never store plaintext passwords)</li>
-                      <li>Date of birth (collected once during onboarding to confirm you are 18 or older — see Section 10, "Age Requirement and Age Verification")</li>
+                      <li>Password (stored as a hashed value; we never store plaintext passwords)</li>
+                      <li>Date of birth (collected once during onboarding to confirm you are 18 or older; see Section 10, "Age Requirement and Age Verification")</li>
                       <li>An optional profile photo, if you choose to add one (stored while your account is active and deleted when you delete your account)</li>
                     </ul>
 
@@ -106,7 +106,7 @@ const PrivacyPage = () => {
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
                       <li>Images captured using your device camera during product scans</li>
                       <li>Ingredient lists extracted from scanned products</li>
-                      <li>Scan results and compatibility scores</li>
+                      <li>Scan results, including the fit verdict we show you</li>
                       <li>Products added to your digital shelf</li>
                     </ul>
 
@@ -114,8 +114,7 @@ const PrivacyPage = () => {
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li>Custom allergens you manually enter</li>
                       <li>Routines and routine steps you create</li>
-                      <li>Goals you set and modify</li>
-                      <li>Product reaction reports you choose to flag (which product, what your skin did, when it started, whether it felt severe, and an optional free-text description). This is health-adjacent and treated with the same care as your skin profile.</li>
+                      <li>Product reaction reports you choose to flag (which product, what your skin did, and whether it felt severe). This is health-adjacent and treated with the same care as your skin profile.</li>
                     </ul>
                   </div>
 
@@ -158,7 +157,7 @@ const PrivacyPage = () => {
                       <li><strong>The image or images are sent to Anthropic (Claude API), our AI processing provider, to read the ingredient list.</strong> Your skin profile is sent with them so the reading is specific to your skin rather than generic. Section 2.4 lists everything that is sent.</li>
                       <li><strong>We do not store raw product scan images on our own servers after processing is complete.</strong> Anthropic's handling of what we send is covered in Section 5 and Section 6.</li>
                       <li>An account is required to use scan features</li>
-                      <li>Camera access is only activated when you initiate a scan — we never access your camera in the background</li>
+                      <li>Camera access is only activated when you initiate a scan; we never access your camera in the background</li>
                     </ul>
                   </div>
 
@@ -172,12 +171,11 @@ const PrivacyPage = () => {
                       <li>Allergens you flagged, and separately, other ingredients you asked us to avoid</li>
                       <li>Skin tone, product preferences, your main skin goal, and how experienced you are with skincare</li>
                       <li>Lifestyle factors you selected, such as sleep, stress, diet, or water intake</li>
-                      <li>Your local climate, season, and UV level, <strong>only if</strong> you turned on climate-aware results</li>
                     </ul>
                     <p className="leading-relaxed mb-3"><strong>What is deliberately held back.</strong> The extra detail you give about a concern, such as acne type or scarring type, is <strong>not</strong> sent to Anthropic. Nor is sex at birth, which we no longer ask for at all.</p>
-                    <p className="leading-relaxed mb-3">It also sends what the reading is about: the scanned product and its scores, the <strong>names of the products on your shelf</strong>, and any conflicts we found between them. If you use Ask Curae, the ingredient lists of your shelf products are sent too, so it can answer questions about them.</p>
+                    <p className="leading-relaxed mb-3">It also sends what the reading is about: the scanned product and its ingredient list, the <strong>names of the products on your shelf</strong>, and any conflicts we found between them. If you use Ask Curae, the ingredient lists of your shelf products are sent too, so it can answer questions about them.</p>
                     <p className="leading-relaxed mb-3"><strong>We do not send your name, email address, date of birth, or account identifier in either send.</strong> Anthropic receives a skin profile, not an identified person.</p>
-                    <p className="leading-relaxed mb-3"><strong>What you can turn off.</strong> Product preferences and climate-aware results each have a switch in the app, and turning either off removes that data from what we send. The rest is what the reading is built from. If you would rather it were not sent, the scan features are the part to avoid using.</p>
+                    <p className="leading-relaxed mb-3"><strong>What you can turn off.</strong> There is no switch to turn this off today. Everything listed above is what the reading is built from. If you would rather it were not sent, the scan features are the part to avoid using.</p>
                     <p className="leading-relaxed">Anthropic processes this on our behalf under its commercial terms. How long it holds it is covered in Section 6.</p>
                   </div>
                 </div>
@@ -194,7 +192,7 @@ const PrivacyPage = () => {
                   <div>
                     <p className="font-semibold mb-2">Provide and Improve the Service:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
-                      <li>Analyze scanned products and provide personalized compatibility scores</li>
+                      <li>Analyze scanned products and show how each one fits your skin profile</li>
                       <li>Generate ingredient safety assessments based on your skin profile</li>
                       <li>Surface compatible product recommendations tailored to your skin type and concerns</li>
                       <li>Power your digital shelf and routine tracker</li>
@@ -264,26 +262,26 @@ const PrivacyPage = () => {
                 </div>
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mb-6">
                   <p className="font-semibold text-forest-900 mb-2">Aggregated and Anonymized Insights (Future)</p>
-                  <p className="text-gray-700 leading-relaxed mb-3">In the future, we may create and share aggregated, anonymized insights about skincare trends — for example, which kinds of products people with a particular skin type tend to scan, keep, or stop using — with skincare brands, researchers, or similar partners. This is not the same as selling your personal information, which we never do (as stated in Section 5, "How We Share Your Information"). By "aggregated and anonymized" we mean:</p>
+                  <p className="text-gray-700 leading-relaxed mb-3">In the future, we may create and share aggregated, anonymized insights about skincare trends (for example, which kinds of products people with a particular skin type tend to scan, keep, or stop using) with skincare brands, researchers, or similar partners. This is not the same as selling your personal information, which we never do (as stated in Section 5, "How We Share Your Information"). By "aggregated and anonymized" we mean:</p>
                   <ul className="list-disc pl-6 space-y-2 text-gray-700 leading-relaxed mb-3">
                     <li><strong>No individual data.</strong> These insights never include your name, email, account, images, or skin profile, and never any information that could identify you.</li>
                     <li><strong>Combined across many users.</strong> Insights are calculated over large groups, so that neither we nor any recipient can single you out or trace an insight back to you.</li>
                     <li><strong>Trends, not people.</strong> They describe patterns across a population, never any individual's activity.</li>
                   </ul>
-                  <p className="text-gray-700 leading-relaxed">This would be <strong>opt-in only.</strong> We are not doing this today, and we will not include your activity in any such insights unless you expressly choose to participate — and you could withdraw that choice at any time. Our commitment never to sell your personal information or skin profile data remains unchanged regardless of any aggregated-insights program.</p>
+                  <p className="text-gray-700 leading-relaxed">This would be <strong>opt-in only.</strong> We are not doing this today, and we will not include your activity in any such insights unless you expressly choose to participate, and you could withdraw that choice at any time. Our commitment never to sell your personal information or skin profile data remains unchanged regardless of any aggregated-insights program.</p>
                 </div>
                 <p className="text-gray-700 leading-relaxed mb-4">We may share information with:</p>
                 <div className="space-y-5 text-gray-700">
                   <div>
                     <p className="font-semibold mb-2">Service Providers:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
-                      <li><strong>Supabase</strong> — Database hosting, authentication, and backend infrastructure (servers located in the United States)</li>
-                      <li><strong>Google</strong> — Sign-in with Google, if you choose it. Google provides your name and email to create your account; your use of Google sign-in is subject to Google's privacy policy.</li>
-                      <li><strong>Anthropic (Claude API)</strong> — AI-powered ingredient analysis and skincare insights. We send product scan images, your skin profile, and details of the products on your shelf; we do not send your name, email address, date of birth, or account identifier. <strong>Section 2.4 lists exactly what is sent</strong>, and Section 6 covers how long it is held.</li>
-                      <li><strong>PostHog</strong> — Analytics and user behavior tracking</li>
-                      <li><strong>Resend</strong> — Transactional email delivery</li>
-                      <li><strong>Serper.dev</strong> — Web search for product, retailer, and ingredient research (we send product and ingredient search queries, which may include general skin-type or concern keywords to refine results; we do not send your name, email, or full skin profile)</li>
-                      <li><strong>Expo / Expo Application Services (EAS)</strong> — Mobile app distribution and build services</li>
+                      <li><strong>Supabase</strong>: Database hosting, authentication, and backend infrastructure (servers located in the United States)</li>
+                      <li><strong>Google</strong>: Sign-in with Google, if you choose it. Google provides your name and email to create your account; your use of Google sign-in is subject to Google's privacy policy.</li>
+                      <li><strong>Anthropic (Claude API)</strong>: AI-powered ingredient analysis and skincare insights. We send product scan images, your skin profile, and details of the products on your shelf; we do not send your name, email address, date of birth, or account identifier. <strong>Section 2.4 lists exactly what is sent</strong>, and Section 6 covers how long it is held.</li>
+                      <li><strong>PostHog</strong>: Analytics and user behavior tracking</li>
+                      <li><strong>Resend</strong>: Transactional email delivery</li>
+                      <li><strong>Serper.dev</strong>: Web search for product, retailer, and ingredient research (we send product and ingredient search queries, which may include general skin-type or concern keywords to refine results; we do not send your name, email, or full skin profile)</li>
+                      <li><strong>Expo / Expo Application Services (EAS)</strong>: Mobile app distribution and build services</li>
                     </ul>
                     <p className="leading-relaxed mt-3">All service providers are contractually required to handle your data securely and only for the purposes we specify.</p>
                   </div>
@@ -406,7 +404,7 @@ const PrivacyPage = () => {
                 <div className="space-y-4 text-gray-700 leading-relaxed">
                   <p>The Service is intended for adults. <strong>You must be at least 18 years old to create an account or use the Service.</strong></p>
                   <p>To confirm this, we ask for your date of birth during onboarding. If the date you provide indicates you are under 18, you are blocked from creating an account and cannot use the Service.</p>
-                  <p>To keep that block in place if the app is reinstalled, when an under-18 attempt is blocked we store a <strong>one-way SHA-256 hash of a device identifier — never the raw identifier</strong> — together with the submitted date of birth. This minimal record is created before any account exists, is used only to enforce the age restriction, is never used to build a profile or for advertising, and <strong>self-expires</strong> — we delete it after the person would turn 18.</p>
+                  <p>To keep that block in place if the app is reinstalled, when an under-18 attempt is blocked we store a <strong>one-way SHA-256 hash of a device identifier, never the raw identifier</strong>, together with the submitted date of birth. This minimal record is created before any account exists, is used only to enforce the age restriction, is never used to build a profile or for advertising, and <strong>self-expires</strong>: we delete it after the person would turn 18.</p>
                   <p>We do not knowingly collect personal information from anyone under 18 except the minimal information described above, and only to enforce this age restriction. The Service is not directed to children under 13, and we do not knowingly permit their use.</p>
                   <p>If you believe a person under 18 has provided us personal information beyond what is described here, please contact us at <a href="mailto:ethanjones@loremcurae.com" className="text-forest-700 hover:underline">ethanjones@loremcurae.com</a> and we will delete it promptly.</p>
                 </div>
@@ -458,11 +456,12 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>November 21, 2026:</strong> Brought this policy in line with the app. Scan results are now described as a fit verdict, since the app no longer shows compatibility scores, and no score is sent to our AI provider. Removed the line about climate, season, and UV data, which is never sent, and corrected "What you can turn off": the app has no switch for this today. Reaction reports no longer record when a reaction started or a typed note, so those were removed. Removed "goals you set and modify", since the app has no goals feature beyond the main skin goal you give in the survey. Replaced em dashes with other punctuation; the meaning is unchanged.</li>
                     <li><strong>September 18, 2026:</strong> Clarified that product scan images are sent to Anthropic (Claude API) for analysis, and that your skin profile is sent with them. Added Section 2.4, which lists in full what each of the two sends contains, including the automatic personalized reading, the additional profile detail it carries, and the shelf product information sent with it. Added a retention line for data held by AI processing providers, including that deleting your account does not retroactively delete copies a provider still holds inside its own retention window. Stopped sending the extra detail you give about a concern (acne type, uneven tone type, sensitivity type, aging concerns, scarring type) to our AI provider, and stopped asking for sex at birth entirely. Disclosed the concern detail we do collect, which this policy had not listed. Disclosed the optional phone number collected for founding-member text updates, which had not previously been described, and added its retention terms.</li>
                     <li><strong>September 2, 2026:</strong> Removed a claim that we match you with reviews from users with similar skin profiles. There is no review feature and no such data, so the statement was not accurate. Added a "What We Do Not Collect" section covering face and body photography, biometric identifiers, GPS location, the microphone, your photo library, and data brokers. Clarified that tapping a Where to Buy link takes you to the retailer's own site under their privacy policy, and that we never send your skin profile or allergens to a retailer or affiliate network. Named Lineup Labs LLC as the operating entity in the mailing address and removed an individual founder name, since this policy names the entity that controls your data. Renumbered the sections to close a numbering gap.</li>
                     <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com and added a dedicated account-deletion page describing how to request deletion, what is removed, and what is retained. Corrected our data-collection disclosures to match how the app actually behaves: removed a "crash reports" claim (we do not collect crash reports), disclosed product-reaction reports and an optional profile photo, clarified that product searches may include general skin-type or concern keywords, named Google sign-in, and refined the analytics-retention wording.</li>
                     <li><strong>August 15, 2026:</strong> Disclosed the 18+ age requirement and the date-of-birth age verification collected during onboarding, including the one-way hashed device identifier retained to enforce the restriction for blocked users. Corrected the age policy from 13+ to 18+ to match the app.</li>
-                    <li><strong>August 2, 2026:</strong> Added a forward-looking disclosure that we may, on an opt-in basis, share aggregated, anonymized skincare-trend insights with third parties — never individual data, and never a sale of your personal information.</li>
+                    <li><strong>August 2, 2026:</strong> Added a forward-looking disclosure that we may, on an opt-in basis, share aggregated, anonymized skincare-trend insights with third parties, never individual data, and never a sale of your personal information.</li>
                     <li><strong>July 30, 2026:</strong> Updated the operating entity name to Lineup Labs LLC. Service tier and free-trial terms were also updated (see our Terms of Service).</li>
                   </ul>
                 </div>

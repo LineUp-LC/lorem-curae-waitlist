@@ -9,7 +9,7 @@ const TermsPage = () => {
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Read Curae\'s Terms of Service — your rights, responsibilities, subscription details, and dispute resolution when using the Curae skincare intelligence platform.');
+      metaDescription.setAttribute('content', 'Read Curae\'s Terms of Service: your rights, responsibilities, subscription details, and dispute resolution when using the Curae skincare intelligence platform.');
     }
 
     const metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -25,8 +25,8 @@ const TermsPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Terms of Service</h1>
-              <p className="text-gray-600 text-lg">Last Updated: November 20, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: November 20, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: November 21, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: November 21, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -114,7 +114,7 @@ const TermsPage = () => {
                     <p className="leading-relaxed mb-3">Curae is an AI-powered skincare intelligence platform that:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
                       <li>Analyzes skincare product ingredients via camera scan</li>
-                      <li>Provides personalized compatibility scores based on your skin profile</li>
+                      <li>Shows how each product fits your skin profile</li>
                       <li>Surfaces compatible product recommendations</li>
                       <li>Helps you build and manage a skincare routine</li>
                       <li>Provides AI-powered skincare insights and chat features</li>
@@ -123,10 +123,10 @@ const TermsPage = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-medium text-forest-800 mb-3">4.2 Important Limitations — Not Medical Advice</h3>
+                    <h3 className="text-xl font-medium text-forest-800 mb-3">4.2 Important Limitations: Not Medical Advice</h3>
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-4">
                       <p className="font-bold text-red-900 uppercase tracking-wide text-sm mb-2">THE SERVICE DOES NOT PROVIDE MEDICAL ADVICE, DIAGNOSIS, OR TREATMENT.</p>
-                      <p className="text-red-800 leading-relaxed">The information provided by Curae, including ingredient safety assessments, compatibility scores, and product recommendations, is for <strong>informational and educational purposes only</strong>. It is not a substitute for professional medical advice, diagnosis, or treatment from a licensed dermatologist, allergist, physician, or other qualified healthcare provider.</p>
+                      <p className="text-red-800 leading-relaxed">The information provided by Curae, including ingredient safety assessments, fit verdicts, and product recommendations, is for <strong>informational and educational purposes only</strong>. It is not a substitute for professional medical advice, diagnosis, or treatment from a licensed dermatologist, allergist, physician, or other qualified healthcare provider.</p>
                     </div>
                     <p className="font-semibold mb-2">You should:</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed">
@@ -134,7 +134,7 @@ const TermsPage = () => {
                       <li>Never disregard professional medical advice based on information provided by the Service</li>
                       <li>Seek emergency medical attention if you experience a severe skin reaction, allergic reaction, or other medical emergency</li>
                     </ul>
-                    <p className="leading-relaxed mt-3"><strong>If you have known allergies, skin conditions, or sensitivities, you should verify product safety with a qualified healthcare provider before use, even if Curae rates a product as compatible for you.</strong></p>
+                    <p className="leading-relaxed mt-3"><strong>If you have known allergies, skin conditions, or sensitivities, you should verify product safety with a qualified healthcare provider before use, even if Curae shows a product as Clear for you.</strong></p>
                   </div>
 
                   <div>
@@ -210,7 +210,7 @@ const TermsPage = () => {
 
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">5.6 Free Tier</h3>
-                    <p className="leading-relaxed">Curae offers a free tier that includes 5 product scans per month, resetting at the start of each calendar month, along with full ingredient analysis, allergen flags, an unlimited product shelf, one fully working routine, conflict detection showing which of your products clash and what those ingredients could cause, and the compatible and similar products list. Premium adds unlimited scanning, multiple named routines with scheduling, recommended actions for resolving a conflict, and routine analysis. We reserve the right to modify the features available in the free tier and the terms of the free trial, and we will give notice before reducing them.</p>
+                    <p className="leading-relaxed">Curae offers a free tier that includes 5 product scans per month, resetting at the start of each calendar month, along with full ingredient analysis, allergen flags, an unlimited product shelf, one fully working routine, conflict detection showing which of your products clash and what those ingredients could cause, and the compatible products list. Premium removes the monthly scan limit (every account has a limit of 30 scans an hour), and adds multiple named routines with scheduling, what to do about each conflict, a personal read of why a product fits you, and Ask Curae. We reserve the right to modify the features available in the free tier and the terms of the free trial, and we will give notice before reducing them.</p>
                   </div>
                 </div>
               </section>
@@ -257,7 +257,7 @@ const TermsPage = () => {
                 <div className="space-y-5 text-gray-700">
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">7.1 Your Content</h3>
-                    <p className="leading-relaxed">You retain ownership of any content you submit to the Service, including your skin profile data, custom allergens, routines, and goals ("User Content").</p>
+                    <p className="leading-relaxed">You retain ownership of any content you submit to the Service, including your skin profile data, custom allergens and routines ("User Content").</p>
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">7.2 License to Curae</h3>
@@ -479,10 +479,11 @@ const TermsPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>November 21, 2026:</strong> Described what Curae shows as a fit verdict instead of compatibility scores, which the app no longer shows. Corrected Section 5.6: Premium removes the monthly scan limit while every account keeps a limit of 30 scans an hour; Premium includes Ask Curae and a personal read of why a product fits you; routine analysis and the similar products list are no longer part of Curae. Removed goals from User Content, since the app has no goals feature. Replaced em dashes with other punctuation; the meaning is unchanged.</li>
                     <li><strong>November 20, 2026:</strong> Corrected the age requirement to 18 and older, matching the app and our Privacy Policy. Earlier versions of these Terms said 13 and older with parental consent; the Service has only ever allowed adults.</li>
                     <li><strong>September 2, 2026:</strong> Corrected the free tier to 5 scans per month, moved conflict detection and the compatible products list back to the free tier, and corrected the Premium free trial to reflect that it starts automatically on signup, requires no payment method, and lapses to the free tier without a charge. Also named Lineup Labs LLC as the operating entity in the mailing address and removed an individual founder name, so these Terms identify the company that provides the Service. The scan limit change is a correction rather than a reduction: the free tier has operated at 5 scans per month since August 5, 2026, and these Terms had not been updated to match, so no user is losing scans they previously received. Section 5.6 now also reserves the right to modify the free trial on the same terms as the free tier, including notice before reducing it.</li>
                     <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com.</li>
-                    <li><strong>August 2, 2026:</strong> Clarified (Section 7.4) that aggregated, anonymized data derived from User Content — which no longer identifies you — may be shared on an opt-in basis, consistent with our Privacy Policy and our commitment never to sell your User Content.</li>
+                    <li><strong>August 2, 2026:</strong> Clarified (Section 7.4) that aggregated, anonymized data derived from User Content, which no longer identifies you, may be shared on an opt-in basis, consistent with our Privacy Policy and our commitment never to sell your User Content.</li>
                     <li><strong>July 30, 2026:</strong> Free tier updated to 15 scans per month; compatibility and conflict detection moved to Premium; added a one-week Premium free trial (once per user, opt-in). Superseded September 2, 2026.</li>
                   </ul>
                 </div>
