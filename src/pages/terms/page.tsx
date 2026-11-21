@@ -25,8 +25,8 @@ const TermsPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Terms of Service</h1>
-              <p className="text-gray-600 text-lg">Last Updated: September 2, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: September 2, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: November 20, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: November 20, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -65,8 +65,9 @@ const TermsPage = () => {
                 <div className="space-y-5 text-gray-700">
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">2.1 Age Requirements</h3>
-                    <p className="leading-relaxed mb-2">You must be at least 13 years of age to use the Service. If you are between 13 and 17 years of age, you may only use the Service with the consent and involvement of a parent or legal guardian.</p>
-                    <p className="leading-relaxed">By using the Service, you represent and warrant that you meet the applicable age requirements.</p>
+                    <p className="leading-relaxed mb-2">You must be at least 18 years of age to use the Service. By downloading, installing, or using the Service, you represent and warrant that you are at least 18 years old and have the legal capacity to enter into these Terms.</p>
+                    <p className="leading-relaxed mb-2">The Service is intended only for adults and is not directed to anyone under 18.</p>
+                    <p className="leading-relaxed">If we become aware that a person under 18 has created an account, we may suspend or terminate that account.</p>
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-forest-800 mb-3">2.2 Account Requirements</h3>
@@ -478,6 +479,7 @@ const TermsPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>November 20, 2026:</strong> Corrected the age requirement to 18 and older, matching the app and our Privacy Policy. Earlier versions of these Terms said 13 and older with parental consent; the Service has only ever allowed adults.</li>
                     <li><strong>September 2, 2026:</strong> Corrected the free tier to 5 scans per month, moved conflict detection and the compatible products list back to the free tier, and corrected the Premium free trial to reflect that it starts automatically on signup, requires no payment method, and lapses to the free tier without a charge. Also named Lineup Labs LLC as the operating entity in the mailing address and removed an individual founder name, so these Terms identify the company that provides the Service. The scan limit change is a correction rather than a reduction: the free tier has operated at 5 scans per month since August 5, 2026, and these Terms had not been updated to match, so no user is losing scans they previously received. Section 5.6 now also reserves the right to modify the free trial on the same terms as the free tier, including notice before reducing it.</li>
                     <li><strong>August 16, 2026:</strong> Updated the contact email to ethanjones@loremcurae.com.</li>
                     <li><strong>August 2, 2026:</strong> Clarified (Section 7.4) that aggregated, anonymized data derived from User Content — which no longer identifies you — may be shared on an opt-in basis, consistent with our Privacy Policy and our commitment never to sell your User Content.</li>
