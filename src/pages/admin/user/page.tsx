@@ -513,10 +513,18 @@ export default function UserDetailPage() {
         />
       )}
 
-      {outreach && outreach.resignup_attempts > 0 && (
+      {outreach && outreach.resignup_attempts > 0 && isRemoved && (
         <WarningBanner
           title="Signed up again while Removed"
           message={`Tried to sign up again ${outreach.resignup_attempts} time${outreach.resignup_attempts === 1 ? '' : 's'}${outreach.last_resignup_at ? `, most recently on ${formatDate(outreach.last_resignup_at)}` : ''}. The record was not reset and stays Removed until an admin changes it.`}
+        />
+      )}
+
+      {/* After an undo the attempts are history; the person is no longer Removed. */}
+      {outreach && outreach.resignup_attempts > 0 && !isRemoved && (
+        <WarningBanner
+          title="Signed up again while Removed"
+          message={`Signed up again${outreach.last_resignup_at ? ` on ${formatDate(outreach.last_resignup_at)}` : ''} while Removed (${outreach.resignup_attempts} time${outreach.resignup_attempts === 1 ? '' : 's'}). Since restored.`}
         />
       )}
 
