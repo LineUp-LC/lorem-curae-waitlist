@@ -37,8 +37,8 @@ export const OUTREACH_STATUS_BADGE: Record<
 // SYNC PAIR with the notes CHECK in the migration.
 export const OUTREACH_NOTES_MAX = 500;
 
-// Notes survive an anonymize (decision 5c), so they must never name the person.
-// Shown under the notes box.
+// Notes are kept with a Removed record (decision 5c), so they must never name
+// the person. Shown under the notes box.
 export const OUTREACH_NOTES_HINT = 'No names or personal details. Write what they want, not who they are.';
 
 export const OUTREACH_NOTES_NAMES_PERSON_ERROR =

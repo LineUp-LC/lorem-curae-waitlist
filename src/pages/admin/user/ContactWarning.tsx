@@ -1,4 +1,4 @@
-// Warning shown by the Delete and Anonymize panels before acting on a person who
+// Warning shown by the Delete panel before acting on a person who
 // asked not to be contacted (decision 7a, tracked in #26). The admin must tick
 // the box to continue.
 //

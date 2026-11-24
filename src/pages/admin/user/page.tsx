@@ -14,7 +14,6 @@ import {
   WarningBanner,
 } from '@/pages/admin/components/ui';
 import { DeleteUserPanel } from './DeleteUserPanel';
-import { AnonymizeUserPanel } from './AnonymizeUserPanel';
 import { RegenerateTokenPanel } from './RegenerateTokenPanel';
 import { OutreachPanel } from './OutreachPanel';
 import { OUTREACH_REMOVED, type OutreachRecord } from '@/lib/outreachStatus';
@@ -418,7 +417,7 @@ export default function UserDetailPage() {
 
   const { user, outreach, outreach_error, drips, drips_error, resendable_events, neighbors } = data;
   const isRemoved = outreach?.outreach_status === OUTREACH_REMOVED;
-  // The Delete and Anonymize warnings cover anyone who asked not to be
+  // The Delete warning covers anyone who asked not to be
   // contacted: Removed OR unsubscribed (an admin may have undone Removed for an
   // unsubscribed person). Unknown outreach gets the same care: we cannot rule
   // out that they asked us to stop.
@@ -916,13 +915,6 @@ export default function UserDetailPage() {
         <CardBody>
           <div className="space-y-6">
             <RegenerateTokenPanel email={user.email} />
-            <div className="border-t border-sage-100 pt-6">
-              <AnonymizeUserPanel
-                email={user.email}
-                onUserAnonymized={fetchUserData}
-                contactWarning={contactWarning}
-              />
-            </div>
             <div className="border-t border-sage-100 pt-6">
               <DeleteUserPanel email={user.email} contactWarning={contactWarning} />
             </div>

@@ -39,7 +39,6 @@ import { MAX_FOUNDING_MEMBERS } from '../src/lib/foundingMembers.js';
 //   - toggleWaitlist (POST)
 //   - resendMagicLink (POST)
 //   - bulkDeleteFallback (POST)
-//   - anonymizeUser (POST)
 //   - regenerateToken (POST)
 //   - resendDripEmail (POST) - repairs ONE failed drip_send_log row
 //   - updateOutreach (POST) - outreach status, last-emailed date, notes (#26)
@@ -661,73 +660,6 @@ async function handleWaitlistAnalytics(supabase: SupabaseClient, res: VercelResp
   });
 }
 
-async function handleAnonymizeUser(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'email is required' });
-
-  const trimmedEmail = email.trim().toLowerCase();
-  if (!isValidEmail(trimmedEmail)) return res.status(400).json({ error: 'Invalid email format' });
-
-  if (trimmedEmail.startsWith('anon_') && trimmedEmail.endsWith('@example.com')) {
-    return res.status(400).json({ error: 'User is already anonymized' });
-  }
-
-  const { data: existingUser, error: fetchError } = await supabase
-    .from('waitlist')
-    .select('*')
-    .eq('email', trimmedEmail)
-    .maybeSingle();
-
-  if (fetchError) return res.status(500).json({ error: 'Failed to verify user' });
-  if (!existingUser) return res.status(404).json({ error: 'User not found' });
-
-  // Decision 5c (#26): anonymize also clears the phone number and text opt-in.
-  // It KEEPS the outreach notes and the signup date; notes are refused if they
-  // name the person (see handleUpdateOutreach), so they survive an erase safely.
-  //
-  // D1: a held text spot (or an open offer) is given back and passed on the
-  // same way Removed and the decline path do, through release_text_spot, which
-  // also clears phone_number and text_opt_in. It runs first so it can still see
-  // the opt-in; it is idempotent, so a retry after a failed email change is safe.
-  const { data: passOnAfter, error: releaseErr } = await supabase.rpc('release_text_spot', {
-    p_waitlist_id: existingUser.id,
-  });
-  if (releaseErr) return res.status(500).json({ error: 'Failed to clear the phone number. Nothing was anonymized.' });
-
-  const warnings: string[] = [];
-  if (typeof passOnAfter === 'string' && passOnAfter) {
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      warnings.push('Their text spot was freed, but the offer could not be passed on: email is not configured.');
-    } else {
-      const passed = await passOnTextOffer(supabase, resendApiKey, passOnAfter);
-      if (passed.error) warnings.push(`Their text spot was freed, but passing it on failed: ${passed.error}.`);
-    }
-  }
-
-  const anonymizedEmail = `anon_${crypto.randomUUID()}@example.com`;
-  // By id, and checked: an update that matches no row resolves with no error,
-  // and an erasure must never report success for a write that did not happen.
-  const { data: anonymized, error: updateError } = await supabase
-    .from('waitlist')
-    .update({ email: anonymizedEmail, phone_number: null, text_opt_in: false })
-    .eq('id', existingUser.id)
-    .select('id');
-
-  if (updateError || !anonymized || anonymized.length !== 1) {
-    return res.status(500).json({
-      error: 'The phone number was cleared, but changing the email failed. Try again.',
-    });
-  }
-
-  return res.status(200).json({
-    anonymized: true,
-    original_email: trimmedEmail,
-    new_email: anonymizedEmail,
-    warnings,
-  });
-}
-
 async function handleRegenerateToken(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ error: 'email is required' });
@@ -1102,7 +1034,7 @@ async function handleUpdateOutreach(supabase: SupabaseClient, req: VercelRequest
       if (trimmed.length > OUTREACH_NOTES_MAX) {
         return res.status(400).json({ error: `Notes are limited to ${OUTREACH_NOTES_MAX} characters` });
       }
-      // Notes survive an anonymize, so they must not name the person (5c).
+      // Notes must not name the person (5c): they are kept with a Removed record.
       if (notesNamePerson(trimmed, email)) {
         return res.status(400).json({ error: OUTREACH_NOTES_NAMES_PERSON_ERROR });
       }
@@ -1503,10 +1435,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'waitlistAnalytics':
         if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
         return handleWaitlistAnalytics(supabase, res);
-
-      case 'anonymizeUser':
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-        return handleAnonymizeUser(supabase, req, res);
 
       case 'regenerateToken':
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
