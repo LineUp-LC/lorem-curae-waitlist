@@ -53,7 +53,9 @@ function AdminLoginForm() {
       body: JSON.stringify({
         email: trimmed,
         type: 'login',
-        redirectTo: 'https://lorem-curae-waitlist.vercel.app/auth/callback?next=/admin',
+        // Same origin as this page: the server only accepts a redirect that starts
+        // with the request's own origin, and auth_next lives in this origin's storage.
+        redirectTo: `${window.location.origin}/auth/callback?next=/admin`,
       }),
     });
 
