@@ -294,6 +294,16 @@ BEGIN
 
   PERFORM pg_advisory_xact_lock(hashtext('waitlist_founding_cap'));
 
+  -- LOCK ORDER: the waitlist row first, then the outreach row, the same order
+  -- mark_waitlist_removed uses, so an undo racing an unsubscribe cannot deadlock.
+  SELECT w.is_founding_member INTO v_founding
+    FROM public.waitlist w
+   WHERE w.id = p_waitlist_id
+     FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'waitlist row % not found', p_waitlist_id USING ERRCODE = 'P0002';
+  END IF;
+
   SELECT o.outreach_status INTO v_status
     FROM public.waitlist_outreach o
    WHERE o.waitlist_id = p_waitlist_id
@@ -304,11 +314,6 @@ BEGIN
   IF v_status <> 'removed' THEN
     RAISE EXCEPTION 'signup % is not removed', p_waitlist_id USING ERRCODE = '55000';
   END IF;
-
-  SELECT w.is_founding_member INTO v_founding
-    FROM public.waitlist w
-   WHERE w.id = p_waitlist_id
-     FOR UPDATE;
 
   IF COALESCE(v_founding, false) THEN
     -- This person is still Removed here, so they are not in the count.
