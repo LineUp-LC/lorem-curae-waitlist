@@ -45,7 +45,9 @@ export function DeleteUserPanel({ email, contactWarning = null }: DeleteUserPane
           'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        // The API refuses to delete someone who asked not to be contacted
+        // unless this confirmation is sent (#26).
+        body: JSON.stringify({ email, confirm_contact_warning: Boolean(contactWarning) && acknowledged }),
       });
 
       if (!response.ok) {

@@ -13,7 +13,10 @@ import {
   WarningBanner,
 } from '@/pages/admin/components/ui';
 import {
+  notesNamePerson,
+  OUTREACH_NOTES_HINT,
   OUTREACH_NOTES_MAX,
+  OUTREACH_NOTES_NAMES_PERSON_ERROR,
   OUTREACH_REMOVED,
   OUTREACH_STATUSES,
   OUTREACH_STATUS_LABELS,
@@ -115,6 +118,8 @@ export function OutreachPanel({ email, outreach, outreachError, onSaved }: Outre
   const undoing = wasRemoved && dirty.status;
   const removing = !wasRemoved && dirty.status && form.status === OUTREACH_REMOVED;
   const notesTooLong = form.notes.trim().length > OUTREACH_NOTES_MAX;
+  // Same check the API enforces (decision 5c), shown before the save.
+  const notesNamesThem = dirty.notes === true && notesNamePerson(form.notes.trim(), email);
 
   const save = async (confirmUndo: boolean) => {
     setSaving(true);
@@ -218,8 +223,14 @@ export function OutreachPanel({ email, outreach, outreachError, onSaved }: Outre
             value={form.notes}
             maxLength={OUTREACH_NOTES_MAX}
             onChange={(e) => setForm((f) => (f ? { ...f, notes: e.target.value } : f))}
-            hint={`${form.notes.trim().length} of ${OUTREACH_NOTES_MAX} characters. Seen only by admins.`}
-            error={notesTooLong ? `Notes are limited to ${OUTREACH_NOTES_MAX} characters.` : undefined}
+            hint={`${OUTREACH_NOTES_HINT} ${form.notes.trim().length} of ${OUTREACH_NOTES_MAX} characters.`}
+            error={
+              notesTooLong
+                ? `Notes are limited to ${OUTREACH_NOTES_MAX} characters.`
+                : notesNamesThem
+                  ? OUTREACH_NOTES_NAMES_PERSON_ERROR
+                  : undefined
+            }
             fullWidth
           />
         </div>
@@ -252,7 +263,7 @@ export function OutreachPanel({ email, outreach, outreachError, onSaved }: Outre
               variant="primary"
               size="sm"
               loading={saving}
-              disabled={dirtyCount === 0 || saving || notesTooLong}
+              disabled={dirtyCount === 0 || saving || notesTooLong || notesNamesThem}
               onClick={handleSaveClick}
             >
               Save outreach

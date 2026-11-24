@@ -7,7 +7,14 @@ import { dripTemplates } from '../src/lib/email/dripTemplates.js';
 import type { DripEventType } from '../src/lib/email/dripTemplates.js';
 import { excludeIds, firstEmbedded, readOutreachStatus, readRemovedIds } from './_outreach.js';
 import { passOnTextOffer } from './_textOffer.js';
-import { isOutreachStatus, OUTREACH_NOTES_MAX, OUTREACH_REMOVED } from '../src/lib/outreachStatus.js';
+import {
+  isOutreachStatus,
+  notesNamePerson,
+  OUTREACH_NOTES_MAX,
+  OUTREACH_NOTES_NAMES_PERSON_ERROR,
+  OUTREACH_REMOVED,
+} from '../src/lib/outreachStatus.js';
+import { MAX_FOUNDING_MEMBERS } from '../src/lib/foundingMembers.js';
 
 // ============================================================================
 // CONSOLIDATED ADMIN API
@@ -309,10 +316,29 @@ async function handleDeleteUser(supabase: SupabaseClient, req: VercelRequest, re
 
   const trimmedEmail = email.trim().toLowerCase();
 
+  // Decision 7a, enforced here and not only in the browser (#26, decision 4a):
+  // deleting someone who asked not to be contacted (Removed or unsubscribed),
+  // or whose outreach record cannot be read, needs confirm_contact_warning.
+  const { data: target, error: targetErr } = await supabase
+    .from('waitlist')
+    .select('id, unsubscribed_at')
+    .eq('email', trimmedEmail)
+    .maybeSingle();
+  if (targetErr) return res.status(500).json({ error: 'Failed to verify user' });
+  if (!target) return res.status(404).json({ error: 'User not found' });
+
+  const outreach = await readOutreachStatus(supabase, target.id);
+  const needsConfirm = Boolean(target.unsubscribed_at) || !outreach.ok || outreach.status === OUTREACH_REMOVED;
+  if (needsConfirm && (req.body || {}).confirm_contact_warning !== true) {
+    return res.status(409).json({
+      error: 'This person asked not to be contacted, or their outreach record could not be read. Tick the confirmation box to delete.',
+    });
+  }
+
   const { error } = await supabase
     .from('waitlist')
     .delete()
-    .eq('email', trimmedEmail);
+    .eq('id', target.id);
 
   if (error) return res.status(500).json({ error: 'Failed to delete user' });
 
@@ -510,26 +536,42 @@ async function handleBulkDeleteFallback(supabase: SupabaseClient, req: VercelReq
     return res.status(400).json({ error: 'Must set confirm: true to proceed' });
   }
 
-  const { data: users } = await supabase
-    .from('waitlist')
-    .select('email')
-    .eq('status', 'waiting_for_next_wave')
-    .order('created_at', { ascending: true })
-    .limit(limit);
+  // Removed and unsubscribed people are never bulk-deleted (#26, decision 4a):
+  // their record is what stops us contacting them again. They are skipped and
+  // counted. If the Removed set cannot be read, nothing is deleted.
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups. Nothing was deleted.' });
+  const removedIds = new Set(removed.ids);
 
-  if (!users?.length) {
-    return res.status(200).json({ deleted_count: 0 });
+  const { data: waiting, error: waitingErr } = await supabase
+    .from('waitlist')
+    .select('id, unsubscribed_at')
+    .eq('status', 'waiting_for_next_wave')
+    .order('created_at', { ascending: true });
+  if (waitingErr) return res.status(500).json({ error: 'Failed to read fallback users. Nothing was deleted.' });
+
+  const rows = (waiting ?? []) as { id: string; unsubscribed_at: string | null }[];
+  const protectedRows = rows.filter(r => r.unsubscribed_at || removedIds.has(r.id));
+  const deletable = rows.filter(r => !r.unsubscribed_at && !removedIds.has(r.id));
+  const ids = deletable.slice(0, Math.max(0, Number(limit) || 0)).map(r => r.id);
+
+  if (ids.length === 0) {
+    return res.status(200).json({ deleted_count: 0, skipped_count: protectedRows.length });
   }
 
-  const emails = users.map(u => u.email);
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from('waitlist')
     .delete()
-    .in('email', emails);
+    .in('id', ids)
+    .is('unsubscribed_at', null)
+    .select('id');
 
   if (error) return res.status(500).json({ error: 'Failed to delete users' });
 
-  return res.status(200).json({ deleted_count: emails.length });
+  return res.status(200).json({
+    deleted_count: deleted?.length ?? 0,
+    skipped_count: protectedRows.length,
+  });
 }
 
 async function handleExportUsers(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
@@ -637,10 +679,13 @@ async function handleAnonymizeUser(supabase: SupabaseClient, req: VercelRequest,
   if (fetchError) return res.status(500).json({ error: 'Failed to verify user' });
   if (!existingUser) return res.status(404).json({ error: 'User not found' });
 
+  // Decision 5c (#26): anonymize also clears the phone number and text opt-in.
+  // It KEEPS the outreach notes and the signup date; notes are refused if they
+  // name the person (see handleUpdateOutreach), so they survive an erase safely.
   const anonymizedEmail = `anon_${crypto.randomUUID()}@example.com`;
   const { error: updateError } = await supabase
     .from('waitlist')
-    .update({ email: anonymizedEmail })
+    .update({ email: anonymizedEmail, phone_number: null, text_opt_in: false })
     .eq('email', trimmedEmail);
 
   if (updateError) return res.status(500).json({ error: 'Failed to anonymize user' });
@@ -991,7 +1036,10 @@ async function handleGetWaitlistUser(supabase: SupabaseClient, req: VercelReques
 // UNDOING REMOVED (decision 2a) needs confirm_undo_removed: true. removed_at is
 // kept as history and removed_cleared_at records the undo. A deleted phone
 // number is not restored. unsubscribed_at is not touched, so someone who
-// unsubscribed still gets no email after an undo.
+// unsubscribed still gets no email after an undo. If founding spots are full,
+// they return without the founding badge (decision 3a, undo_waitlist_removed).
+//
+// NOTES may not contain the person's email or the part before the @ (5c).
 
 const LAST_EMAILED_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -1022,6 +1070,10 @@ async function handleUpdateOutreach(supabase: SupabaseClient, req: VercelRequest
       const trimmed = v.trim();
       if (trimmed.length > OUTREACH_NOTES_MAX) {
         return res.status(400).json({ error: `Notes are limited to ${OUTREACH_NOTES_MAX} characters` });
+      }
+      // Notes survive an anonymize, so they must not name the person (5c).
+      if (notesNamePerson(trimmed, email)) {
+        return res.status(400).json({ error: OUTREACH_NOTES_NAMES_PERSON_ERROR });
       }
       patch.notes = trimmed === '' ? null : trimmed;
     } else return res.status(400).json({ error: 'notes must be text' });
@@ -1064,9 +1116,10 @@ async function handleUpdateOutreach(supabase: SupabaseClient, req: VercelRequest
     return res.status(409).json({ error: 'Undoing Removed needs confirmation. They may get emails again.' });
   }
 
-  if (nextStatus !== undefined && !toRemoved && nextStatus !== current.status) {
+  // Undo goes through undo_waitlist_removed below (it re-checks the founding
+  // cap in the same database step), so only a plain status change is patched.
+  if (nextStatus !== undefined && !toRemoved && !undoRemoved && nextStatus !== current.status) {
     patch.outreach_status = nextStatus;
-    if (undoRemoved) patch.removed_cleared_at = new Date().toISOString();
   }
 
   const warnings: string[] = [];
@@ -1087,6 +1140,26 @@ async function handleUpdateOutreach(supabase: SupabaseClient, req: VercelRequest
     }
     if (updated.length !== 1) {
       return res.status(409).json({ error: 'This record was changed by someone else. Reload and try again. Nothing was saved.' });
+    }
+  }
+
+  // Decision 3a: if founding spots are full, they come back without the badge.
+  if (undoRemoved) {
+    const { data: undone, error: undoErr } = await supabase.rpc('undo_waitlist_removed', {
+      p_waitlist_id: user.id,
+      p_new_status: nextStatus,
+      p_founding_cap: MAX_FOUNDING_MEMBERS,
+    });
+    if (undoErr) {
+      return res.status(500).json({
+        error: Object.keys(patch).length > 0
+          ? 'The date and notes were saved, but undoing Removed failed. Try again.'
+          : 'Undoing Removed failed. Nothing was changed.',
+      });
+    }
+    const kept = firstEmbedded(undone as { founding_kept: boolean } | { founding_kept: boolean }[] | null)?.founding_kept;
+    if (kept === false) {
+      warnings.push('Founding spots are full, so they return without the founding badge.');
     }
   }
 

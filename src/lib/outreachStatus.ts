@@ -37,6 +37,24 @@ export const OUTREACH_STATUS_BADGE: Record<
 // SYNC PAIR with the notes CHECK in the migration.
 export const OUTREACH_NOTES_MAX = 500;
 
+// Notes survive an anonymize (decision 5c), so they must never name the person.
+// Shown under the notes box.
+export const OUTREACH_NOTES_HINT = 'No names or personal details. Write what they want, not who they are.';
+
+export const OUTREACH_NOTES_NAMES_PERSON_ERROR =
+  'Notes cannot contain this person’s email address or the part of it before the @. Write what they want, not who they are.';
+
+// True when the notes contain the person's email address, or the part of it
+// before the @, ignoring case. The ONE check, used by the admin API (which
+// refuses the save) and by the Outreach card (which explains why first).
+export function notesNamePerson(notes: string, email: string): boolean {
+  const n = notes.toLowerCase();
+  const e = email.trim().toLowerCase();
+  if (!e) return false;
+  const local = e.split('@')[0];
+  return n.includes(e) || (local.length > 0 && n.includes(local));
+}
+
 export function isOutreachStatus(value: unknown): value is OutreachStatus {
   return typeof value === 'string' && (OUTREACH_STATUSES as readonly string[]).includes(value);
 }

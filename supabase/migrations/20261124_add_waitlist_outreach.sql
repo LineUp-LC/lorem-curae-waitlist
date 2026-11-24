@@ -29,11 +29,16 @@
 --   DROP FUNCTION IF EXISTS public.create_waitlist_outreach_row();
 --   DROP FUNCTION IF EXISTS public.flag_removed_resignup(text);
 --   DROP FUNCTION IF EXISTS public.mark_waitlist_removed(uuid);
+--   DROP FUNCTION IF EXISTS public.undo_waitlist_removed(uuid, text, integer);
 --   DROP FUNCTION IF EXISTS public.claim_next_text_offer(timestamptz);
 --   DROP TABLE IF EXISTS public.waitlist_outreach;
 --   COMMIT;
--- The rollback cannot restore phone numbers or text opt-ins cleared by
--- mark_waitlist_removed after this migration went live (decision 5a deletes them).
+-- WHAT THE ROLLBACK CANNOT UNDO (both are deletions, decisions 5a and 6a):
+--   - phone_number and text_opt_in cleared by THIS migration's backfill for rows
+--     with unsubscribed_at set (measured 2026-11-24: 1 unsubscribed row, 0 with a
+--     phone number, 0 opted in, so nothing was deleted at that time);
+--   - phone_number and text_opt_in cleared later by mark_waitlist_removed.
+-- Founding badges removed by undo_waitlist_removed are not restored either.
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -64,7 +69,8 @@ COMMENT ON TABLE public.waitlist_outreach IS
 -- ----------------------------------------------------------------------------
 -- BACKFILL
 -- Existing signups start as Not sent. Anyone already unsubscribed starts as
--- Removed, with removed_at = unsubscribed_at. Phone numbers are NOT cleared here.
+-- Removed, with removed_at = unsubscribed_at, and loses their phone number and
+-- text opt-in (decision 6a, matching what mark_waitlist_removed does).
 -- ----------------------------------------------------------------------------
 INSERT INTO public.waitlist_outreach (waitlist_id, outreach_status, removed_at)
 SELECT w.id,
@@ -72,6 +78,15 @@ SELECT w.id,
        w.unsubscribed_at
   FROM public.waitlist w
 ON CONFLICT (waitlist_id) DO NOTHING;
+
+-- THIS DELETION CANNOT BE ROLLED BACK. The cleared phone numbers are not kept
+-- anywhere. Measured 2026-11-24: 1 unsubscribed row, with no phone number and
+-- no text opt-in, so no text spot is held and none needs giving back.
+UPDATE public.waitlist
+   SET phone_number = NULL,
+       text_opt_in  = false
+ WHERE unsubscribed_at IS NOT NULL
+   AND (phone_number IS NOT NULL OR text_opt_in);
 
 -- ----------------------------------------------------------------------------
 -- NEW SIGNUPS START AS NOT SENT
@@ -197,6 +212,80 @@ REVOKE ALL ON FUNCTION public.mark_waitlist_removed(uuid) FROM PUBLIC, anon, aut
 GRANT EXECUTE ON FUNCTION public.mark_waitlist_removed(uuid) TO service_role;
 
 -- ----------------------------------------------------------------------------
+-- UNDO REMOVED (admin, decisions 2a and 3a)
+-- Sets the new status and removed_cleared_at (removed_at is kept as history).
+-- If the person had the founding badge and the founding cap is already reached
+-- (founding members who are not Removed, the same count api/signup.ts uses),
+-- they return WITHOUT the badge: is_founding_member = false. The cap is passed
+-- in by the caller (MAX_FOUNDING_MEMBERS in src/lib/foundingMembers.ts, one
+-- source). A transaction-scoped advisory lock serialises undos, so two undos
+-- cannot both take the last spot. Returns founding_kept = false when the badge
+-- was taken off. A deleted phone number is not restored.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.undo_waitlist_removed(
+  p_waitlist_id uuid,
+  p_new_status  text,
+  p_founding_cap integer
+)
+RETURNS TABLE (founding_kept boolean)
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public
+AS $$
+DECLARE
+  v_status   text;
+  v_founding boolean;
+  v_count    bigint;
+  v_kept     boolean := true;
+BEGIN
+  IF p_new_status IS NULL OR p_new_status NOT IN ('not_sent', 'sent', 'replied', 'quiet') THEN
+    RAISE EXCEPTION 'undo needs a status other than removed, got %', p_new_status USING ERRCODE = '22023';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtext('waitlist_founding_cap'));
+
+  SELECT o.outreach_status INTO v_status
+    FROM public.waitlist_outreach o
+   WHERE o.waitlist_id = p_waitlist_id
+     FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no outreach row for %', p_waitlist_id USING ERRCODE = 'P0002';
+  END IF;
+  IF v_status <> 'removed' THEN
+    RAISE EXCEPTION 'signup % is not removed', p_waitlist_id USING ERRCODE = '55000';
+  END IF;
+
+  SELECT w.is_founding_member INTO v_founding
+    FROM public.waitlist w
+   WHERE w.id = p_waitlist_id
+     FOR UPDATE;
+
+  IF COALESCE(v_founding, false) THEN
+    -- This person is still Removed here, so they are not in the count.
+    SELECT count(*) INTO v_count
+      FROM public.waitlist w
+     WHERE w.is_founding_member = true
+       AND NOT EXISTS (
+             SELECT 1 FROM public.waitlist_outreach o
+              WHERE o.waitlist_id = w.id AND o.outreach_status = 'removed');
+    IF v_count >= p_founding_cap THEN
+      UPDATE public.waitlist SET is_founding_member = false WHERE id = p_waitlist_id;
+      v_kept := false;
+    END IF;
+  END IF;
+
+  UPDATE public.waitlist_outreach
+     SET outreach_status    = p_new_status,
+         removed_cleared_at = now()
+   WHERE waitlist_id = p_waitlist_id;
+
+  RETURN QUERY SELECT v_kept;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.undo_waitlist_removed(uuid, text, integer) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.undo_waitlist_removed(uuid, text, integer) TO service_role;
+
+-- ----------------------------------------------------------------------------
 -- NEXT TEXT OFFER (one selector for api/_textOffer.ts and the unsubscribe edge
 -- function). Same filter as the old sendCascadeOffer in api/text-opt-in.ts, plus
 -- Removed people left out, and the pick and the stamp happen in one statement.
@@ -281,7 +370,11 @@ CREATE OR REPLACE VIEW public.founding_member_slots AS
 -- 3. Functions are service_role only (expect no anon / authenticated in proacl):
 --   select proname, proacl from pg_proc
 --    where proname in ('flag_removed_resignup', 'mark_waitlist_removed',
---                      'claim_next_text_offer', 'create_waitlist_outreach_row');
+--                      'undo_waitlist_removed', 'claim_next_text_offer',
+--                      'create_waitlist_outreach_row');
+-- 2b. No unsubscribed row keeps a phone number or text opt-in (expect 0):
+--   select count(*) from waitlist
+--    where unsubscribed_at is not null and (phone_number is not null or text_opt_in);
 -- 4. The public counter still works for anon, and its grant survived (expect true):
 --   select * from public.founding_member_slots;
 --   select has_table_privilege('anon', 'public.founding_member_slots', 'SELECT');
