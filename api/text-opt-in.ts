@@ -84,39 +84,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'invalid phone number format' });
     }
 
-    // Read current slot count
-    const { data: config } = await supabase
-      .from('text_opt_in_config')
-      .select('id, slots_remaining')
-      .single();
-
-    if (!config || (config.slots_remaining as number) <= 0) {
-      return res.status(409).json({ error: 'no-slots-remaining' });
+    // Claim the slot and record the opt-in in ONE locked database step
+    // (accept_text_offer, migration 20261124_text_offer_accept.sql). It
+    // decrements slots_remaining inside the database, so a spot freed by a
+    // removal meanwhile is never lost, and it re-checks Removed and
+    // unsubscribed under the row lock, so an accept can never write
+    // text_opt_in or a phone number onto someone who opted out after the
+    // checks above. Anything but 'accepted' writes nothing.
+    const { data: outcome, error: acceptErr } = await supabase.rpc('accept_text_offer', {
+      p_waitlist_id: row.id,
+      p_phone: trimmedPhone,
+    });
+    if (acceptErr) {
+      console.error(JSON.stringify({ level: 'error', event: 'text_offer_accept_failed', error: acceptErr.message }));
+      return res.status(500).json({ error: 'server-error' });
     }
-
-    // Decrement first with a WHERE guard so a concurrent race to the last slot
-    // cannot push slots_remaining below 0. The .gt() filter is evaluated at
-    // update time in Postgres — if another request already claimed the slot,
-    // this update affects 0 rows and we reject the second claimer.
-    const { data: decremented } = await supabase
-      .from('text_opt_in_config')
-      .update({ slots_remaining: (config.slots_remaining as number) - 1 })
-      .eq('id', config.id)
-      .gt('slots_remaining', 0)
-      .select('id')
-      .maybeSingle();
-
-    if (!decremented) {
-      return res.status(409).json({ error: 'no-slots-remaining' });
+    switch (outcome) {
+      case 'accepted':
+        return res.status(200).json({ success: true });
+      case 'not_found':
+      case 'not_contactable':
+        return res.status(404).json({ error: 'not-found' });
+      case 'already_opted_in':
+        return res.status(409).json({ error: 'already-opted-in' });
+      case 'no_offer':
+        return res.status(400).json({ error: 'no-offer-active' });
+      case 'expired':
+        return res.status(410).json({ error: 'offer-expired' });
+      case 'no_slots':
+        return res.status(409).json({ error: 'no-slots-remaining' });
+      default:
+        // outreach_unreadable, or an answer this code does not know.
+        console.error(JSON.stringify({ level: 'error', event: 'text_offer_accept_refused', outcome }));
+        return res.status(500).json({ error: 'server-error' });
     }
-
-    // Slot claimed — record the opt-in
-    await supabase
-      .from('waitlist')
-      .update({ text_opt_in: true, phone_number: trimmedPhone })
-      .eq('id', row.id);
-
-    return res.status(200).json({ success: true });
   }
 
   // action === 'decline'
