@@ -23,7 +23,7 @@
 -- Name sorts after 20261124_add_waitlist_outreach.sql, which it depends on
 -- (waitlist_outreach, text_opt_in_config).
 --
--- NOT APPLIED. Apply before deploying the api/text-opt-in.ts that calls it;
+-- APPLIED Nov 24 2026 about 20:22 UTC through the Supabase connector (name text_offer_accept), on Ethan's apply. Apply before deploying the api/text-opt-in.ts that calls it;
 -- until then every accept answers 500.
 --
 -- Rollback: DROP FUNCTION public.accept_text_offer(uuid, text);
