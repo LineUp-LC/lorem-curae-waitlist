@@ -18,7 +18,7 @@
 // ============================================================================
 
 import { createClient } from '@supabase/supabase-js';
-import { OUTREACH_REMOVED } from '../outreachStatus.js';
+import { checkSendable } from '../../../api/_outreach.js';
 
 // ----------------------------------------------------------------------------
 // CONFIGURATION (from environment)
@@ -410,53 +410,38 @@ export async function sendFollowupEmail(
   // skip would permanently block the email if they later resubscribe. Leaving
   // the log untouched means a resubscribed user gets it on the next run.
   // ---------------------------------------------------------------------------
-  if ((waitlistRow as { unsubscribed_at?: string | null } | null)?.unsubscribed_at) {
-    console.log(JSON.stringify({
-      level: 'info',
-      event: 'followup_email_skipped_unsubscribed',
-      email: email.substring(0, 3) + '***',
-      templateKey,
-    }));
-    return { success: true, templateKey, skipped: true, skippedReason: 'unsubscribed' };
-  }
-
-  const userId = (waitlistRow as { id?: string } | null)?.id;
+  // ---------------------------------------------------------------------------
+  // REMOVED GUARD (#26). Removed = taken off the waitlist, often because they
+  // asked us to stop. Checked alongside the unsubscribe guard, never instead of
+  // it. Both come from the one shared gate, checkSendable (api/_outreach.ts).
+  //
+  // FAILS CLOSED. If the outreach row cannot be read, or is missing, we cannot
+  // tell whether they asked us to stop, so nothing is sent. It throws, like the
+  // failed dedupe lookup below, so batches report it as a failure.
+  // ---------------------------------------------------------------------------
+  const row = waitlistRow as { id?: string; unsubscribed_at?: string | null } | null;
+  const userId = row?.id;
   if (!userId) {
     throw new Error(
       `[followupTemplates] No waitlist row for ${email.substring(0, 3)}***, so the send cannot be logged. Not sending.`
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // REMOVED GUARD (#26). Removed = taken off the waitlist, often because they
-  // asked us to stop. Checked alongside the unsubscribe guard above, never
-  // instead of it.
-  //
-  // FAILS CLOSED. If the outreach row cannot be read, or is missing, we cannot
-  // tell whether they asked us to stop, so nothing is sent. It throws, like the
-  // failed dedupe lookup below, so batches report it as a failure.
-  // ---------------------------------------------------------------------------
-  const { data: outreachRow, error: outreachErr } = await supabase
-    .from('waitlist_outreach')
-    .select('outreach_status')
-    .eq('waitlist_id', userId)
-    .maybeSingle();
-
-  if (outreachErr || !outreachRow) {
-    throw new Error(
-      `[followupTemplates] Could not confirm the outreach status for ${email.substring(0, 3)}***` +
-      `${outreachErr ? `: ${outreachErr.message}` : ' (no outreach row)'}. Not sending.`
-    );
-  }
-
-  if ((outreachRow as { outreach_status: string }).outreach_status === OUTREACH_REMOVED) {
+  const contact = await checkSendable(supabase, { id: userId, unsubscribed_at: row.unsubscribed_at ?? null });
+  if (contact.sendable === false) {
+    if (contact.reason === 'read_failed') {
+      throw new Error(
+        `[followupTemplates] Could not confirm the outreach status for ${email.substring(0, 3)}***` +
+        ` (${contact.readReason === 'missing' ? 'no outreach row' : 'read failed'}). Not sending.`
+      );
+    }
     console.log(JSON.stringify({
       level: 'info',
-      event: 'followup_email_skipped_removed',
+      event: contact.reason === 'unsubscribed' ? 'followup_email_skipped_unsubscribed' : 'followup_email_skipped_removed',
       email: email.substring(0, 3) + '***',
       templateKey,
     }));
-    return { success: true, templateKey, skipped: true, skippedReason: 'removed' };
+    return { success: true, templateKey, skipped: true, skippedReason: contact.reason };
   }
 
   // THE DEDUPE KEY IS THE TEMPLATE PLUS ITS VARIABLES, not the template alone.

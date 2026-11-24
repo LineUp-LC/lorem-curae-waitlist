@@ -50,7 +50,7 @@ export async function checkSendable(
 ): Promise<SendCheck> {
   if (row.unsubscribed_at) return { sendable: false, reason: 'unsubscribed' };
   const outreach = await readOutreachStatus(supabase, row.id);
-  if (!outreach.ok) return { sendable: false, reason: 'read_failed', readReason: outreach.reason };
+  if (outreach.ok === false) return { sendable: false, reason: 'read_failed', readReason: outreach.reason };
   if (outreach.status === OUTREACH_REMOVED) return { sendable: false, reason: 'removed' };
   return { sendable: true };
 }
