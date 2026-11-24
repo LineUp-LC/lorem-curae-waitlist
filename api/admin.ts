@@ -706,12 +706,15 @@ async function handleAnonymizeUser(supabase: SupabaseClient, req: VercelRequest,
   }
 
   const anonymizedEmail = `anon_${crypto.randomUUID()}@example.com`;
-  const { error: updateError } = await supabase
+  // By id, and checked: an update that matches no row resolves with no error,
+  // and an erasure must never report success for a write that did not happen.
+  const { data: anonymized, error: updateError } = await supabase
     .from('waitlist')
     .update({ email: anonymizedEmail, phone_number: null, text_opt_in: false })
-    .eq('email', trimmedEmail);
+    .eq('id', existingUser.id)
+    .select('id');
 
-  if (updateError) {
+  if (updateError || !anonymized || anonymized.length !== 1) {
     return res.status(500).json({
       error: 'The phone number was cleared, but changing the email failed. Try again.',
     });
