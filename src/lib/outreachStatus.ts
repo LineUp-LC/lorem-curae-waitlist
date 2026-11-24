@@ -44,15 +44,27 @@ export const OUTREACH_NOTES_HINT = 'No names or personal details. Write what the
 export const OUTREACH_NOTES_NAMES_PERSON_ERROR =
   'Notes cannot contain this person’s email address or the part of it before the @. Write what they want, not who they are.';
 
-// True when the notes contain the person's email address, or the part of it
-// before the @, ignoring case. The ONE check, used by the admin API (which
-// refuses the save) and by the Outreach card (which explains why first).
+// The part before the @ only counts once it is this long (choice B1), so a
+// short address like ed@ does not block every note containing "ed".
+const NOTES_LOCAL_PART_MIN = 4;
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// True when the notes contain the person's full email address anywhere, or the
+// part before the @ (4 or more characters) as a whole word, ignoring case.
+// "Whole word" means not touching another letter or digit on either side. The
+// ONE check, used by the admin API (which refuses the save) and by the
+// Outreach card (which explains why first).
 export function notesNamePerson(notes: string, email: string): boolean {
   const n = notes.toLowerCase();
   const e = email.trim().toLowerCase();
   if (!e) return false;
+  if (n.includes(e)) return true;
   const local = e.split('@')[0];
-  return n.includes(e) || (local.length > 0 && n.includes(local));
+  if (local.length < NOTES_LOCAL_PART_MIN) return false;
+  return new RegExp(`(^|[^a-z0-9])${escapeRegExp(local)}($|[^a-z0-9])`).test(n);
 }
 
 export function isOutreachStatus(value: unknown): value is OutreachStatus {
