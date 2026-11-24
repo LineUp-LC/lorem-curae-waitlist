@@ -108,17 +108,24 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<void> {
   const next = Array.isArray(claimed) ? claimed[0] : claimed;
   if (!next?.email) return;
 
+  // Bounded: the unsubscribe page waits on this, and a slow email service must
+  // not hang it. An abort is logged like any other failed send.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: FROM_EMAIL, to: next.email, subject: TEXT_OFFER_SUBJECT, html: TEXT_OFFER_HTML }),
+      signal: controller.signal,
     });
     if (!res.ok) {
       console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', status: res.status }));
     }
   } catch (err) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', error: (err as Error).message }));
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -168,8 +175,10 @@ serve(async (req: Request) => {
   }
 
   if (data.unsubscribed_at) {
-    // Idempotent: makes sure an earlier unsubscribe is also Removed (#26).
-    await markRemoved(supabase, data.id);
+    // Deliberately NOT re-marked Removed here (#26). An admin may have undone
+    // Removed on purpose (decision 2a); a second click on an old link must not
+    // silently reverse that. Earlier unsubscribes are made Removed by the
+    // migration backfill, and every send still checks unsubscribed_at.
     return htmlPage("You&#8217;re already unsubscribed.");
   }
 

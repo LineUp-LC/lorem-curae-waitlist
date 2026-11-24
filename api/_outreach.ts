@@ -33,10 +33,6 @@ export async function readOutreachStatus(
   return { ok: true, status };
 }
 
-export function isRemovedRead(read: OutreachStatusRead): boolean {
-  return read.ok && read.status === OUTREACH_REMOVED;
-}
-
 export type RemovedIdsRead = { ok: true; ids: string[] } | { ok: false };
 
 export async function readRemovedIds(supabase: SupabaseClient): Promise<RemovedIdsRead> {

@@ -68,10 +68,16 @@ export function OutreachPanel({ email, outreach, outreachError, onSaved }: Outre
   const [warnings, setWarnings] = useState<string[]>([]);
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
 
-  // Re-seed the form whenever a different person or a fresh read arrives.
+  // Re-seed the form only when a different person loads or the STORED record
+  // changes (updated_at moves on every write). Other actions on the page refetch
+  // the user and hand us a new object with the same updated_at; re-seeding on
+  // that would throw away notes being typed. A failed save leaves updated_at
+  // unchanged, so the input that failed is kept for another try.
+  const seedKey = `${email}|${outreach ? outreach.updated_at : 'none'}`;
   useEffect(() => {
     setForm(outreach ? formFrom(outreach) : null);
-  }, [outreach, email]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seedKey captures email and updated_at
+  }, [seedKey]);
 
   // Clear per-person messages when the route moves to someone else.
   useEffect(() => {
@@ -269,7 +275,7 @@ export function OutreachPanel({ email, outreach, outreachError, onSaved }: Outre
         onClose={() => setPendingConfirm(null)}
         onConfirm={handleConfirm}
         title="Move to Removed?"
-        message="They will get no email or text. Their phone number and text opt-in are deleted, and a deleted phone number is not restored if this is undone."
+        message="They will get no email or text. Their phone number and text opt-in are deleted, and a deleted phone number is not restored if this is undone. If they held a text spot or an open offer, it is offered to the next person in line."
         confirmLabel="Move to Removed"
         variant="danger"
       />

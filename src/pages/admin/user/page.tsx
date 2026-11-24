@@ -418,9 +418,12 @@ export default function UserDetailPage() {
 
   const { user, outreach, outreach_error, drips, drips_error, resendable_events, neighbors } = data;
   const isRemoved = outreach?.outreach_status === OUTREACH_REMOVED;
-  // Unknown is treated with the same care as Removed by the Delete and
-  // Anonymize warnings: we cannot rule out that they asked us to stop.
-  const contactWarning: 'removed' | 'unknown' | null = isRemoved ? 'removed' : outreach ? null : 'unknown';
+  // The Delete and Anonymize warnings cover anyone who asked not to be
+  // contacted: Removed OR unsubscribed (an admin may have undone Removed for an
+  // unsubscribed person). Unknown outreach gets the same care: we cannot rule
+  // out that they asked us to stop.
+  const contactWarning: 'removed' | 'unknown' | null =
+    isRemoved || user.unsubscribed_at ? 'removed' : outreach ? null : 'unknown';
 
   // Order the sequence, and note which rows can actually be repaired.
   const rows = (drips ?? []).slice().sort((a, b) => {

@@ -1074,13 +1074,19 @@ async function handleUpdateOutreach(supabase: SupabaseClient, req: VercelRequest
   // Date, notes and any non-Removed status change first. Zero rows matched is
   // a failure, never a silent success.
   if (Object.keys(patch).length > 0) {
+    // Guarded on the status we read, so two admins saving at once cannot
+    // overwrite each other's change unseen.
     const { data: updated, error: updErr } = await supabase
       .from('waitlist_outreach')
       .update(patch)
       .eq('waitlist_id', user.id)
+      .eq('outreach_status', current.status)
       .select('waitlist_id');
-    if (updErr || !updated || updated.length !== 1) {
+    if (updErr || !updated) {
       return res.status(500).json({ error: 'Failed to save the outreach record. Nothing was saved.' });
+    }
+    if (updated.length !== 1) {
+      return res.status(409).json({ error: 'This record was changed by someone else. Reload and try again. Nothing was saved.' });
     }
   }
 

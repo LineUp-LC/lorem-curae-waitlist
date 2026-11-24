@@ -74,6 +74,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let foundingCapReached = false;
     let foundingCreatorCapReached = false;
 
+    // Removed people are left out of the founding and tester counts (#26,
+    // decision 3b: Removed frees a founding spot). If the Removed set cannot be
+    // read, fail the signup like a failed count does rather than guess.
+    const removed = await readRemovedIds(supabase);
+    if (!removed.ok) {
+      console.error('[signup] Could not read removed signups for the caps');
+      return res.status(500).json({ error: 'Server error during signup' });
+    }
+
     if (isCreator) {
       // Creator signup: check the founding member creator pool
       const { count, error: countError } = await supabase
@@ -89,14 +98,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       foundingCreatorCapReached = (count ?? 0) >= MAX_FOUNDING_MEMBER_CREATORS;
     } else {
       // Non-creator signup: check the general founding member pool.
-      // Removed people free their founding spot (#26, decision 3b), so they are
-      // left out of the count. If the Removed set cannot be read, fail the
-      // signup like a failed count does rather than guess.
-      const removed = await readRemovedIds(supabase);
-      if (!removed.ok) {
-        console.error('[signup] Could not read removed signups for the founding cap');
-        return res.status(500).json({ error: 'Server error during signup' });
-      }
       const { count, error: countError } = await excludeIds(
         supabase
           .from('waitlist')
@@ -121,11 +122,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (wants_tester_access) {
       const maxTesterCap = isCreator ? MAX_TESTER_CREATORS : MAX_TESTER_CONSUMERS;
 
-      const { count: testerCount, error: testerCountError } = await supabase
-        .from('waitlist')
-        .select('*', { count: 'exact', head: true })
-        .eq('wants_tester_access', true)
-        .eq('is_creator', isCreator);
+      const { count: testerCount, error: testerCountError } = await excludeIds(
+        supabase
+          .from('waitlist')
+          .select('*', { count: 'exact', head: true })
+          .eq('wants_tester_access', true)
+          .eq('is_creator', isCreator),
+        removed.ids,
+      );
 
       if (testerCountError) {
         console.error('[signup] Error counting testers:', testerCountError);
