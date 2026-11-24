@@ -33,7 +33,29 @@ export async function readOutreachStatus(
   return { ok: true, status };
 }
 
-export type RemovedIdsRead = { ok: true; ids: string[] } | { ok: false };
+// ONE gate for "may we contact this person" on every hand-written send path
+// (#26). Unsubscribed refuses without a read; Removed refuses; a failed or
+// missing outreach read refuses as read_failed, which callers answer with a
+// server error. Each caller keeps its own response shape for each reason.
+export type SendCheck =
+  | { sendable: true }
+  | { sendable: false; reason: 'unsubscribed' | 'removed' }
+  | { sendable: false; reason: 'read_failed'; readReason: 'read_failed' | 'missing' };
+
+export async function checkSendable(
+  supabase: SupabaseClient,
+  // unsubscribed_at is REQUIRED: a caller that forgot to select it must not
+  // read as "not unsubscribed".
+  row: { id: string; unsubscribed_at: string | null },
+): Promise<SendCheck> {
+  if (row.unsubscribed_at) return { sendable: false, reason: 'unsubscribed' };
+  const outreach = await readOutreachStatus(supabase, row.id);
+  if (!outreach.ok) return { sendable: false, reason: 'read_failed', readReason: outreach.reason };
+  if (outreach.status === OUTREACH_REMOVED) return { sendable: false, reason: 'removed' };
+  return { sendable: true };
+}
+
+export type RemovedIdsRead ={ ok: true; ids: string[] } | { ok: false };
 
 export async function readRemovedIds(supabase: SupabaseClient): Promise<RemovedIdsRead> {
   const { data, error } = await supabase

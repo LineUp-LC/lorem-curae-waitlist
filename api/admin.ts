@@ -5,7 +5,8 @@ import { sendFollowupEmail } from '../src/lib/email/followupTemplates.js';
 import type { UserRole, FollowupEventType } from '../src/lib/email/followupTemplates.js';
 import { dripTemplates } from '../src/lib/email/dripTemplates.js';
 import type { DripEventType } from '../src/lib/email/dripTemplates.js';
-import { excludeIds, firstEmbedded, readOutreachStatus, readRemovedIds } from './_outreach.js';
+import { checkSendable, excludeIds, firstEmbedded, readOutreachStatus, readRemovedIds } from './_outreach.js';
+import type { SendCheck } from './_outreach.js';
 import { passOnTextOffer } from './_textOffer.js';
 import {
   isOutreachStatus,
@@ -56,6 +57,14 @@ import { MAX_FOUNDING_MEMBERS } from '../src/lib/foundingMembers.js';
 const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
 const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 const UNSUBSCRIBE_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscribe';
+
+// The admin resend actions' answer to a checkSendable refusal. null = send.
+function adminSendRefusal(check: SendCheck): { status: number; error: string } | null {
+  if (check.sendable) return null;
+  if (check.reason === 'unsubscribed') return { status: 409, error: 'This person has unsubscribed. Nothing sent.' };
+  if (check.reason === 'removed') return { status: 409, error: 'This person is Removed. Nothing sent.' };
+  return { status: 500, error: 'Could not confirm outreach status. Nothing sent.' };
+}
 
 // Columns updateUser is allowed to write.
 //
@@ -326,8 +335,8 @@ async function handleDeleteUser(supabase: SupabaseClient, req: VercelRequest, re
   if (targetErr) return res.status(500).json({ error: 'Failed to verify user' });
   if (!target) return res.status(404).json({ error: 'User not found' });
 
-  const outreach = await readOutreachStatus(supabase, target.id);
-  const needsConfirm = Boolean(target.unsubscribed_at) || !outreach.ok || outreach.status === OUTREACH_REMOVED;
+  const contact = await checkSendable(supabase, target);
+  const needsConfirm = !contact.sendable;
   if (needsConfirm && (req.body || {}).confirm_contact_warning !== true) {
     return res.status(409).json({
       error: 'This person asked not to be contacted, or their outreach record could not be read. Tick the confirmation box to delete.',
@@ -489,14 +498,8 @@ async function handleResendMagicLink(supabase: SupabaseClient, req: VercelReques
 
   // Never email someone who opted out or was Removed (#26). This action had no
   // unsubscribe check before. A failed outreach read does not send.
-  if (user.unsubscribed_at) {
-    return res.status(409).json({ error: 'This person has unsubscribed. Nothing sent.' });
-  }
-  const outreach = await readOutreachStatus(supabase, user.id);
-  if (!outreach.ok) return res.status(500).json({ error: 'Could not confirm outreach status. Nothing sent.' });
-  if (outreach.status === OUTREACH_REMOVED) {
-    return res.status(409).json({ error: 'This person is Removed. Nothing sent.' });
-  }
+  const refusal = adminSendRefusal(await checkSendable(supabase, user));
+  if (refusal) return res.status(refusal.status).json({ error: refusal.error });
 
   // Generate magic link
   const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
@@ -1188,17 +1191,10 @@ async function handleResendDripEmail(supabase: SupabaseClient, req: VercelReques
   if (userErr) return res.status(500).json({ error: 'Failed to fetch user' });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  // Same guard the scheduler applies. Never email someone who opted out.
-  if (user.unsubscribed_at) {
-    return res.status(409).json({ error: 'This person has unsubscribed. Nothing sent.' });
-  }
-
-  // Nor someone Removed (#26). A failed outreach read does not send.
-  const outreach = await readOutreachStatus(supabase, user.id);
-  if (!outreach.ok) return res.status(500).json({ error: 'Could not confirm outreach status. Nothing sent.' });
-  if (outreach.status === OUTREACH_REMOVED) {
-    return res.status(409).json({ error: 'This person is Removed. Nothing sent.' });
-  }
+  // Same guard the scheduler applies. Never email someone who opted out, nor
+  // someone Removed (#26). A failed outreach read does not send.
+  const refusal = adminSendRefusal(await checkSendable(supabase, user));
+  if (refusal) return res.status(refusal.status).json({ error: refusal.error });
 
   // This action REPAIRS a failure. It is not a general send: it requires an
   // existing row for this event, in state failed. That is what stops it being

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { passOnTextOffer } from './_textOffer.js';
-import { readOutreachStatus } from './_outreach.js';
+import { checkSendable } from './_outreach.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { data: row, error: rowErr } = await supabase
     .from('waitlist')
-    .select('id, email, created_at, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
+    .select('id, email, created_at, unsubscribed_at, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
     .eq('email', trimmedEmail)
     .maybeSingle();
 
@@ -41,14 +41,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).json({ error: 'not-found' });
   }
 
-  // A Removed person is off the waitlist and out of every text send (#26).
-  // Answer as if there were no record, so the response reveals nothing. A failed
-  // read does not let them through.
-  const outreach = await readOutreachStatus(supabase, row.id as string);
-  if (!outreach.ok) {
+  // A Removed or unsubscribed person is out of every text send (#26). Answer as
+  // if there were no record, so the response reveals nothing. A failed read
+  // does not let them through.
+  const contact = await checkSendable(supabase, {
+    id: row.id as string,
+    unsubscribed_at: row.unsubscribed_at as string | null,
+  });
+  if (!contact.sendable && contact.reason === 'read_failed') {
     return res.status(500).json({ error: 'server-error' });
   }
-  if (outreach.status === 'removed') {
+  if (!contact.sendable) {
     return res.status(404).json({ error: 'not-found' });
   }
 

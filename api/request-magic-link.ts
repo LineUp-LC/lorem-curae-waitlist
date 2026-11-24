@@ -5,7 +5,7 @@ import {
   FOUNDING_WELCOME_LOGO_URL,
   foundingPositionBlock,
 } from './_emails/foundingWelcome.js';
-import { readOutreachStatus } from './_outreach.js';
+import { checkSendable } from './_outreach.js';
 
 console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 
@@ -431,17 +431,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // admin who once unsubscribed must still be able to reach it.
     // -------------------------------------------------------------------------
     if (waitlist && !(type === 'login' && isAdminEmail)) {
-      if (waitlist.unsubscribed_at) {
-        console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: 'unsubscribed', type }));
-        return res.status(200).json({ success: true });
-      }
-      const outreach = await readOutreachStatus(supabase, waitlist.id as string);
-      if (!outreach.ok) {
-        console.error(JSON.stringify({ level: 'error', event: 'magic_link_outreach_unreadable', reason: outreach.reason, type }));
+      const contact = await checkSendable(supabase, {
+        id: waitlist.id as string,
+        unsubscribed_at: waitlist.unsubscribed_at as string | null,
+      });
+      if (!contact.sendable && contact.reason === 'read_failed') {
+        console.error(JSON.stringify({ level: 'error', event: 'magic_link_outreach_unreadable', reason: contact.readReason, type }));
         return res.status(500).json({ error: 'Email sending failed' });
       }
-      if (outreach.status === 'removed') {
-        console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: 'removed', type }));
+      if (!contact.sendable) {
+        console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: contact.reason, type }));
         return res.status(200).json({ success: true });
       }
     }
