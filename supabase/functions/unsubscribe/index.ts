@@ -6,7 +6,8 @@
 //
 // GET CHANGES NOTHING (#26, decision 2a). Mail scanners and link previewers open
 // links by themselves, so a GET only redirects to the confirmation page on the
-// website (/unsubscribe?token=...). That page's "Yes, unsubscribe me" button
+// website (https://loremcurae.com/unsubscribe?token=...). That page's "Yes,
+// unsubscribe me" button
 // sends:
 //   POST /functions/v1/unsubscribe?token=<unsubscribe_token>
 // and only the POST checks the token, sets unsubscribed_at and marks the person
@@ -25,7 +26,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
-const CONFIRM_PAGE = 'https://lorem-curae-waitlist.vercel.app/unsubscribe';
+// The real domain (choice A1, Ethan 2026-11-24).
+const CONFIRM_PAGE = 'https://loremcurae.com/unsubscribe';
 
 // The confirmation page is served from these origins.
 const ALLOWED_ORIGINS = new Set([
