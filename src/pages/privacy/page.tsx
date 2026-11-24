@@ -24,8 +24,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: November 21, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: November 21, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: November 24, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: November 24, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -315,7 +315,7 @@ const PrivacyPage = () => {
                   <li><strong>Skin profile data:</strong> Retained as long as your account is active. Deleted upon account deletion.</li>
                   <li><strong>Scan data and product interactions:</strong> Retained for as long as your account is active to power your scan history and recommendations.</li>
                   <li><strong>Analytics data:</strong> Product-usage analytics (via PostHog) may be retained to understand and improve the Service, including in aggregated, anonymized form. You can request deletion of your individual analytics records by contacting us.</li>
-                  <li><strong>Waitlist email and phone number:</strong> Retained while you remain on the waitlist. Removed when you ask us to remove you, or when the waitlist closes and you have not become an account holder. A phone number given for text updates is deleted when you ask us to stop texting you.</li>
+                  <li><strong>Waitlist email and phone number:</strong> Retained while you remain on the waitlist. Removed when you ask us to remove you, or when the waitlist closes and you have not become an account holder. A phone number given for text updates is deleted when you ask us to stop texting you. If you ask us to stop contacting you, we keep only your email address and the date you asked, so we never contact you again. We keep short internal notes about our contact with you, seen only by our team.</li>
                   <li><strong>Data sent to AI processing providers:</strong> Scan images <strong>and the profile and product details sent with them</strong> are held by Anthropic only for as long as its commercial terms require, for processing and abuse monitoring. <strong>Deleting your Curae account removes the data we hold. It does not retroactively delete copies a processing provider may still hold inside its own retention window.</strong></li>
                 </ul>
               </section>
