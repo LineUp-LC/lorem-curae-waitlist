@@ -1,24 +1,35 @@
-import { useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAdminToken } from '@/lib/adminAuth';
+import { ContactWarning, type ContactWarningKind } from './ContactWarning';
 
 interface DeleteUserPanelProps {
   email: string;
+  /** Removed or unreadable outreach: requires an extra confirmation (#26). */
+  contactWarning?: ContactWarningKind;
 }
 
-export function DeleteUserPanel({ email }: DeleteUserPanelProps) {
+export function DeleteUserPanel({ email, contactWarning = null }: DeleteUserPanelProps) {
   const navigate = useNavigate();
   const [confirmEmail, setConfirmEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const [acknowledged, setAcknowledged] = useState(false);
+  // Never carry one person's acknowledgement onto the next (prev/next keeps
+  // this panel mounted).
+  useEffect(() => {
+    setAcknowledged(false);
+  }, [email, contactWarning]);
+
   const isConfirmed = confirmEmail === email;
+  const canSubmit = isConfirmed && (!contactWarning || acknowledged);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!isConfirmed) {
+    if (!canSubmit) {
       return;
     }
 
@@ -34,7 +45,9 @@ export function DeleteUserPanel({ email }: DeleteUserPanelProps) {
           'Authorization': `Bearer ${adminToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        // The API refuses to delete someone who asked not to be contacted
+        // unless this confirmation is sent (#26).
+        body: JSON.stringify({ email, confirm_contact_warning: Boolean(contactWarning) && acknowledged }),
       });
 
       if (!response.ok) {
@@ -120,6 +133,14 @@ export function DeleteUserPanel({ email }: DeleteUserPanelProps) {
           </div>
         </div>
 
+        <ContactWarning
+          kind={contactWarning}
+          id="ack_delete_removed"
+          acknowledged={acknowledged}
+          onAcknowledgedChange={setAcknowledged}
+          disabled={loading}
+        />
+
         {/* Error message */}
         {error && (
           <div className="bg-coral-50 border border-coral-300 rounded-lg p-4">
@@ -165,7 +186,7 @@ export function DeleteUserPanel({ email }: DeleteUserPanelProps) {
         <div className="pt-2">
           <button
             type="submit"
-            disabled={loading || !isConfirmed}
+            disabled={loading || !canSubmit}
             className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-coral-600 rounded-lg hover:bg-coral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-coral-600"
           >
             {loading ? (

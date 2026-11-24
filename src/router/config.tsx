@@ -43,6 +43,7 @@ const PrivacyPage = lazy(() => import('../pages/privacy/page'));
 const TermsPage = lazy(() => import('../pages/terms/page'));
 const DeleteAccountPage = lazy(() => import('../pages/delete-account/page'));
 const ContactPage = lazy(() => import('../pages/contact/page'));
+const UnsubscribePage = lazy(() => import('../pages/unsubscribe/page'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
 const routes: RouteObject[] = [
@@ -77,6 +78,11 @@ const routes: RouteObject[] = [
   {
     path: '/contact',
     element: <ContactPage />,
+  },
+  {
+    // Unsubscribe confirmation (#26). The email link's GET redirects here.
+    path: '/unsubscribe',
+    element: <UnsubscribePage />,
   },
   // Admin routes (waitlist operations console)
   {

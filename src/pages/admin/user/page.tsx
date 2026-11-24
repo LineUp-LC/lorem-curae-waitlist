@@ -14,8 +14,9 @@ import {
   WarningBanner,
 } from '@/pages/admin/components/ui';
 import { DeleteUserPanel } from './DeleteUserPanel';
-import { AnonymizeUserPanel } from './AnonymizeUserPanel';
 import { RegenerateTokenPanel } from './RegenerateTokenPanel';
+import { OutreachPanel } from './OutreachPanel';
+import { OUTREACH_REMOVED, type OutreachRecord } from '@/lib/outreachStatus';
 
 // ============================================================================
 // TYPES
@@ -59,6 +60,9 @@ interface Neighbor {
 
 interface UserDetailResponse {
   user: WaitlistUser;
+  // Outreach row (#26). Null with outreach_error set when it could not be read.
+  outreach: OutreachRecord | null;
+  outreach_error: string | null;
   drips: DripRow[] | null;
   drips_error: string | null;
   resendable_events: string[];
@@ -411,7 +415,14 @@ export default function UserDetailPage() {
 
   if (!data || !form) return null;
 
-  const { user, drips, drips_error, resendable_events, neighbors } = data;
+  const { user, outreach, outreach_error, drips, drips_error, resendable_events, neighbors } = data;
+  const isRemoved = outreach?.outreach_status === OUTREACH_REMOVED;
+  // The Delete warning covers anyone who asked not to be
+  // contacted: Removed OR unsubscribed (an admin may have undone Removed for an
+  // unsubscribed person). Unknown outreach gets the same care: we cannot rule
+  // out that they asked us to stop.
+  const contactWarning: 'removed' | 'unknown' | null =
+    isRemoved || user.unsubscribed_at ? 'removed' : outreach ? null : 'unknown';
 
   // Order the sequence, and note which rows can actually be repaired.
   const rows = (drips ?? []).slice().sort((a, b) => {
@@ -494,6 +505,35 @@ export default function UserDetailPage() {
           message={`Unsubscribed ${formatDate(user.unsubscribed_at)}. No email will be sent to them, including a resend.`}
         />
       )}
+
+      {isRemoved && (
+        <WarningBanner
+          title="Removed"
+          message={`${outreach?.removed_at ? `Removed on ${formatDate(outreach.removed_at)}. ` : ''}No email or text will be sent to them, and they are left out of waitlist counts.`}
+        />
+      )}
+
+      {outreach && outreach.resignup_attempts > 0 && isRemoved && (
+        <WarningBanner
+          title="Signed up again while Removed"
+          message={`Tried to sign up again ${outreach.resignup_attempts} time${outreach.resignup_attempts === 1 ? '' : 's'}${outreach.last_resignup_at ? `, most recently on ${formatDate(outreach.last_resignup_at)}` : ''}. The record was not reset and stays Removed until an admin changes it.`}
+        />
+      )}
+
+      {/* After an undo the attempts are history; the person is no longer Removed. */}
+      {outreach && outreach.resignup_attempts > 0 && !isRemoved && (
+        <WarningBanner
+          title="Signed up again while Removed"
+          message={`Signed up again${outreach.last_resignup_at ? ` on ${formatDate(outreach.last_resignup_at)}` : ''} while Removed (${outreach.resignup_attempts} time${outreach.resignup_attempts === 1 ? '' : 's'}). Since restored.`}
+        />
+      )}
+
+      <OutreachPanel
+        email={user.email}
+        outreach={outreach}
+        outreachError={outreach_error}
+        onSaved={fetchUserData}
+      />
 
       {/* ------------------------------------------------------------------ */}
       {/* DELIVERY LEDGER                                                     */}
@@ -853,6 +893,11 @@ export default function UserDetailPage() {
               This person has unsubscribed, and the grant action skips
               unsubscribed records. Nothing to do here.
             </p>
+          ) : isRemoved ? (
+            <p className="text-sm text-sage-500">
+              This person is Removed, and the grant action skips Removed
+              records. Nothing to do here.
+            </p>
           ) : (
             <Button
               variant="primary"
@@ -879,10 +924,7 @@ export default function UserDetailPage() {
           <div className="space-y-6">
             <RegenerateTokenPanel email={user.email} />
             <div className="border-t border-sage-100 pt-6">
-              <AnonymizeUserPanel email={user.email} onUserAnonymized={fetchUserData} />
-            </div>
-            <div className="border-t border-sage-100 pt-6">
-              <DeleteUserPanel email={user.email} />
+              <DeleteUserPanel email={user.email} contactWarning={contactWarning} />
             </div>
           </div>
         </CardBody>

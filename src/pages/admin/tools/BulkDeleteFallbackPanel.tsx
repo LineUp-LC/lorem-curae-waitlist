@@ -8,7 +8,7 @@ export function BulkDeleteFallbackPanel() {
   const [confirmPhrase, setConfirmPhrase] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ deleted: number } | null>(null);
+  const [result, setResult] = useState<{ deleted: number; skipped: number } | null>(null);
 
   const isValidLimit = limit >= 1 && limit <= 100;
   const isConfirmed = confirmPhrase === CONFIRMATION_PHRASE;
@@ -49,7 +49,9 @@ export function BulkDeleteFallbackPanel() {
       }
 
       const data = await response.json();
-      setResult({ deleted: data.deleted || data.count || 0 });
+      // The API answers deleted_count and skipped_count (#26). The old read of
+      // data.deleted / data.count never matched, so the panel always said 0.
+      setResult({ deleted: data.deleted_count ?? 0, skipped: data.skipped_count ?? 0 });
       setConfirmPhrase('');
     } catch (err) {
       console.error('[BulkDeleteFallbackPanel] Delete failed:', err);
@@ -101,6 +103,9 @@ export function BulkDeleteFallbackPanel() {
               <p className="text-sm text-coral-700">
                 Maximum 100 users per request.
               </p>
+              <p className="text-sm text-coral-700">
+                People who are Removed or unsubscribed are always skipped and kept.
+              </p>
             </div>
           </div>
         </div>
@@ -128,6 +133,11 @@ export function BulkDeleteFallbackPanel() {
                 <p className="text-sm font-medium text-forest-700">
                   Successfully deleted {result.deleted} fallback user{result.deleted !== 1 ? 's' : ''}
                 </p>
+                {result.skipped > 0 && (
+                  <p className="text-sm text-forest-700 mt-1">
+                    Skipped {result.skipped} who asked not to be contacted (Removed or unsubscribed). Their records are kept.
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={handleReset}

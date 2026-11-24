@@ -5,6 +5,17 @@ import { sendFollowupEmail } from '../src/lib/email/followupTemplates.js';
 import type { UserRole, FollowupEventType } from '../src/lib/email/followupTemplates.js';
 import { dripTemplates } from '../src/lib/email/dripTemplates.js';
 import type { DripEventType } from '../src/lib/email/dripTemplates.js';
+import { checkSendable, excludeIds, firstEmbedded, readOutreachStatus, readRemovedIds } from './_outreach.js';
+import type { SendCheck } from './_outreach.js';
+import { passOnTextOffer } from './_textOffer.js';
+import {
+  isOutreachStatus,
+  notesNamePerson,
+  OUTREACH_NOTES_MAX,
+  OUTREACH_NOTES_NAMES_PERSON_ERROR,
+  OUTREACH_REMOVED,
+} from '../src/lib/outreachStatus.js';
+import { MAX_FOUNDING_MEMBERS } from '../src/lib/foundingMembers.js';
 
 // ============================================================================
 // CONSOLIDATED ADMIN API
@@ -29,9 +40,13 @@ import type { DripEventType } from '../src/lib/email/dripTemplates.js';
 //   - toggleWaitlist (POST)
 //   - resendMagicLink (POST)
 //   - bulkDeleteFallback (POST)
-//   - anonymizeUser (POST)
 //   - regenerateToken (POST)
 //   - resendDripEmail (POST) - repairs ONE failed drip_send_log row
+//   - updateOutreach (POST) - outreach status, last-emailed date, notes (#26)
+//
+// REMOVED (#26): a signup whose waitlist_outreach.outreach_status is 'removed'
+// is left out of every count and every send here. Reads of the Removed set fail
+// closed: a count returns an error, a send does not happen.
 //
 // ============================================================================
 
@@ -42,6 +57,14 @@ import type { DripEventType } from '../src/lib/email/dripTemplates.js';
 const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
 const REDIRECT_URL = 'https://lorem-curae-waitlist.vercel.app/auth/callback';
 const UNSUBSCRIBE_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscribe';
+
+// The admin resend actions' answer to a checkSendable refusal. null = send.
+function adminSendRefusal(check: SendCheck): { status: number; error: string } | null {
+  if (check.sendable) return null;
+  if (check.reason === 'unsubscribed') return { status: 409, error: 'This person has unsubscribed. Nothing sent.' };
+  if (check.reason === 'removed') return { status: 409, error: 'This person is Removed. Nothing sent.' };
+  return { status: 500, error: 'Could not confirm outreach status. Nothing sent.' };
+}
 
 // Columns updateUser is allowed to write.
 //
@@ -147,14 +170,18 @@ async function handleHealthCheck(supabase: SupabaseClient, res: VercelResponse) 
 }
 
 async function handleGetStats(supabase: SupabaseClient, res: VercelResponse) {
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
+  const count = () => excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids);
+
   const [total, founding, foundingCreator, wave1, wave2, wave3, fallback] = await Promise.all([
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('is_founding_member', true),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('is_founding_member_creator', true),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('wave_number', 1),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('wave_number', 2),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('wave_number', 3),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('status', 'waiting_for_next_wave'),
+    count(),
+    count().eq('is_founding_member', true),
+    count().eq('is_founding_member_creator', true),
+    count().eq('wave_number', 1),
+    count().eq('wave_number', 2),
+    count().eq('wave_number', 3),
+    count().eq('status', 'waiting_for_next_wave'),
   ]);
 
   return res.status(200).json({
@@ -297,10 +324,29 @@ async function handleDeleteUser(supabase: SupabaseClient, req: VercelRequest, re
 
   const trimmedEmail = email.trim().toLowerCase();
 
+  // Decision 7a, enforced here and not only in the browser (#26, decision 4a):
+  // deleting someone who asked not to be contacted (Removed or unsubscribed),
+  // or whose outreach record cannot be read, needs confirm_contact_warning.
+  const { data: target, error: targetErr } = await supabase
+    .from('waitlist')
+    .select('id, unsubscribed_at')
+    .eq('email', trimmedEmail)
+    .maybeSingle();
+  if (targetErr) return res.status(500).json({ error: 'Failed to verify user' });
+  if (!target) return res.status(404).json({ error: 'User not found' });
+
+  const contact = await checkSendable(supabase, target);
+  const needsConfirm = !contact.sendable;
+  if (needsConfirm && (req.body || {}).confirm_contact_warning !== true) {
+    return res.status(409).json({
+      error: 'This person asked not to be contacted, or their outreach record could not be read. Tick the confirmation box to delete.',
+    });
+  }
+
   const { error } = await supabase
     .from('waitlist')
     .delete()
-    .eq('email', trimmedEmail);
+    .eq('id', target.id);
 
   if (error) return res.status(500).json({ error: 'Failed to delete user' });
 
@@ -313,9 +359,30 @@ async function handleOpenWave(supabase: SupabaseClient, req: VercelRequest, res:
     return res.status(400).json({ error: 'wave_number must be an integer' });
   }
 
+  // Removed people are not moved into a wave (#26). A filtered UPDATE cannot
+  // filter on waitlist_outreach, so read the eligible ids first, then update
+  // exactly those.
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
+
+  const { data: waiting, error: waitingErr } = await excludeIds(
+    supabase.from('waitlist').select('id').eq('status', 'waiting_for_next_wave'),
+    removed.ids,
+  );
+  if (waitingErr) return res.status(500).json({ error: 'Failed to open wave' });
+
+  const waitingIds = (waiting ?? []).map((r: { id: string }) => r.id);
+  if (waitingIds.length === 0) {
+    return res.status(200).json({
+      success: true, wave_number, users_moved: 0,
+      emails_sent: 0, emails_skipped: 0, emails_failed: 0, emails: [],
+    });
+  }
+
   const { data, error } = await supabase
     .from('waitlist')
     .update({ wave_number, status: 'active' })
+    .in('id', waitingIds)
     .eq('status', 'waiting_for_next_wave')
     .select('*');
 
@@ -345,10 +412,18 @@ async function handlePromoteWave(supabase: SupabaseClient, req: VercelRequest, r
     return res.status(400).json({ error: 'target_wave and limit are required' });
   }
 
-  const { data: fallbackUsers } = await supabase
-    .from('waitlist')
-    .select('email')
-    .eq('status', 'waiting_for_next_wave')
+  // Removed people are not promoted (#26). Excluded BEFORE the limit, so the
+  // batch still fills to `limit` from the people who remain.
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
+
+  const { data: fallbackUsers } = await excludeIds(
+    supabase
+      .from('waitlist')
+      .select('email')
+      .eq('status', 'waiting_for_next_wave'),
+    removed.ids,
+  )
     .order('created_at', { ascending: true })
     .limit(limit);
 
@@ -412,13 +487,19 @@ async function handleResendMagicLink(supabase: SupabaseClient, req: VercelReques
   const trimmedEmail = email.trim().toLowerCase();
 
   // Check user exists
-  const { data: user } = await supabase
+  const { data: user, error: userErr } = await supabase
     .from('waitlist')
-    .select('email')
+    .select('id, email, unsubscribed_at')
     .eq('email', trimmedEmail)
     .maybeSingle();
 
+  if (userErr) return res.status(500).json({ error: 'Failed to fetch user' });
   if (!user) return res.status(404).json({ error: 'User not found in waitlist' });
+
+  // Never email someone who opted out or was Removed (#26). This action had no
+  // unsubscribe check before. A failed outreach read does not send.
+  const refusal = adminSendRefusal(await checkSendable(supabase, user));
+  if (refusal) return res.status(refusal.status).json({ error: refusal.error });
 
   // Generate magic link
   const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
@@ -457,26 +538,44 @@ async function handleBulkDeleteFallback(supabase: SupabaseClient, req: VercelReq
     return res.status(400).json({ error: 'Must set confirm: true to proceed' });
   }
 
-  const { data: users } = await supabase
-    .from('waitlist')
-    .select('email')
-    .eq('status', 'waiting_for_next_wave')
-    .order('created_at', { ascending: true })
-    .limit(limit);
+  // Removed and unsubscribed people are never bulk-deleted (#26, decision 4a):
+  // their record is what stops us contacting them again. They are skipped and
+  // counted. If the Removed set cannot be read, nothing is deleted.
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups. Nothing was deleted.' });
+  const removedIds = new Set(removed.ids);
 
-  if (!users?.length) {
-    return res.status(200).json({ deleted_count: 0 });
+  const { data: waiting, error: waitingErr } = await supabase
+    .from('waitlist')
+    .select('id, unsubscribed_at')
+    .eq('status', 'waiting_for_next_wave')
+    .order('created_at', { ascending: true });
+  if (waitingErr) return res.status(500).json({ error: 'Failed to read fallback users. Nothing was deleted.' });
+
+  const rows = (waiting ?? []) as { id: string; unsubscribed_at: string | null }[];
+  const protectedRows = rows.filter(r => r.unsubscribed_at || removedIds.has(r.id));
+  const deletable = rows.filter(r => !r.unsubscribed_at && !removedIds.has(r.id));
+  // The panel promises at most 100 per request; enforce it here too.
+  const cap = Math.min(100, Math.max(0, Math.floor(Number(limit) || 0)));
+  const ids = deletable.slice(0, cap).map(r => r.id);
+
+  if (ids.length === 0) {
+    return res.status(200).json({ deleted_count: 0, skipped_count: protectedRows.length });
   }
 
-  const emails = users.map(u => u.email);
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from('waitlist')
     .delete()
-    .in('email', emails);
+    .in('id', ids)
+    .is('unsubscribed_at', null)
+    .select('id');
 
   if (error) return res.status(500).json({ error: 'Failed to delete users' });
 
-  return res.status(200).json({ deleted_count: emails.length });
+  return res.status(200).json({
+    deleted_count: deleted?.length ?? 0,
+    skipped_count: protectedRows.length,
+  });
 }
 
 async function handleExportUsers(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
@@ -512,13 +611,18 @@ async function handleWaitlistAnalytics(supabase: SupabaseClient, res: VercelResp
   thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
   thirtyDaysAgo.setUTCHours(0, 0, 0, 0);
 
+  // Removed people are left out of every waitlist count (#26).
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
+  const count = () => excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids);
+
   const [total, founding, foundingCreator, last30Days, waveDist, statusDist] = await Promise.all([
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('is_founding_member', true),
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }).eq('is_founding_member_creator', true),
-    supabase.from('waitlist').select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
-    supabase.from('waitlist').select('wave_number'),
-    supabase.from('waitlist').select('status'),
+    count(),
+    count().eq('is_founding_member', true),
+    count().eq('is_founding_member_creator', true),
+    excludeIds(supabase.from('waitlist').select('created_at'), removed.ids).gte('created_at', thirtyDaysAgo.toISOString()),
+    excludeIds(supabase.from('waitlist').select('wave_number'), removed.ids),
+    excludeIds(supabase.from('waitlist').select('status'), removed.ids),
   ]);
 
   // Aggregate by day
@@ -556,41 +660,6 @@ async function handleWaitlistAnalytics(supabase: SupabaseClient, res: VercelResp
     status_distribution,
     founding_member_count: founding.count ?? 0,
     founding_member_creator_count: foundingCreator.count ?? 0,
-  });
-}
-
-async function handleAnonymizeUser(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'email is required' });
-
-  const trimmedEmail = email.trim().toLowerCase();
-  if (!isValidEmail(trimmedEmail)) return res.status(400).json({ error: 'Invalid email format' });
-
-  if (trimmedEmail.startsWith('anon_') && trimmedEmail.endsWith('@example.com')) {
-    return res.status(400).json({ error: 'User is already anonymized' });
-  }
-
-  const { data: existingUser, error: fetchError } = await supabase
-    .from('waitlist')
-    .select('*')
-    .eq('email', trimmedEmail)
-    .maybeSingle();
-
-  if (fetchError) return res.status(500).json({ error: 'Failed to verify user' });
-  if (!existingUser) return res.status(404).json({ error: 'User not found' });
-
-  const anonymizedEmail = `anon_${crypto.randomUUID()}@example.com`;
-  const { error: updateError } = await supabase
-    .from('waitlist')
-    .update({ email: anonymizedEmail })
-    .eq('email', trimmedEmail);
-
-  if (updateError) return res.status(500).json({ error: 'Failed to anonymize user' });
-
-  return res.status(200).json({
-    anonymized: true,
-    original_email: trimmedEmail,
-    new_email: anonymizedEmail,
   });
 }
 
@@ -640,9 +709,14 @@ async function handleRegenerateToken(supabase: SupabaseClient, req: VercelReques
 // ============================================================================
 
 async function handleSummary(supabase: SupabaseClient, res: VercelResponse) {
+  // Removed people are left out of the COUNTS (#26). The recent-signups list
+  // below is a list, not a count, and is left as it was.
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to fetch summary data' });
+
   const [totalResult, waveResult, recentResult] = await Promise.all([
-    supabase.from('waitlist').select('*', { count: 'exact', head: true }),
-    supabase.from('waitlist').select('wave_number').not('wave_number', 'is', null),
+    excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids),
+    excludeIds(supabase.from('waitlist').select('wave_number'), removed.ids).not('wave_number', 'is', null),
     supabase.from('waitlist').select('email, created_at, wave_number').order('created_at', { ascending: false }).limit(10),
   ]);
   if (totalResult.error || waveResult.error || recentResult.error) {
@@ -702,15 +776,29 @@ async function handleEmailSummary(supabase: SupabaseClient, res: VercelResponse)
 async function handleWaitlistUsers(supabase: SupabaseClient, res: VercelResponse) {
   const { data, error } = await supabase
     .from('waitlist')
-    .select('id, email, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access')
+    .select('id, email, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access, waitlist_outreach(outreach_status, last_emailed_on, resignup_attempts)')
     .order('created_at', { ascending: true });
   if (error) return res.status(500).json({ error: 'Failed to fetch waitlist users' });
-  return res.status(200).json({ users: data ?? [] });
+
+  // Flatten the one-to-one embed to `outreach` (object or null). Null means the
+  // row was missing; the page shows it as unknown and never as Not sent.
+  const users = (data ?? []).map((row: Record<string, unknown>) => {
+    const { waitlist_outreach, ...rest } = row;
+    return { ...rest, outreach: firstEmbedded(waitlist_outreach as Record<string, unknown> | Record<string, unknown>[] | null) };
+  });
+  return res.status(200).json({ users });
 }
 
 async function handleTextOptInUsers(supabase: SupabaseClient, res: VercelResponse) {
+  // This list is who gets texted by hand, so Removed people are left out (#26).
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to fetch opted-in users' });
+
   const [usersResult, configResult] = await Promise.all([
-    supabase.from('waitlist').select('email, phone_number, wave_number, is_founding_member, text_opt_in_offer_sent_at, created_at').eq('text_opt_in', true).order('created_at', { ascending: true }),
+    excludeIds(
+      supabase.from('waitlist').select('email, phone_number, wave_number, is_founding_member, text_opt_in_offer_sent_at, created_at').eq('text_opt_in', true),
+      removed.ids,
+    ).order('created_at', { ascending: true }),
     supabase.from('text_opt_in_config').select('slots_remaining').single(),
   ]);
   if (usersResult.error) return res.status(500).json({ error: 'Failed to fetch opted-in users' });
@@ -751,12 +839,19 @@ async function handleGrantAccess(supabase: SupabaseClient, req: VercelRequest, r
     .in('id', userIds);
   if (fetchErr || !rows) return res.status(500).json({ error: 'Failed to fetch waitlist records' });
 
+  // Removed people are skipped (#26): granting sends an access email. If the
+  // Removed set cannot be read, grant nobody.
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups. Nobody was granted.' });
+  const removedIds = new Set(removed.ids);
+
   let granted = 0, skipped = 0, failed = 0;
   const results: Array<{ email: string; status: 'granted' | 'skipped' | 'failed'; reason?: string }> = [];
 
   for (const row of rows as WaitlistRow[]) {
     if (row.has_access) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'already_granted' }); continue; }
     if (row.unsubscribed_at) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'unsubscribed' }); continue; }
+    if (removedIds.has(row.id)) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'removed' }); continue; }
     const { error: updateErr } = await supabase.from('waitlist').update({ has_access: true }).eq('id', row.id);
     if (updateErr) { failed++; results.push({ email: row.email, status: 'failed', reason: updateErr.message }); continue; }
     const role = determineUserRole(row);
@@ -870,12 +965,204 @@ async function handleGetWaitlistUser(supabase: SupabaseClient, req: VercelReques
     index = idx ?? null;
   }
 
+  // Outreach row (#26). A failed or missing read is reported as such and never
+  // defaulted to Not sent; the page shows an error instead of the form.
+  const { data: outreachRow, error: outreachErr } = await supabase
+    .from('waitlist_outreach')
+    .select('outreach_status, last_emailed_on, notes, removed_at, removed_cleared_at, resignup_attempts, last_resignup_at, updated_at')
+    .eq('waitlist_id', user.id)
+    .maybeSingle();
+
   return res.status(200).json({
     user,
+    outreach: outreachErr ? null : (outreachRow ?? null),
+    outreach_error: outreachErr
+      ? 'The outreach record could not be read.'
+      : outreachRow
+        ? null
+        : 'This signup has no outreach record. The outreach migration may not be applied yet.',
     drips: dripErr ? null : (dripRows ?? []),
     drips_error: dripErr ? 'Failed to load the delivery log' : null,
     resendable_events: [...RESENDABLE_DRIP_EVENTS],
     neighbors: { prev, next, index, total: total ?? null },
+  });
+}
+
+// ============================================================================
+// OUTREACH  (/admin/user/:email, #26)
+// ============================================================================
+//
+// Status, last-emailed date and notes for one signup. Kept separate from
+// updateUser, which sends emails when certain fields change.
+//
+// MOVING TO REMOVED goes through mark_waitlist_removed, which also clears the
+// phone number and text opt-in (decision 5a) and gives back a held text spot.
+// If a spot or open offer was freed, it is passed on like a decline.
+//
+// UNDOING REMOVED (decision 2a) needs confirm_undo_removed: true. removed_at is
+// kept as history and removed_cleared_at records the undo. A deleted phone
+// number is not restored. unsubscribed_at is not touched, so someone who
+// unsubscribed still gets no email after an undo. If founding spots are full,
+// they return without the founding badge (decision 3a, undo_waitlist_removed).
+//
+// NOTES may not contain the person's email or the part before the @ (5c).
+
+const LAST_EMAILED_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isRealDate(value: string): boolean {
+  if (!LAST_EMAILED_RE.test(value)) return false;
+  const d = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
+}
+
+async function handleUpdateOutreach(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
+  const body = (req.body || {}) as Record<string, unknown>;
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  if (!email || !isValidEmail(email)) return res.status(400).json({ error: 'A valid email is required' });
+
+  const patch: Record<string, unknown> = {};
+
+  if ('last_emailed_on' in body) {
+    const v = body.last_emailed_on;
+    if (v === null || v === '') patch.last_emailed_on = null;
+    else if (typeof v === 'string' && isRealDate(v)) patch.last_emailed_on = v;
+    else return res.status(400).json({ error: 'last_emailed_on must be a date (YYYY-MM-DD) or empty' });
+  }
+
+  if ('notes' in body) {
+    const v = body.notes;
+    if (v === null) patch.notes = null;
+    else if (typeof v === 'string') {
+      const trimmed = v.trim();
+      if (trimmed.length > OUTREACH_NOTES_MAX) {
+        return res.status(400).json({ error: `Notes are limited to ${OUTREACH_NOTES_MAX} characters` });
+      }
+      // Notes must not name the person (5c): they are kept with a Removed record.
+      if (notesNamePerson(trimmed, email)) {
+        return res.status(400).json({ error: OUTREACH_NOTES_NAMES_PERSON_ERROR });
+      }
+      patch.notes = trimmed === '' ? null : trimmed;
+    } else return res.status(400).json({ error: 'notes must be text' });
+  }
+
+  let nextStatus: string | undefined;
+  if ('outreach_status' in body) {
+    if (!isOutreachStatus(body.outreach_status)) {
+      return res.status(400).json({ error: 'Invalid outreach status' });
+    }
+    nextStatus = body.outreach_status;
+  }
+
+  if (nextStatus === undefined && Object.keys(patch).length === 0) {
+    return res.status(400).json({ error: 'No fields to update' });
+  }
+
+  const { data: user, error: userErr } = await supabase
+    .from('waitlist')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  if (userErr) return res.status(500).json({ error: 'Failed to fetch user' });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const current = await readOutreachStatus(supabase, user.id);
+  if (!current.ok) {
+    return res.status(500).json({
+      error: current.reason === 'missing'
+        ? 'This signup has no outreach record. The outreach migration may not be applied yet.'
+        : 'Could not read the outreach record. Nothing was saved.',
+    });
+  }
+
+  const wasRemoved = current.status === OUTREACH_REMOVED;
+  const toRemoved = nextStatus === OUTREACH_REMOVED && !wasRemoved;
+  const undoRemoved = wasRemoved && nextStatus !== undefined && nextStatus !== OUTREACH_REMOVED;
+
+  if (undoRemoved && body.confirm_undo_removed !== true) {
+    return res.status(409).json({ error: 'Undoing Removed needs confirmation. They may get emails again.' });
+  }
+
+  // Undo goes through undo_waitlist_removed below (it re-checks the founding
+  // cap in the same database step), so only a plain status change is patched.
+  if (nextStatus !== undefined && !toRemoved && !undoRemoved && nextStatus !== current.status) {
+    patch.outreach_status = nextStatus;
+  }
+
+  const warnings: string[] = [];
+
+  // Date, notes and any non-Removed status change first. Zero rows matched is
+  // a failure, never a silent success.
+  if (Object.keys(patch).length > 0) {
+    // Guarded on the status we read, so two admins saving at once cannot
+    // overwrite each other's change unseen.
+    const { data: updated, error: updErr } = await supabase
+      .from('waitlist_outreach')
+      .update(patch)
+      .eq('waitlist_id', user.id)
+      .eq('outreach_status', current.status)
+      .select('waitlist_id');
+    if (updErr || !updated) {
+      return res.status(500).json({ error: 'Failed to save the outreach record. Nothing was saved.' });
+    }
+    if (updated.length !== 1) {
+      return res.status(409).json({ error: 'This record was changed by someone else. Reload and try again. Nothing was saved.' });
+    }
+  }
+
+  // Decision 3a: if founding spots are full, they come back without the badge.
+  if (undoRemoved) {
+    const { data: undone, error: undoErr } = await supabase.rpc('undo_waitlist_removed', {
+      p_waitlist_id: user.id,
+      p_new_status: nextStatus,
+      p_founding_cap: MAX_FOUNDING_MEMBERS,
+    });
+    if (undoErr) {
+      return res.status(500).json({
+        error: Object.keys(patch).length > 0
+          ? 'The date and notes were saved, but undoing Removed failed. Try again.'
+          : 'Undoing Removed failed. Nothing was changed.',
+      });
+    }
+    const kept = firstEmbedded(undone as { founding_kept: boolean } | { founding_kept: boolean }[] | null)?.founding_kept;
+    if (kept === false) {
+      warnings.push('Founding spots are full, so they return without the founding badge or its locked price.');
+    }
+  }
+
+  let textOfferPassedOn = false;
+  if (toRemoved) {
+    const { data: marked, error: markErr } = await supabase.rpc('mark_waitlist_removed', { p_waitlist_id: user.id });
+    if (markErr) {
+      return res.status(500).json({
+        error: Object.keys(patch).length > 0
+          ? 'The date and notes were saved, but moving to Removed failed. Try again.'
+          : 'Moving to Removed failed. Nothing was changed.',
+      });
+    }
+    const passOnAfter = (firstEmbedded(marked as { pass_on_after: string | null } | { pass_on_after: string | null }[] | null))?.pass_on_after ?? null;
+    if (passOnAfter) {
+      const resendApiKey = process.env.RESEND_API_KEY;
+      if (!resendApiKey) {
+        warnings.push('Their text spot was freed, but the offer could not be passed on: email is not configured.');
+      } else {
+        const passed = await passOnTextOffer(supabase, resendApiKey, passOnAfter);
+        textOfferPassedOn = passed.offered;
+        if (passed.error) warnings.push(`Their text spot was freed, but passing it on failed: ${passed.error}.`);
+      }
+    }
+  }
+
+  const { data: outreach, error: readBackErr } = await supabase
+    .from('waitlist_outreach')
+    .select('outreach_status, last_emailed_on, notes, removed_at, removed_cleared_at, resignup_attempts, last_resignup_at, updated_at')
+    .eq('waitlist_id', user.id)
+    .maybeSingle();
+
+  return res.status(200).json({
+    updated: true,
+    outreach: readBackErr ? null : outreach,
+    text_offer_passed_on: textOfferPassedOn,
+    warnings,
   });
 }
 
@@ -904,10 +1191,10 @@ async function handleResendDripEmail(supabase: SupabaseClient, req: VercelReques
   if (userErr) return res.status(500).json({ error: 'Failed to fetch user' });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  // Same guard the scheduler applies. Never email someone who opted out.
-  if (user.unsubscribed_at) {
-    return res.status(409).json({ error: 'This person has unsubscribed. Nothing sent.' });
-  }
+  // Same guard the scheduler applies. Never email someone who opted out, nor
+  // someone Removed (#26). A failed outreach read does not send.
+  const refusal = adminSendRefusal(await checkSendable(supabase, user));
+  if (refusal) return res.status(refusal.status).json({ error: refusal.error });
 
   // This action REPAIRS a failure. It is not a general send: it requires an
   // existing row for this event, in state failed. That is what stops it being
@@ -1145,10 +1432,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
         return handleWaitlistAnalytics(supabase, res);
 
-      case 'anonymizeUser':
-        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-        return handleAnonymizeUser(supabase, req, res);
-
       case 'regenerateToken':
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         return handleRegenerateToken(supabase, req, res);
@@ -1156,6 +1439,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'resendDripEmail':
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
         return handleResendDripEmail(supabase, req, res);
+
+      case 'updateOutreach':
+        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+        return handleUpdateOutreach(supabase, req, res);
 
 
       // Merged from api/admin/* files

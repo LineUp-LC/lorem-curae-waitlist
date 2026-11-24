@@ -3,10 +3,18 @@ import { getAdminToken } from '@/lib/adminAuth';
 import {
   Button,
   Badge,
+  FilterSelect,
   PageHeader,
   ErrorBanner,
   LoadingState,
 } from '@/pages/admin/components/ui';
+import {
+  OUTREACH_REMOVED,
+  OUTREACH_STATUSES,
+  OUTREACH_STATUS_BADGE,
+  OUTREACH_STATUS_LABELS,
+  type OutreachStatus,
+} from '@/lib/outreachStatus';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,6 +31,24 @@ interface WaitlistUser {
   is_creator: boolean;
   is_founding_member: boolean;
   wants_tester_access: boolean;
+  // Outreach row (#26). Null when it was missing: shown as unknown, never as
+  // Not sent, and the row cannot be ticked.
+  outreach: {
+    outreach_status: OutreachStatus;
+    last_emailed_on: string | null;
+    resignup_attempts: number;
+  } | null;
+}
+
+type OutreachFilter = 'all' | OutreachStatus;
+
+const OUTREACH_FILTER_OPTIONS: { value: OutreachFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  ...OUTREACH_STATUSES.map((s) => ({ value: s as OutreachFilter, label: OUTREACH_STATUS_LABELS[s] })),
+];
+
+function isRemoved(user: WaitlistUser): boolean {
+  return user.outreach?.outreach_status === OUTREACH_REMOVED;
 }
 
 interface GrantResult {
@@ -63,6 +89,7 @@ export default function AccessManagementPage() {
   const [selectNextN, setSelectNextN] = useState('10');
   const [granting, setGranting] = useState(false);
   const [grantResult, setGrantResult] = useState<GrantResult | null>(null);
+  const [outreachFilter, setOutreachFilter] = useState<OutreachFilter>('all');
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -86,8 +113,21 @@ export default function AccessManagementPage() {
     loadUsers();
   }, [loadUsers]);
 
-  // Eligible = no access, not unsubscribed
-  const eligible = users.filter(u => !u.has_access && !u.unsubscribed_at);
+  // Rows shown under the current outreach filter.
+  const visibleUsers =
+    outreachFilter === 'all'
+      ? users
+      : users.filter(u => u.outreach?.outreach_status === outreachFilter);
+
+  // Eligible = no access, not unsubscribed, outreach known and not Removed (#26).
+  // Selection works on the rows you can see.
+  const eligible = visibleUsers.filter(
+    u => !u.has_access && !u.unsubscribed_at && u.outreach !== null && !isRemoved(u)
+  );
+
+  // Removed people are left out of the waitlist counts (#26).
+  const counted = users.filter(u => !isRemoved(u));
+  const removedCount = users.length - counted.length;
 
   function handleSelectAll(checked: boolean) {
     if (checked) {
@@ -148,8 +188,11 @@ export default function AccessManagementPage() {
     }
   }
 
-  const totalGranted = users.filter(u => u.has_access).length;
-  const totalPending = eligible.length;
+  // Stats ignore the filter and leave Removed people out (#26).
+  const totalGranted = counted.filter(u => u.has_access).length;
+  const totalPending = counted.filter(
+    u => !u.has_access && !u.unsubscribed_at && u.outreach !== null
+  ).length;
   const allEligibleSelected =
     eligible.length > 0 && eligible.every(u => selectedIds.has(u.id));
   const someEligibleSelected =
@@ -178,7 +221,10 @@ export default function AccessManagementPage() {
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-sage-100 p-4">
           <p className="text-xs text-sage-500 uppercase tracking-wider font-medium mb-1">Total</p>
-          <p className="text-2xl font-semibold text-sage-900">{users.length}</p>
+          <p className="text-2xl font-semibold text-sage-900">{counted.length}</p>
+          {removedCount > 0 && (
+            <p className="text-xs text-sage-500 mt-1">{removedCount} Removed, not counted</p>
+          )}
         </div>
         <div className="bg-white rounded-lg border border-sage-100 p-4">
           <p className="text-xs text-forest-600 uppercase tracking-wider font-medium mb-1">Granted</p>
@@ -229,6 +275,16 @@ export default function AccessManagementPage() {
             Select
           </Button>
         </div>
+        <FilterSelect<OutreachFilter>
+          label="Outreach"
+          value={outreachFilter}
+          options={OUTREACH_FILTER_OPTIONS}
+          onChange={(value) => {
+            setOutreachFilter(value);
+            // A hidden row must never be granted, so selection resets with the filter.
+            setSelectedIds(new Set());
+          }}
+        />
         <div className="ml-auto">
           <Button
             variant="primary"
@@ -272,20 +328,25 @@ export default function AccessManagementPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-sage-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-sage-500 uppercase tracking-wider">
+                  Outreach
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-sage-50">
-              {users.map((user, index) => {
+              {visibleUsers.map((user, index) => {
                 const isUnsubscribed = !!user.unsubscribed_at;
                 const isGranted = user.has_access;
-                const isSelectable = !isUnsubscribed && !isGranted;
+                const isRemovedRow = isRemoved(user);
+                const outreachUnknown = user.outreach === null;
+                const isSelectable = !isUnsubscribed && !isGranted && !isRemovedRow && !outreachUnknown;
                 const isSelected = selectedIds.has(user.id);
 
                 return (
                   <tr
                     key={user.id}
                     className={`transition-colors ${
-                      isUnsubscribed
+                      isUnsubscribed || isRemovedRow
                         ? 'opacity-40'
                         : isSelected
                         ? 'bg-forest-50/50'
@@ -324,11 +385,31 @@ export default function AccessManagementPage() {
                         <Badge variant="warning" size="sm">Pending</Badge>
                       )}
                     </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {user.outreach ? (
+                          <Badge variant={OUTREACH_STATUS_BADGE[user.outreach.outreach_status]} size="sm">
+                            {OUTREACH_STATUS_LABELS[user.outreach.outreach_status]}
+                          </Badge>
+                        ) : (
+                          <Badge variant="default" size="sm">Unknown</Badge>
+                        )}
+                        {user.outreach && user.outreach.resignup_attempts > 0 && (
+                          <Badge variant="critical" size="sm">Re-signed up</Badge>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+
+          {users.length > 0 && visibleUsers.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="text-sage-500 text-sm">No signups with this outreach status.</p>
+            </div>
+          )}
 
           {users.length === 0 && (
             <div className="py-12 text-center">

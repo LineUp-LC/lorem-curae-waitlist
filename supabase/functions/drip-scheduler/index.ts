@@ -127,12 +127,23 @@ interface SupabaseAdminClient {
   from: (t: string) => any;
 }
 
+interface OutreachEmbed {
+  outreach_status: string;
+}
+
 interface SignupRow {
   id: string;
   email: string;
   unsubscribed_at: string | null;
   unsubscribe_token: string;
+  // One-to-one embed from waitlist_outreach (#26). May arrive as an object or a
+  // one-element array; missing means the status cannot be confirmed.
+  waitlist_outreach: OutreachEmbed | OutreachEmbed[] | null;
 }
+
+// SYNC PAIR with OUTREACH_REMOVED in src/lib/outreachStatus.ts (Deno cannot
+// import it) and the CHECK on waitlist_outreach.outreach_status.
+const OUTREACH_REMOVED = 'removed';
 
 async function fetchCohort(
   supabase: SupabaseAdminClient,
@@ -149,7 +160,7 @@ async function fetchCohort(
 
   const { data, error } = await supabase
     .from('waitlist')
-    .select('id, email, unsubscribed_at, unsubscribe_token')
+    .select('id, email, unsubscribed_at, unsubscribe_token, waitlist_outreach(outreach_status)')
     .gte('created_at', start.toISOString())
     .lt('created_at', end.toISOString());
 
@@ -282,6 +293,35 @@ serve(async (_req: Request) => {
           console.log(JSON.stringify({
             level: 'info',
             event: 'drip_skipped_unsubscribed',
+            userId: user.id,
+            dripEvent,
+          }));
+          continue;
+        }
+
+        // Removed guard (#26), checked alongside the unsubscribe guard. FAILS
+        // CLOSED: a missing outreach row means we cannot tell whether they asked
+        // us to stop, so it counts as a failure and nothing is sent.
+        const outreach = Array.isArray(user.waitlist_outreach)
+          ? (user.waitlist_outreach[0] ?? null)
+          : user.waitlist_outreach;
+        if (!outreach) {
+          result.failed += 1;
+          result.byEvent[dripEvent].failed += 1;
+          console.error(JSON.stringify({
+            level: 'error',
+            event: 'drip_outreach_unreadable',
+            userId: user.id,
+            dripEvent,
+          }));
+          continue;
+        }
+        if (outreach.outreach_status === OUTREACH_REMOVED) {
+          result.skipped += 1;
+          result.byEvent[dripEvent].skipped += 1;
+          console.log(JSON.stringify({
+            level: 'info',
+            event: 'drip_skipped_removed',
             userId: user.id,
             dripEvent,
           }));
