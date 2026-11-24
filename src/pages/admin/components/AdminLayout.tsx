@@ -229,6 +229,24 @@ export function AdminLayout() {
     };
   }, [recheck]);
 
+  // While this shell is mounted in any state, answer a new admin sign-in tab
+  // so it can show a close-this-tab note instead of a second dashboard.
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return;
+    const channel = new BroadcastChannel('curae-admin-auth');
+    channel.onmessage = (e: MessageEvent) => {
+      const data: unknown = e.data;
+      if (
+        data !== null &&
+        typeof data === 'object' &&
+        (data as { type?: unknown }).type === 'admin-signed-in'
+      ) {
+        channel.postMessage({ type: 'admin-tab-here' });
+      }
+    };
+    return () => channel.close();
+  }, []);
+
   // Apply dark mode class to document
   useEffect(() => {
     const root = document.documentElement;
