@@ -38,7 +38,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('origin') ?? '';
-  if (!ALLOWED_ORIGINS.has(origin)) return {};
+  // Vary on every response, so a cache never serves one origin's answer to another.
+  if (!ALLOWED_ORIGINS.has(origin)) return { Vary: 'Origin' };
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -99,6 +100,23 @@ const TEXT_OFFER_HTML = `<p>Hi there,</p>
 <p><strong><a href="${TEXT_OFFER_CLAIM_URL}">Claim your spot</a></strong></p>
 <p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
 <p>— Ethan Jones<br/>Founder, Curae</p>`;
+
+// Finishes a half-done unsubscribe: Removed only when the outreach row is not
+// already Removed AND an admin has never undone Removed for this person.
+// deno-lint-ignore no-explicit-any
+async function repairRemovedIfNeverUndone(supabase: any, waitlistId: string): Promise<void> {
+  const { data: row, error } = await supabase
+    .from('waitlist_outreach')
+    .select('outreach_status, removed_cleared_at')
+    .eq('waitlist_id', waitlistId)
+    .maybeSingle();
+  if (error) {
+    console.error(JSON.stringify({ level: 'error', event: 'outreach_read_failed', userId: waitlistId, error: error.message }));
+    return;
+  }
+  if (row && (row.outreach_status === 'removed' || row.removed_cleared_at)) return;
+  await markRemoved(supabase, waitlistId);
+}
 
 // deno-lint-ignore no-explicit-any
 async function markRemoved(supabase: any, waitlistId: string): Promise<void> {
@@ -208,23 +226,30 @@ serve(async (req: Request) => {
   }
 
   if (data.unsubscribed_at) {
-    // Deliberately NOT re-marked Removed here (#26). An admin may have undone
-    // Removed on purpose (decision 2a); a second confirm on an old link must not
-    // silently reverse that. Earlier unsubscribes are made Removed by the
-    // migration backfill, and every send still checks unsubscribed_at.
+    // REPAIR, NEVER REVERSE (#26). If an earlier unsubscribe recorded the
+    // opt-out but its Removed step failed, finish it now. But if an admin has
+    // ever undone Removed (removed_cleared_at set), leave it: a second confirm
+    // on an old link must not reverse that decision (2a).
+    await repairRemovedIfNeverUndone(supabase, data.id);
     return json(req, { result: 'already_unsubscribed' });
   }
 
-  // Mark unsubscribed.
+  // Mark unsubscribed. Conditional, so a double submit cannot move the date.
   // deno-lint-ignore no-explicit-any
-  const { error: updateError } = await (supabase as any)
+  const { data: marked, error: updateError } = await (supabase as any)
     .from('waitlist')
     .update({ unsubscribed_at: new Date().toISOString() })
-    .eq('id', data.id);
+    .eq('id', data.id)
+    .is('unsubscribed_at', null)
+    .select('id');
 
   if (updateError) {
     console.error(JSON.stringify({ level: 'error', event: 'unsubscribe_update_failed', error: updateError.message }));
     return json(req, { error: 'server_error' }, 500);
+  }
+  if (!marked || marked.length === 0) {
+    // Another request got there first.
+    return json(req, { result: 'already_unsubscribed' });
   }
 
   console.log(JSON.stringify({ level: 'info', event: 'unsubscribed', userId: data.id }));

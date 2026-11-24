@@ -553,7 +553,9 @@ async function handleBulkDeleteFallback(supabase: SupabaseClient, req: VercelReq
   const rows = (waiting ?? []) as { id: string; unsubscribed_at: string | null }[];
   const protectedRows = rows.filter(r => r.unsubscribed_at || removedIds.has(r.id));
   const deletable = rows.filter(r => !r.unsubscribed_at && !removedIds.has(r.id));
-  const ids = deletable.slice(0, Math.max(0, Number(limit) || 0)).map(r => r.id);
+  // The panel promises at most 100 per request; enforce it here too.
+  const cap = Math.min(100, Math.max(0, Math.floor(Number(limit) || 0)));
+  const ids = deletable.slice(0, cap).map(r => r.id);
 
   if (ids.length === 0) {
     return res.status(200).json({ deleted_count: 0, skipped_count: protectedRows.length });

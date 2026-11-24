@@ -67,28 +67,6 @@ COMMENT ON TABLE public.waitlist_outreach IS
   'Admin-only outreach tracking per waitlist signup (#26). Service role only: RLS on, no policies.';
 
 -- ----------------------------------------------------------------------------
--- BACKFILL
--- Existing signups start as Not sent. Anyone already unsubscribed starts as
--- Removed, with removed_at = unsubscribed_at, and loses their phone number and
--- text opt-in (decision 6a, matching what mark_waitlist_removed does).
--- ----------------------------------------------------------------------------
-INSERT INTO public.waitlist_outreach (waitlist_id, outreach_status, removed_at)
-SELECT w.id,
-       CASE WHEN w.unsubscribed_at IS NOT NULL THEN 'removed' ELSE 'not_sent' END,
-       w.unsubscribed_at
-  FROM public.waitlist w
-ON CONFLICT (waitlist_id) DO NOTHING;
-
--- THIS DELETION CANNOT BE ROLLED BACK. The cleared phone numbers are not kept
--- anywhere. Measured 2026-11-24: 1 unsubscribed row, with no phone number and
--- no text opt-in, so no text spot is held and none needs giving back.
-UPDATE public.waitlist
-   SET phone_number = NULL,
-       text_opt_in  = false
- WHERE unsubscribed_at IS NOT NULL
-   AND (phone_number IS NOT NULL OR text_opt_in);
-
--- ----------------------------------------------------------------------------
 -- NEW SIGNUPS START AS NOT SENT
 -- SECURITY DEFINER because anon may insert into waitlist directly ("Anyone can
 -- join waitlist") and holds no grant on waitlist_outreach.
@@ -117,6 +95,29 @@ DROP TRIGGER IF EXISTS trigger_waitlist_outreach_updated_at ON public.waitlist_o
 CREATE TRIGGER trigger_waitlist_outreach_updated_at
     BEFORE UPDATE ON public.waitlist_outreach
     FOR EACH ROW EXECUTE FUNCTION public.update_waitlist_updated_at();
+
+-- ----------------------------------------------------------------------------
+-- BACKFILL (after the insert trigger exists, so a signup that lands during the
+-- migration gets its row from the trigger or from here; ON CONFLICT covers both)
+-- Existing signups start as Not sent. Anyone already unsubscribed starts as
+-- Removed, with removed_at = unsubscribed_at, and loses their phone number and
+-- text opt-in (decision 6a, matching what mark_waitlist_removed does).
+-- ----------------------------------------------------------------------------
+INSERT INTO public.waitlist_outreach (waitlist_id, outreach_status, removed_at)
+SELECT w.id,
+       CASE WHEN w.unsubscribed_at IS NOT NULL THEN 'removed' ELSE 'not_sent' END,
+       w.unsubscribed_at
+  FROM public.waitlist w
+ON CONFLICT (waitlist_id) DO NOTHING;
+
+-- THIS DELETION CANNOT BE ROLLED BACK. The cleared phone numbers are not kept
+-- anywhere. Measured 2026-11-24: 1 unsubscribed row, with no phone number and
+-- no text opt-in, so no text spot is held and none needs giving back.
+UPDATE public.waitlist
+   SET phone_number = NULL,
+       text_opt_in  = false
+ WHERE unsubscribed_at IS NOT NULL
+   AND (phone_number IS NOT NULL OR text_opt_in);
 
 -- ----------------------------------------------------------------------------
 -- RE-SIGNUP FLAG

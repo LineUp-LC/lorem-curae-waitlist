@@ -153,8 +153,12 @@ export function OutreachPanel({ email, outreach, outreachError, onSaved }: Outre
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Save failed');
       // Refresh anyway: a partial save (date and notes saved, status not) must
-      // show what is actually stored.
-      await onSaved();
+      // show what is actually stored. A failed refresh must not throw from here.
+      try {
+        await onSaved();
+      } catch (refreshErr) {
+        console.error('[OutreachPanel] Refresh after failed save failed:', refreshErr);
+      }
     } finally {
       setSaving(false);
     }
