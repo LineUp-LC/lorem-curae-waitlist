@@ -55,6 +55,74 @@ function htmlError(message: string, status: number): Response {
 }
 
 // ----------------------------------------------------------------------------
+// REMOVED ON UNSUBSCRIBE (#26, decision 6a)
+// ----------------------------------------------------------------------------
+// Unsubscribing also marks the signup Removed through mark_waitlist_removed
+// (migration 20261124_add_waitlist_outreach.sql), which clears the phone number
+// and text opt-in and gives back a held text spot (decision 5a). If a spot or an
+// open offer was freed, it is passed to the next person: claim_next_text_offer
+// picks and stamps them (the same database function api/_textOffer.ts uses),
+// and the offer email is sent here.
+//
+// The offer HTML below is the one api/signup.ts sends (signup.ts:247-252), not
+// the copy in api/_textOffer.ts, which carries a known problem (comment lines
+// inside the email). SYNC PAIR with signup.ts until that is fixed.
+
+const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
+const TEXT_OFFER_CLAIM_URL = 'https://lorem-curae-waitlist.vercel.app/member';
+const TEXT_OFFER_SUBJECT = "A personal note from Ethan — you're in the first 100";
+const TEXT_OFFER_HTML = `<p>Hi there,</p>
+<p>You're one of our first 100 founding members on Curae.</p>
+<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
+<p><strong><a href="${TEXT_OFFER_CLAIM_URL}">Claim your spot</a></strong></p>
+<p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
+<p>— Ethan Jones<br/>Founder, Curae</p>`;
+
+// deno-lint-ignore no-explicit-any
+async function markRemoved(supabase: any, waitlistId: string): Promise<void> {
+  const { data: marked, error: markErr } = await supabase.rpc('mark_waitlist_removed', {
+    p_waitlist_id: waitlistId,
+  });
+  if (markErr) {
+    console.error(JSON.stringify({ level: 'error', event: 'mark_removed_failed', userId: waitlistId, error: markErr.message }));
+    return;
+  }
+
+  const row = Array.isArray(marked) ? marked[0] : marked;
+  const passOnAfter: string | null = row?.pass_on_after ?? null;
+  if (!passOnAfter) return;
+
+  // Check the key BEFORE claiming: a claim stamps the next person's offer, and
+  // a stamped offer with no email would strand them.
+  const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? '';
+  if (!resendApiKey) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_pass_on_skipped', reason: 'missing RESEND_API_KEY' }));
+    return;
+  }
+
+  const { data: claimed, error: claimErr } = await supabase.rpc('claim_next_text_offer', { p_after: passOnAfter });
+  if (claimErr) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_claim_failed', error: claimErr.message }));
+    return;
+  }
+  const next = Array.isArray(claimed) ? claimed[0] : claimed;
+  if (!next?.email) return;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM_EMAIL, to: next.email, subject: TEXT_OFFER_SUBJECT, html: TEXT_OFFER_HTML }),
+    });
+    if (!res.ok) {
+      console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', status: res.status }));
+    }
+  } catch (err) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', error: (err as Error).message }));
+  }
+}
+
+// ----------------------------------------------------------------------------
 // HANDLER
 // ----------------------------------------------------------------------------
 
@@ -100,6 +168,8 @@ serve(async (req: Request) => {
   }
 
   if (data.unsubscribed_at) {
+    // Idempotent: makes sure an earlier unsubscribe is also Removed (#26).
+    await markRemoved(supabase, data.id);
     return htmlPage("You&#8217;re already unsubscribed.");
   }
 
@@ -116,6 +186,10 @@ serve(async (req: Request) => {
   }
 
   console.log(JSON.stringify({ level: 'info', event: 'unsubscribed', userId: data.id }));
+
+  // The opt-out is already recorded in unsubscribed_at, which every send checks,
+  // so a failure here is logged and never turns the page into an error.
+  await markRemoved(supabase, data.id);
 
   return htmlPage("You&#8217;ve been unsubscribed. You won&#8217;t hear from us again.");
 });
