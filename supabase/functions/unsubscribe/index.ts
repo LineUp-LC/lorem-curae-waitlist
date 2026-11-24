@@ -96,7 +96,7 @@ async function readToken(req: Request): Promise<string> {
 // Finishes a half-done unsubscribe: Removed only when the outreach row is not
 // already Removed AND an admin has never undone Removed for this person.
 // deno-lint-ignore no-explicit-any
-async function repairRemovedIfNeverUndone(supabase: any, waitlistId: string): Promise<void> {
+async function repairRemovedIfNeverUndone(supabase: any, waitlistId: string): Promise<boolean> {
   const { data: row, error } = await supabase
     .from('waitlist_outreach')
     .select('outreach_status, removed_cleared_at')
@@ -104,41 +104,43 @@ async function repairRemovedIfNeverUndone(supabase: any, waitlistId: string): Pr
     .maybeSingle();
   if (error) {
     console.error(JSON.stringify({ level: 'error', event: 'outreach_read_failed', userId: waitlistId, error: error.message }));
-    return;
+    return false;
   }
-  if (row && (row.outreach_status === 'removed' || row.removed_cleared_at)) return;
-  await markRemoved(supabase, waitlistId);
+  if (row && (row.outreach_status === 'removed' || row.removed_cleared_at)) return true;
+  return await markRemoved(supabase, waitlistId);
 }
 
+// Returns whether the Removed mark itself succeeded. A failed pass-on of a
+// freed text spot after a successful mark is logged and still counts as true.
 // deno-lint-ignore no-explicit-any
-async function markRemoved(supabase: any, waitlistId: string): Promise<void> {
+async function markRemoved(supabase: any, waitlistId: string): Promise<boolean> {
   const { data: marked, error: markErr } = await supabase.rpc('mark_waitlist_removed', {
     p_waitlist_id: waitlistId,
   });
   if (markErr) {
     console.error(JSON.stringify({ level: 'error', event: 'mark_removed_failed', userId: waitlistId, error: markErr.message }));
-    return;
+    return false;
   }
 
   const row = Array.isArray(marked) ? marked[0] : marked;
   const passOnAfter: string | null = row?.pass_on_after ?? null;
-  if (!passOnAfter) return;
+  if (!passOnAfter) return true;
 
   // Check the key BEFORE claiming: a claim stamps the next person's offer, and
   // a stamped offer with no email would strand them.
   const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? '';
   if (!resendApiKey) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_pass_on_skipped', reason: 'missing RESEND_API_KEY' }));
-    return;
+    return true;
   }
 
   const { data: claimed, error: claimErr } = await supabase.rpc('claim_next_text_offer', { p_after: passOnAfter });
   if (claimErr) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_claim_failed', error: claimErr.message }));
-    return;
+    return true;
   }
   const next = Array.isArray(claimed) ? claimed[0] : claimed;
-  if (!next?.email) return;
+  if (!next?.email) return true;
 
   // Bounded (the shared send has the timeout): the unsubscribe page waits on
   // this. A timeout is logged like any other failed send.
@@ -146,6 +148,7 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<void> {
   if (!sent.ok) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', status: sent.status, error: sent.error }));
   }
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -209,7 +212,11 @@ serve(async (req: Request) => {
     // opt-out but its Removed step failed, finish it now. But if an admin has
     // ever undone Removed (removed_cleared_at set), leave it: a second confirm
     // on an old link must not reverse that decision (2a).
-    await repairRemovedIfNeverUndone(supabase, data.id);
+    // A failed repair is not reported as done: the page asks them to try again.
+    if (!(await repairRemovedIfNeverUndone(supabase, data.id))) {
+      console.error(JSON.stringify({ level: 'error', event: 'unsubscribe_remove_failed', userId: data.id, path: 'repair' }));
+      return json(req, { error: 'server_error' }, 500);
+    }
     return json(req, { result: 'already_unsubscribed' });
   }
 
@@ -233,9 +240,14 @@ serve(async (req: Request) => {
 
   console.log(JSON.stringify({ level: 'info', event: 'unsubscribed', userId: data.id }));
 
-  // The opt-out is already recorded in unsubscribed_at, which every send checks,
-  // so a failure here is logged and never turns the answer into an error.
-  await markRemoved(supabase, data.id);
+  // The opt-out is recorded in unsubscribed_at, but if the Removed step fails
+  // the person still holds their phone number and text spot (decision 5a), so
+  // the answer is an error and the page asks them to try again. A retry takes
+  // the already-unsubscribed path above, which finishes the Removed step.
+  if (!(await markRemoved(supabase, data.id))) {
+    console.error(JSON.stringify({ level: 'error', event: 'unsubscribe_remove_failed', userId: data.id, path: 'first' }));
+    return json(req, { error: 'server_error' }, 500);
+  }
 
   return json(req, { result: 'unsubscribed' });
 });
