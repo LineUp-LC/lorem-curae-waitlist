@@ -39,7 +39,7 @@
 --     with unsubscribed_at set (measured 2026-11-24: 1 unsubscribed row, 0 with a
 --     phone number, 0 opted in, so nothing was deleted at that time);
 --   - phone_number and text_opt_in cleared later by release_text_spot (called
---     by mark_waitlist_removed and by the admin anonymize action).
+--     by mark_waitlist_removed).
 -- Founding badges (is_founding_member) and price locks (price_locked) taken off
 -- by undo_waitlist_removed are not restored either.
 -- ============================================================================
@@ -149,8 +149,10 @@ REVOKE ALL ON FUNCTION public.flag_removed_resignup(text) FROM PUBLIC, anon, aut
 GRANT EXECUTE ON FUNCTION public.flag_removed_resignup(text) TO service_role;
 
 -- ----------------------------------------------------------------------------
--- GIVE BACK A TEXT SPOT (one copy, used by mark_waitlist_removed and by the
--- admin anonymize action, decisions 5a and D1)
+-- GIVE BACK A TEXT SPOT (used by mark_waitlist_removed, decision 5a; kept as
+-- its own function so any future caller shares the one copy)
+-- Raises if the text_opt_in_config row is missing, rather than freeing a spot
+-- the pool never gets back (change 3, Ethan 2026-11-24).
 -- Clears phone_number and text_opt_in. A held text spot (the person had
 -- accepted, so slots_remaining was decremented) is given back to the pool; a
 -- still-open offer is treated as declined, as the decline path does.
@@ -168,6 +170,7 @@ DECLARE
   v_row           public.waitlist%ROWTYPE;
   v_held_slot     boolean;
   v_pending_offer boolean;
+  v_rows          integer;
 BEGIN
   SELECT * INTO v_row FROM public.waitlist WHERE id = p_waitlist_id FOR UPDATE;
   IF NOT FOUND THEN
@@ -190,6 +193,14 @@ BEGIN
     UPDATE public.text_opt_in_config
        SET slots_remaining = slots_remaining + 1
      WHERE id = (SELECT min(id) FROM public.text_opt_in_config);
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    -- No config row means the spot would be freed on this person and never
+    -- reach the pool. Raise, so the whole step (and any Removed mark made in
+    -- the same transaction) rolls back instead of half-happening.
+    IF v_rows = 0 THEN
+      RAISE EXCEPTION 'text_opt_in_config row is missing; cannot give back a text spot'
+        USING ERRCODE = 'P0002';
+    END IF;
   END IF;
 
   RETURN CASE WHEN v_held_slot OR v_pending_offer THEN v_row.created_at END;
@@ -273,6 +284,12 @@ DECLARE
 BEGIN
   IF p_new_status IS NULL OR p_new_status NOT IN ('not_sent', 'sent', 'replied', 'quiet') THEN
     RAISE EXCEPTION 'undo needs a status other than removed, got %', p_new_status USING ERRCODE = '22023';
+  END IF;
+
+  -- A missing or non-positive cap would make every comparison below NULL or
+  -- true and silently keep or drop badges (change 2, Ethan 2026-11-24).
+  IF p_founding_cap IS NULL OR p_founding_cap <= 0 THEN
+    RAISE EXCEPTION 'undo needs a positive founding cap, got %', p_founding_cap USING ERRCODE = '22023';
   END IF;
 
   PERFORM pg_advisory_xact_lock(hashtext('waitlist_founding_cap'));
