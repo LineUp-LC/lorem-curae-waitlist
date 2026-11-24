@@ -684,18 +684,44 @@ async function handleAnonymizeUser(supabase: SupabaseClient, req: VercelRequest,
   // Decision 5c (#26): anonymize also clears the phone number and text opt-in.
   // It KEEPS the outreach notes and the signup date; notes are refused if they
   // name the person (see handleUpdateOutreach), so they survive an erase safely.
+  //
+  // D1: a held text spot (or an open offer) is given back and passed on the
+  // same way Removed and the decline path do, through release_text_spot, which
+  // also clears phone_number and text_opt_in. It runs first so it can still see
+  // the opt-in; it is idempotent, so a retry after a failed email change is safe.
+  const { data: passOnAfter, error: releaseErr } = await supabase.rpc('release_text_spot', {
+    p_waitlist_id: existingUser.id,
+  });
+  if (releaseErr) return res.status(500).json({ error: 'Failed to clear the phone number. Nothing was anonymized.' });
+
+  const warnings: string[] = [];
+  if (typeof passOnAfter === 'string' && passOnAfter) {
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      warnings.push('Their text spot was freed, but the offer could not be passed on: email is not configured.');
+    } else {
+      const passed = await passOnTextOffer(supabase, resendApiKey, passOnAfter);
+      if (passed.error) warnings.push(`Their text spot was freed, but passing it on failed: ${passed.error}.`);
+    }
+  }
+
   const anonymizedEmail = `anon_${crypto.randomUUID()}@example.com`;
   const { error: updateError } = await supabase
     .from('waitlist')
     .update({ email: anonymizedEmail, phone_number: null, text_opt_in: false })
     .eq('email', trimmedEmail);
 
-  if (updateError) return res.status(500).json({ error: 'Failed to anonymize user' });
+  if (updateError) {
+    return res.status(500).json({
+      error: 'The phone number was cleared, but changing the email failed. Try again.',
+    });
+  }
 
   return res.status(200).json({
     anonymized: true,
     original_email: trimmedEmail,
     new_email: anonymizedEmail,
+    warnings,
   });
 }
 

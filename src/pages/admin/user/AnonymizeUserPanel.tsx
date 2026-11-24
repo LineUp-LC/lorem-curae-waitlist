@@ -15,6 +15,7 @@ export function AnonymizeUserPanel({ email, contactWarning = null, onUserAnonymi
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [anonymizedEmail, setAnonymizedEmail] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
 
   const [acknowledged, setAcknowledged] = useState(false);
   // Never carry one person's acknowledgement onto the next (prev/next keeps
@@ -62,6 +63,8 @@ export function AnonymizeUserPanel({ email, contactWarning = null, onUserAnonymi
       const data = await response.json();
       setSuccess(true);
       setAnonymizedEmail(data.new_email || null);
+      // e.g. a freed text spot that could not be passed on (#26, D1).
+      setWarnings(Array.isArray(data.warnings) ? data.warnings : []);
 
       // Notify parent to refresh data
       if (onUserAnonymized) {
@@ -95,6 +98,9 @@ export function AnonymizeUserPanel({ email, contactWarning = null, onUserAnonymi
                 New email: <span className="font-mono bg-forest-100 px-2 py-0.5 rounded">{anonymizedEmail}</span>
               </p>
             )}
+            {warnings.map((w) => (
+              <p key={w} className="text-sm text-amber-700 mt-2">{w}</p>
+            ))}
           </div>
         </div>
       </div>
@@ -125,6 +131,10 @@ export function AnonymizeUserPanel({ email, contactWarning = null, onUserAnonymi
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <div className="space-y-1">
+              {/* First line for every person (choice E, #26). */}
+              <p className="text-sm font-semibold text-amber-900">
+                Only do this if they asked to be erased.
+              </p>
               <p className="text-sm font-medium text-amber-800">
                 This action is permanent and cannot be undone.
               </p>

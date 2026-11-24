@@ -29,6 +29,7 @@
 --   DROP FUNCTION IF EXISTS public.create_waitlist_outreach_row();
 --   DROP FUNCTION IF EXISTS public.flag_removed_resignup(text);
 --   DROP FUNCTION IF EXISTS public.mark_waitlist_removed(uuid);
+--   DROP FUNCTION IF EXISTS public.release_text_spot(uuid);
 --   DROP FUNCTION IF EXISTS public.undo_waitlist_removed(uuid, text, integer);
 --   DROP FUNCTION IF EXISTS public.claim_next_text_offer(timestamptz);
 --   DROP TABLE IF EXISTS public.waitlist_outreach;
@@ -37,8 +38,10 @@
 --   - phone_number and text_opt_in cleared by THIS migration's backfill for rows
 --     with unsubscribed_at set (measured 2026-11-24: 1 unsubscribed row, 0 with a
 --     phone number, 0 opted in, so nothing was deleted at that time);
---   - phone_number and text_opt_in cleared later by mark_waitlist_removed.
--- Founding badges removed by undo_waitlist_removed are not restored either.
+--   - phone_number and text_opt_in cleared later by release_text_spot (called
+--     by mark_waitlist_removed and by the admin anonymize action).
+-- Founding badges (is_founding_member) and price locks (price_locked) taken off
+-- by undo_waitlist_removed are not restored either.
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -146,44 +149,29 @@ REVOKE ALL ON FUNCTION public.flag_removed_resignup(text) FROM PUBLIC, anon, aut
 GRANT EXECUTE ON FUNCTION public.flag_removed_resignup(text) TO service_role;
 
 -- ----------------------------------------------------------------------------
--- MOVE TO REMOVED (admin action and the unsubscribe edge function)
--- Decision 5a: clears phone_number and text_opt_in. A held text spot (the
--- person had accepted, so slots_remaining was decremented) is given back to the
--- pool; a still-open offer is treated as declined, as the decline path does.
--- Returns pass_on_after = the person's created_at when a spot or open offer
--- should be passed on; the caller then calls claim_next_text_offer and sends
--- the offer email. Idempotent: a second call changes nothing further.
+-- GIVE BACK A TEXT SPOT (one copy, used by mark_waitlist_removed and by the
+-- admin anonymize action, decisions 5a and D1)
+-- Clears phone_number and text_opt_in. A held text spot (the person had
+-- accepted, so slots_remaining was decremented) is given back to the pool; a
+-- still-open offer is treated as declined, as the decline path does.
+-- Returns the person's created_at when a spot or open offer should be passed
+-- on (the caller then calls claim_next_text_offer and sends the offer email),
+-- otherwise NULL. Idempotent: a second call finds nothing to give back.
 -- ----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.mark_waitlist_removed(p_waitlist_id uuid)
-RETURNS TABLE (was_already_removed boolean, pass_on_after timestamptz)
+CREATE OR REPLACE FUNCTION public.release_text_spot(p_waitlist_id uuid)
+RETURNS timestamptz
 LANGUAGE plpgsql
 SECURITY INVOKER
 SET search_path = public
 AS $$
 DECLARE
   v_row           public.waitlist%ROWTYPE;
-  v_status        text;
   v_held_slot     boolean;
   v_pending_offer boolean;
 BEGIN
   SELECT * INTO v_row FROM public.waitlist WHERE id = p_waitlist_id FOR UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'waitlist row % not found', p_waitlist_id USING ERRCODE = 'P0002';
-  END IF;
-
-  INSERT INTO public.waitlist_outreach (waitlist_id) VALUES (p_waitlist_id)
-  ON CONFLICT (waitlist_id) DO NOTHING;
-
-  SELECT o.outreach_status INTO v_status
-    FROM public.waitlist_outreach o
-   WHERE o.waitlist_id = p_waitlist_id
-     FOR UPDATE;
-
-  IF v_status <> 'removed' THEN
-    UPDATE public.waitlist_outreach
-       SET outreach_status = 'removed',
-           removed_at      = now()
-     WHERE waitlist_id = p_waitlist_id;
   END IF;
 
   v_held_slot     := v_row.text_opt_in;
@@ -204,9 +192,52 @@ BEGIN
      WHERE id = (SELECT min(id) FROM public.text_opt_in_config);
   END IF;
 
-  RETURN QUERY
-    SELECT (v_status = 'removed'),
-           CASE WHEN v_held_slot OR v_pending_offer THEN v_row.created_at END;
+  RETURN CASE WHEN v_held_slot OR v_pending_offer THEN v_row.created_at END;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.release_text_spot(uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.release_text_spot(uuid) TO service_role;
+
+-- ----------------------------------------------------------------------------
+-- MOVE TO REMOVED (admin action and the unsubscribe edge function)
+-- Marks the outreach row Removed, then gives back any text spot through
+-- release_text_spot (decision 5a: phone_number and text_opt_in are cleared).
+-- Returns pass_on_after from release_text_spot; the caller passes the spot on.
+-- Idempotent: a second call changes nothing further.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.mark_waitlist_removed(p_waitlist_id uuid)
+RETURNS TABLE (was_already_removed boolean, pass_on_after timestamptz)
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public
+AS $$
+DECLARE
+  v_status   text;
+  v_pass_on  timestamptz;
+BEGIN
+  PERFORM 1 FROM public.waitlist WHERE id = p_waitlist_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'waitlist row % not found', p_waitlist_id USING ERRCODE = 'P0002';
+  END IF;
+
+  INSERT INTO public.waitlist_outreach (waitlist_id) VALUES (p_waitlist_id)
+  ON CONFLICT (waitlist_id) DO NOTHING;
+
+  SELECT o.outreach_status INTO v_status
+    FROM public.waitlist_outreach o
+   WHERE o.waitlist_id = p_waitlist_id
+     FOR UPDATE;
+
+  IF v_status <> 'removed' THEN
+    UPDATE public.waitlist_outreach
+       SET outreach_status = 'removed',
+           removed_at      = now()
+     WHERE waitlist_id = p_waitlist_id;
+  END IF;
+
+  v_pass_on := public.release_text_spot(p_waitlist_id);
+
+  RETURN QUERY SELECT (v_status = 'removed'), v_pass_on;
 END;
 $$;
 REVOKE ALL ON FUNCTION public.mark_waitlist_removed(uuid) FROM PUBLIC, anon, authenticated;
@@ -217,7 +248,8 @@ GRANT EXECUTE ON FUNCTION public.mark_waitlist_removed(uuid) TO service_role;
 -- Sets the new status and removed_cleared_at (removed_at is kept as history).
 -- If the person had the founding badge and the founding cap is already reached
 -- (founding members who are not Removed, the same count api/signup.ts uses),
--- they return WITHOUT the badge: is_founding_member = false. The cap is passed
+-- they return WITHOUT the badge: is_founding_member = false and, with it,
+-- price_locked = false (C1). The cap is passed
 -- in by the caller (MAX_FOUNDING_MEMBERS in src/lib/foundingMembers.ts, one
 -- source). A transaction-scoped advisory lock serialises undos, so two undos
 -- cannot both take the last spot. Returns founding_kept = false when the badge
@@ -270,7 +302,11 @@ BEGIN
              SELECT 1 FROM public.waitlist_outreach o
               WHERE o.waitlist_id = w.id AND o.outreach_status = 'removed');
     IF v_count >= p_founding_cap THEN
-      UPDATE public.waitlist SET is_founding_member = false WHERE id = p_waitlist_id;
+      -- C1: the price lock goes with the founding badge, in the same update.
+      UPDATE public.waitlist
+         SET is_founding_member = false,
+             price_locked       = false
+       WHERE id = p_waitlist_id;
       v_kept := false;
     END IF;
   END IF;
@@ -371,7 +407,8 @@ CREATE OR REPLACE VIEW public.founding_member_slots AS
 -- 3. Functions are service_role only (expect no anon / authenticated in proacl):
 --   select proname, proacl from pg_proc
 --    where proname in ('flag_removed_resignup', 'mark_waitlist_removed',
---                      'undo_waitlist_removed', 'claim_next_text_offer',
+--                      'release_text_spot', 'undo_waitlist_removed',
+--                      'claim_next_text_offer',
 --                      'create_waitlist_outreach_row');
 -- 2b. No unsubscribed row keeps a phone number or text opt-in (expect 0):
 --   select count(*) from waitlist
