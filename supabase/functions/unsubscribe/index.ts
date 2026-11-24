@@ -25,6 +25,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { sendTextOfferEmail } from '../_shared/textOfferEmail.ts';
 
 // The real domain (choice A1, Ethan 2026-11-24).
 const CONFIRM_PAGE = 'https://loremcurae.com/unsubscribe';
@@ -89,19 +90,8 @@ async function readToken(req: Request): Promise<string> {
 // picks and stamps them (the same database function api/_textOffer.ts uses),
 // and the offer email is sent here.
 //
-// The offer HTML below is the one api/signup.ts sends (signup.ts:247-252), not
-// the copy in api/_textOffer.ts, which carries a known problem (comment lines
-// inside the email). SYNC PAIR with signup.ts until that is fixed.
-
-const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
-const TEXT_OFFER_CLAIM_URL = 'https://lorem-curae-waitlist.vercel.app/member';
-const TEXT_OFFER_SUBJECT = "A personal note from Ethan — you're in the first 100";
-const TEXT_OFFER_HTML = `<p>Hi there,</p>
-<p>You're one of our first 100 founding members on Curae.</p>
-<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
-<p><strong><a href="${TEXT_OFFER_CLAIM_URL}">Claim your spot</a></strong></p>
-<p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`;
+// The offer email (sender, subject, body, timeout) has ONE copy, shared with
+// api/_textOffer.ts: ../_shared/textOfferEmail.ts.
 
 // Finishes a half-done unsubscribe: Removed only when the outreach row is not
 // already Removed AND an admin has never undone Removed for this person.
@@ -150,24 +140,11 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<void> {
   const next = Array.isArray(claimed) ? claimed[0] : claimed;
   if (!next?.email) return;
 
-  // Bounded: the unsubscribe page waits on this, and a slow email service must
-  // not hang it. An abort is logged like any other failed send.
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM_EMAIL, to: next.email, subject: TEXT_OFFER_SUBJECT, html: TEXT_OFFER_HTML }),
-      signal: controller.signal,
-    });
-    if (!res.ok) {
-      console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', status: res.status }));
-    }
-  } catch (err) {
-    console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', error: (err as Error).message }));
-  } finally {
-    clearTimeout(timer);
+  // Bounded (the shared send has the timeout): the unsubscribe page waits on
+  // this. A timeout is logged like any other failed send.
+  const sent = await sendTextOfferEmail(resendApiKey, next.email);
+  if (!sent.ok) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', status: sent.status, error: sent.error }));
   }
 }
 
