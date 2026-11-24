@@ -281,7 +281,7 @@ export function OutreachPanel({ email, outreach, outreachError, onSaved }: Outre
         onClose={() => setPendingConfirm(null)}
         onConfirm={handleConfirm}
         title="Undo Removed?"
-        message="They may get emails again."
+        message="They may get emails again. If founding spots are full, they lose the founding badge and its locked price."
         confirmLabel="Undo Removed"
         variant="warning"
       />

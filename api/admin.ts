@@ -1125,7 +1125,7 @@ async function handleUpdateOutreach(supabase: SupabaseClient, req: VercelRequest
     }
     const kept = firstEmbedded(undone as { founding_kept: boolean } | { founding_kept: boolean }[] | null)?.founding_kept;
     if (kept === false) {
-      warnings.push('Founding spots are full, so they return without the founding badge.');
+      warnings.push('Founding spots are full, so they return without the founding badge or its locked price.');
     }
   }
 
