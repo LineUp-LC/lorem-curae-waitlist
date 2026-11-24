@@ -18,6 +18,7 @@
 // ============================================================================
 
 import { createClient } from '@supabase/supabase-js';
+import { OUTREACH_REMOVED } from '../outreachStatus.js';
 
 // ----------------------------------------------------------------------------
 // CONFIGURATION (from environment)
@@ -424,6 +425,38 @@ export async function sendFollowupEmail(
     throw new Error(
       `[followupTemplates] No waitlist row for ${email.substring(0, 3)}***, so the send cannot be logged. Not sending.`
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // REMOVED GUARD (#26). Removed = taken off the waitlist, often because they
+  // asked us to stop. Checked alongside the unsubscribe guard above, never
+  // instead of it.
+  //
+  // FAILS CLOSED. If the outreach row cannot be read, or is missing, we cannot
+  // tell whether they asked us to stop, so nothing is sent. It throws, like the
+  // failed dedupe lookup below, so batches report it as a failure.
+  // ---------------------------------------------------------------------------
+  const { data: outreachRow, error: outreachErr } = await supabase
+    .from('waitlist_outreach')
+    .select('outreach_status')
+    .eq('waitlist_id', userId)
+    .maybeSingle();
+
+  if (outreachErr || !outreachRow) {
+    throw new Error(
+      `[followupTemplates] Could not confirm the outreach status for ${email.substring(0, 3)}***` +
+      `${outreachErr ? `: ${outreachErr.message}` : ' (no outreach row)'}. Not sending.`
+    );
+  }
+
+  if ((outreachRow as { outreach_status: string }).outreach_status === OUTREACH_REMOVED) {
+    console.log(JSON.stringify({
+      level: 'info',
+      event: 'followup_email_skipped_removed',
+      email: email.substring(0, 3) + '***',
+      templateKey,
+    }));
+    return { success: true, templateKey, skipped: true, skippedReason: 'removed' };
   }
 
   // THE DEDUPE KEY IS THE TEMPLATE PLUS ITS VARIABLES, not the template alone.

@@ -1,80 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-
-const FROM_EMAIL = 'Curae <hello@loremcurae.com>';
-const CLAIM_URL = 'https://lorem-curae-waitlist.vercel.app/member';
-
-function textOptInOfferHtml(): string {
-  return `<p>Hi there,</p>
-// THE 100 BELOW IS THE TEXT POOL, NOT THE FOUNDING CAP. They are unrelated and
-// coincidentally equal since 2026-09-18, when the founding cap moved 1000 -> 100.
-// This one is text_opt_in_config.slots_remaining: a mutable counter, decremented on
-// accept, that cascades to the next person when someone declines. The founding cap is
-// MAX_FOUNDING_MEMBERS (src/lib/foundingMembers.ts) and the founding_member_slots view.
-// Do not merge them, and do not replace either number with the other constant.
-<p>You're one of our first 100 founding members on Curae.</p>
-<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
-<p><strong><a href="${CLAIM_URL}">Claim your spot</a></strong></p>
-<p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`;
-}
-
-// Finds the next eligible user after the given created_at timestamp and sends
-// them the text opt-in offer email. No-op if no eligible user is found.
-//
-// Cascade intentionally has no upper position bound. The accept flow checks
-// slots_remaining > 0, so at most 100 users can ever accept regardless of
-// how far the cascade travels. Users beyond position 100 can only accept
-// if a prior user declined (their slot is available).
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function sendCascadeOffer(
-  supabase: any,
-  resendApiKey: string,
-  afterCreatedAt: string
-): Promise<void> {
-  const { data: nextUser } = await supabase
-    .from('waitlist')
-    .select('id, email')
-    .gt('created_at', afterCreatedAt)
-    .eq('text_opt_in', false)
-    .eq('text_opt_in_declined', false)
-    .is('unsubscribed_at', null)
-    .is('text_opt_in_offer_sent_at', null)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (!nextUser || !nextUser.email) return;
-
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-
-  await supabase
-    .from('waitlist')
-    .update({
-      text_opt_in_offer_sent_at: now.toISOString(),
-      text_opt_in_expires_at: expiresAt.toISOString(),
-    })
-    .eq('id', nextUser.id);
-
-  const emailRes = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: nextUser.email as string,
-      subject: "A personal note from Ethan — you're in the first 100",
-      html: textOptInOfferHtml(),
-    }),
-  });
-
-  if (!emailRes.ok) {
-    console.error('[text-opt-in] Cascade email failed:', await emailRes.text());
-  }
-}
+import { passOnTextOffer } from './_textOffer.js';
+import { readOutreachStatus } from './_outreach.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -114,6 +41,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).json({ error: 'not-found' });
   }
 
+  // A Removed person is off the waitlist and out of every text send (#26).
+  // Answer as if there were no record, so the response reveals nothing. A failed
+  // read does not let them through.
+  const outreach = await readOutreachStatus(supabase, row.id as string);
+  if (!outreach.ok) {
+    return res.status(500).json({ error: 'server-error' });
+  }
+  if (outreach.status === 'removed') {
+    return res.status(404).json({ error: 'not-found' });
+  }
+
   if (row.text_opt_in) {
     return res.status(409).json({ error: 'already-opted-in' });
   }
@@ -130,7 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .from('waitlist')
         .update({ text_opt_in_declined: true })
         .eq('id', row.id);
-      await sendCascadeOffer(supabase, resendApiKey, row.created_at as string);
+      await passOnTextOffer(supabase, resendApiKey, row.created_at as string);
       return res.status(410).json({ error: 'offer-expired' });
     }
 
@@ -186,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .update({ text_opt_in_declined: true })
     .eq('id', row.id);
 
-  await sendCascadeOffer(supabase, resendApiKey, row.created_at as string);
+  await passOnTextOffer(supabase, resendApiKey, row.created_at as string);
 
   return res.status(200).json({ success: true });
 }

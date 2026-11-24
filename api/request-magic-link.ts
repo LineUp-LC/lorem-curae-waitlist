@@ -5,6 +5,7 @@ import {
   FOUNDING_WELCOME_LOGO_URL,
   foundingPositionBlock,
 } from './_emails/foundingWelcome.js';
+import { readOutreachStatus } from './_outreach.js';
 
 console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 
@@ -398,7 +399,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: waitlist, error: waitlistError } = await supabase
       .from('waitlist')
-      .select('wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token, created_at')
+      .select('id, wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token, unsubscribed_at, created_at')
       .eq('email', trimmedEmail)
       .maybeSingle();
 
@@ -418,6 +419,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (type === 'login' && !waitlist && !isAdminEmail) {
       console.log(`[request-magic-link] Email not on waitlist (login rejected)`);
       return res.status(404).json({ error: 'not-on-waitlist' });
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP: Removed and unsubscribed people get nothing (#26, decision 4a)
+    //
+    // Both signup and login. The response is the same one a normal send
+    // returns, so it reveals nothing about the record. A failed outreach read
+    // does not send. An admin email asking for a LOGIN link is exempt: the
+    // admin console signs in through this endpoint (AdminLayout.tsx), and an
+    // admin who once unsubscribed must still be able to reach it.
+    // -------------------------------------------------------------------------
+    if (waitlist && !(type === 'login' && isAdminEmail)) {
+      if (waitlist.unsubscribed_at) {
+        console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: 'unsubscribed', type }));
+        return res.status(200).json({ success: true });
+      }
+      const outreach = await readOutreachStatus(supabase, waitlist.id as string);
+      if (!outreach.ok) {
+        console.error(JSON.stringify({ level: 'error', event: 'magic_link_outreach_unreadable', reason: outreach.reason, type }));
+        return res.status(500).json({ error: 'Email sending failed' });
+      }
+      if (outreach.status === 'removed') {
+        console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: 'removed', type }));
+        return res.status(200).json({ success: true });
+      }
     }
 
     // -------------------------------------------------------------------------

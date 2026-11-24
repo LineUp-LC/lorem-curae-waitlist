@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { MAX_FOUNDING_MEMBERS, MAX_FOUNDING_MEMBER_CREATORS } from '../src/lib/foundingMembers.js';
+import { excludeIds, readRemovedIds } from './_outreach.js';
 
 // ----------------------------------------------------------------------------
 // API HANDLER - Waitlist Signup
@@ -87,11 +88,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       foundingCreatorCapReached = (count ?? 0) >= MAX_FOUNDING_MEMBER_CREATORS;
     } else {
-      // Non-creator signup: check the general founding member pool
-      const { count, error: countError } = await supabase
-        .from('waitlist')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_founding_member', true);
+      // Non-creator signup: check the general founding member pool.
+      // Removed people free their founding spot (#26, decision 3b), so they are
+      // left out of the count. If the Removed set cannot be read, fail the
+      // signup like a failed count does rather than guess.
+      const removed = await readRemovedIds(supabase);
+      if (!removed.ok) {
+        console.error('[signup] Could not read removed signups for the founding cap');
+        return res.status(500).json({ error: 'Server error during signup' });
+      }
+      const { count, error: countError } = await excludeIds(
+        supabase
+          .from('waitlist')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_founding_member', true),
+        removed.ids,
+      );
 
       if (countError) {
         console.error('[signup] Error counting founding members:', countError);
@@ -168,6 +180,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         (error as { status?: number }).status === 409;
 
       if (isDuplicate) {
+        // RE-SIGNUP FLAG (#26). If the existing record is Removed, count the
+        // attempt so admin sees it. The status is never reset, and the response
+        // is identical either way, so it reveals nothing. A failed flag is
+        // logged and never fails the response.
+        const { error: flagError } = await supabase.rpc('flag_removed_resignup', { p_email: trimmedEmail });
+        if (flagError) {
+          console.error(JSON.stringify({ level: 'error', event: 'resignup_flag_failed', error: flagError.message }));
+        }
         return res.status(409).json({ error: 'duplicate', message: 'Email already on waitlist' });
       }
 
