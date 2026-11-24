@@ -1,57 +1,79 @@
 // ============================================================================
-// UNSUBSCRIBE — Supabase Edge Function
+// UNSUBSCRIBE: Supabase Edge Function
 // ============================================================================
-// Handles one-click unsubscribe links embedded in all Curae emails.
-// Accepts GET /functions/v1/unsubscribe?token=<unsubscribe_token>
+// The unsubscribe link in every Curae email points here:
+//   GET  /functions/v1/unsubscribe?token=<unsubscribe_token>
 //
-// The token is the unsubscribe_token UUID stored on the waitlist row.
-// On success, sets unsubscribed_at = now() on the matching row.
+// GET CHANGES NOTHING (#26, decision 2a). Mail scanners and link previewers open
+// links by themselves, so a GET only redirects to the confirmation page on the
+// website (/unsubscribe?token=...). That page's "Yes, unsubscribe me" button
+// sends:
+//   POST /functions/v1/unsubscribe?token=<unsubscribe_token>
+// and only the POST checks the token, sets unsubscribed_at and marks the person
+// Removed. A POST with the token in the URL is also what a mail client's
+// one-click unsubscribe (RFC 8058) sends, if List-Unsubscribe headers are added
+// later.
 //
-// Returns a minimal HTML page — no branding, no navigation, no redirect.
+// The page lives on the website because this function's default supabase.co
+// domain serves HTML as plain text (checked live: the old HTML page arrived as
+// text/plain), so a button here would show as raw markup.
+//
+// POST answers JSON: { result: 'unsubscribed' | 'already_unsubscribed' } or
+// { error }.
 // ============================================================================
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
-// ----------------------------------------------------------------------------
-// HTML HELPERS
-// ----------------------------------------------------------------------------
+const CONFIRM_PAGE = 'https://lorem-curae-waitlist.vercel.app/unsubscribe';
 
-function htmlPage(message: string): Response {
-  const body = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Unsubscribe</title>
-</head>
-<body style="font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#fff;">
-  <p style="font-size:16px;color:#333;text-align:center;max-width:400px;padding:0 16px;">${message}</p>
-</body>
-</html>`;
+// The confirmation page is served from these origins.
+const ALLOWED_ORIGINS = new Set([
+  'https://lorem-curae-waitlist.vercel.app',
+  'https://loremcurae.com',
+  'https://www.loremcurae.com',
+]);
 
-  return new Response(body, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('origin') ?? '';
+  if (!ALLOWED_ORIGINS.has(origin)) return {};
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'content-type',
+    Vary: 'Origin',
+  };
+}
+
+function json(req: Request, body: Record<string, unknown>, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
   });
 }
 
-function htmlError(message: string, status: number): Response {
-  const body = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Unsubscribe</title>
-</head>
-<body style="font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#fff;">
-  <p style="font-size:16px;color:#333;text-align:center;max-width:400px;padding:0 16px;">${message}</p>
-</body>
-</html>`;
-
-  return new Response(body, {
-    status,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-  });
+// Token from the URL first (the page and RFC 8058 both put it there), then a
+// JSON or form body.
+async function readToken(req: Request): Promise<string> {
+  const fromUrl = new URL(req.url).searchParams.get('token');
+  if (fromUrl) return fromUrl.trim();
+  const type = req.headers.get('content-type') ?? '';
+  try {
+    if (type.includes('application/json')) {
+      const body = await req.json();
+      return typeof body?.token === 'string' ? body.token.trim() : '';
+    }
+    if (type.includes('application/x-www-form-urlencoded') || type.includes('multipart/form-data')) {
+      const form = await req.formData();
+      const t = form.get('token');
+      return typeof t === 'string' ? t.trim() : '';
+    }
+  } catch {
+    return '';
+  }
+  return '';
 }
 
 // ----------------------------------------------------------------------------
@@ -134,15 +156,26 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<void> {
 // ----------------------------------------------------------------------------
 
 serve(async (req: Request) => {
-  if (req.method !== 'GET') {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders(req) });
+  }
+
+  // GET changes nothing: send the person to the confirmation page.
+  if (req.method === 'GET') {
+    const token = new URL(req.url).searchParams.get('token') ?? '';
+    const target = UUID_RE.test(token)
+      ? `${CONFIRM_PAGE}?token=${encodeURIComponent(token)}`
+      : CONFIRM_PAGE;
+    return new Response(null, { status: 302, headers: { Location: target } });
+  }
+
+  if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 });
   }
 
-  const url = new URL(req.url);
-  const token = url.searchParams.get('token');
-
-  if (!token) {
-    return htmlError('This unsubscribe link is invalid.', 400);
+  const token = await readToken(req);
+  if (!UUID_RE.test(token)) {
+    return json(req, { error: 'invalid_link' }, 400);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -150,14 +183,14 @@ serve(async (req: Request) => {
 
   if (!supabaseUrl || !serviceRoleKey) {
     console.error(JSON.stringify({ level: 'error', event: 'missing_env', fn: 'unsubscribe' }));
-    return htmlError('Something went wrong. Please try again later.', 500);
+    return json(req, { error: 'server_error' }, 500);
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // Look up the token.
+  // Token check.
   // deno-lint-ignore no-explicit-any
   const { data, error } = await (supabase as any)
     .from('waitlist')
@@ -167,19 +200,19 @@ serve(async (req: Request) => {
 
   if (error) {
     console.error(JSON.stringify({ level: 'error', event: 'token_lookup_failed', error: error.message }));
-    return htmlError('Something went wrong. Please try again later.', 500);
+    return json(req, { error: 'server_error' }, 500);
   }
 
   if (!data) {
-    return htmlError('This unsubscribe link is invalid.', 404);
+    return json(req, { error: 'invalid_link' }, 404);
   }
 
   if (data.unsubscribed_at) {
     // Deliberately NOT re-marked Removed here (#26). An admin may have undone
-    // Removed on purpose (decision 2a); a second click on an old link must not
+    // Removed on purpose (decision 2a); a second confirm on an old link must not
     // silently reverse that. Earlier unsubscribes are made Removed by the
     // migration backfill, and every send still checks unsubscribed_at.
-    return htmlPage("You&#8217;re already unsubscribed.");
+    return json(req, { result: 'already_unsubscribed' });
   }
 
   // Mark unsubscribed.
@@ -191,16 +224,16 @@ serve(async (req: Request) => {
 
   if (updateError) {
     console.error(JSON.stringify({ level: 'error', event: 'unsubscribe_update_failed', error: updateError.message }));
-    return htmlError('Something went wrong. Please try again later.', 500);
+    return json(req, { error: 'server_error' }, 500);
   }
 
   console.log(JSON.stringify({ level: 'info', event: 'unsubscribed', userId: data.id }));
 
   // The opt-out is already recorded in unsubscribed_at, which every send checks,
-  // so a failure here is logged and never turns the page into an error.
+  // so a failure here is logged and never turns the answer into an error.
   await markRemoved(supabase, data.id);
 
-  return htmlPage("You&#8217;ve been unsubscribed. You won&#8217;t hear from us again.");
+  return json(req, { result: 'unsubscribed' });
 });
 
 // deno-lint-ignore no-explicit-any
