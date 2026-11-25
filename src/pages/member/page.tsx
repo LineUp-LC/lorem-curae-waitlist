@@ -10,7 +10,6 @@ type PageState = 'loading' | 'ready' | 'not-found';
 
 interface MemberData {
   email: string;
-  spotNumber: number;
   slotsRemaining: number;
   waveNumber: number | null;
   isFoundingMember: boolean;
@@ -70,7 +69,7 @@ export default function MemberPage() {
       ] = await Promise.all([
         supabase
           .from('waitlist')
-          .select('id, created_at, wave_number, is_founding_member, founding_number, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
+          .select('id, wave_number, is_founding_member, founding_number, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
           .eq('email', email)
           .maybeSingle(),
         supabase.from('founding_member_slots').select('slots_remaining').single(),
@@ -83,24 +82,11 @@ export default function MemberPage() {
         return;
       }
 
-      // Spot number: count rows created before this user, then add 1.
-      // Uses created_at ascending order — same column the waitlist table is
-      // naturally ordered by on creation.
-      const { count: priorCount, error: countErr } = await supabase
-        .from('waitlist')
-        .select('id', { count: 'exact', head: true })
-        .lt('created_at', row.created_at as string);
-
-      if (cancelled) return;
-
-      if (countErr) {
-        setState('not-found');
-        return;
-      }
-
+      // No earlier-signups count here (#45): the browser can read only its own
+      // row, so it was always 0, and a failed count showed "We couldn't find
+      // your account". A founder's spot is their stored founding_number.
       setData({
         email,
-        spotNumber: (priorCount ?? 0) + 1,
         slotsRemaining: (slotRow as { slots_remaining: number } | null)?.slots_remaining ?? 0,
         waveNumber: (row as { wave_number?: number | null }).wave_number ?? null,
         isFoundingMember: (row as { is_founding_member?: boolean }).is_founding_member ?? false,
