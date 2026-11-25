@@ -15,7 +15,8 @@
 // refuses, so FIRST_NAME_ERRORS.blank is a SYNC PAIR with FIRST_NAME_BLANK_ERROR
 // in src/components/SupabaseWaitlistForm.tsx. It mirrors the waitlist_first_name_check constraint in
 // supabase/migrations/20261125_waitlist_first_name.sql (1 to 50 characters
-// after trimming, no control characters, no < or >).
+// after trimming, none of U+0000-001F, U+007F-009F, < or >). Change both or
+// neither: the constraint spells out the same character set and trim list.
 // ----------------------------------------------------------------------------
 
 export const GREETING_FALLBACK = 'Hi there,';

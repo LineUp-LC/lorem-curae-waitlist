@@ -203,10 +203,12 @@ async function sendDripEmail(
   const template = dripTemplates[dripEvent];
   if (!template) throw new Error(`Unknown drip event: ${dripEvent}`);
 
+  // Greeting filled LAST (#40): the name is typed by the person, so a name written
+  // like a placeholder must not be filled by a later step.
   const html = template.html
-    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(firstName))
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrl)
-    .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining);
+    .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining)
+    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(firstName));
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',

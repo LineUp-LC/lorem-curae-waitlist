@@ -700,7 +700,12 @@ export default function UserDetailPage() {
               value={form.first_name ?? ''}
               placeholder="Not given"
               hint="Used to greet them in every email."
-              onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+              onChange={(e) => {
+                // Emptying the box for someone with no saved name is "no change"
+                // (null), not a blank to save, so the form does not turn dirty.
+                const value = e.target.value;
+                setForm((f) => ({ ...f, first_name: value === '' && user.first_name == null ? null : value }));
+              }}
             />
 
             <Select

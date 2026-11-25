@@ -41,12 +41,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { email, segment, wants_tester_access, first_name } = req.body || {};
 
     // Required first name (waitlist #40). The same check, and the same wording, as
-    // the form (validateFirstName in api/_greeting.ts). Checked first because it is
-    // the first field on the form.
+    // the form (validateFirstName in api/_greeting.ts). Refused below, once the
+    // email is known, so that a DUPLICATE still gets its 409 (see there).
     const firstName = validateFirstName(first_name);
-    if (!firstName.ok) {
-      return res.status(400).json({ error: 'invalid_first_name', message: firstName.error });
-    }
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -69,6 +66,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         persistSession: false,
       },
     });
+
+    // DUPLICATE: identical response wherever it is detected. Before #40 every
+    // signup for an email already on the list got this 409; it still does,
+    // with or without a name (see the first-name step below).
+    const respondDuplicate = async () => {
+      // RE-SIGNUP FLAG (#26). If the existing record is Removed, count the
+      // attempt so admin sees it. The status is never reset, and the response
+      // is identical either way, so it reveals nothing. A failed flag is
+      // logged and never fails the response.
+      const { error: flagError } = await supabase.rpc('flag_removed_resignup', { p_email: trimmedEmail });
+      if (flagError) {
+        console.error(JSON.stringify({ level: 'error', event: 'resignup_flag_failed', error: flagError.message }));
+      }
+      return res.status(409).json({ error: 'duplicate', message: 'Email already on waitlist' });
+    };
+
+    // -------------------------------------------------------------------------
+    // STEP: Refuse a missing or invalid first name (#40)
+    //
+    // Unless the email is already on the list: then the answer is the same 409
+    // a duplicate always got, so the name check changes nothing for duplicates
+    // (an old cached form that sends no name, say). If that lookup fails, the
+    // name error stands, since the name is invalid either way.
+    // -------------------------------------------------------------------------
+    if (!firstName.ok) {
+      const { data: existing, error: existingErr } = await supabase
+        .from('waitlist')
+        .select('id')
+        .eq('email', trimmedEmail)
+        .maybeSingle();
+      if (existingErr) {
+        console.error(JSON.stringify({ level: 'error', event: 'signup_duplicate_lookup_failed', error: existingErr.message }));
+      } else if (existing) {
+        return respondDuplicate();
+      }
+      return res.status(400).json({ error: 'invalid_first_name', message: firstName.error });
+    }
+    const firstNameValue = firstName.value;
 
     // -------------------------------------------------------------------------
     // STEP: Check founding member caps (separate pools)
@@ -153,7 +188,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     const insertPayload: Record<string, unknown> = {
       email: trimmedEmail,
-      first_name: firstName.value,
+      first_name: firstNameValue,
       segment: segment || 'regular',
       wants_tester_access: testerCapReached ? false : (wants_tester_access || false),
       is_creator: isCreator,
@@ -194,18 +229,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         (error as { status?: number }).status === 409;
 
       if (isDuplicate) {
-        // RE-SIGNUP FLAG (#26). If the existing record is Removed, count the
-        // attempt so admin sees it. The status is never reset, and the response
-        // is identical either way, so it reveals nothing. A failed flag is
-        // logged and never fails the response.
-        const { error: flagError } = await supabase.rpc('flag_removed_resignup', { p_email: trimmedEmail });
-        if (flagError) {
-          console.error(JSON.stringify({ level: 'error', event: 'resignup_flag_failed', error: flagError.message }));
-        }
-        return res.status(409).json({ error: 'duplicate', message: 'Email already on waitlist' });
+        return respondDuplicate();
       }
 
-      console.error('[signup] Insert error:', error);
+      // Code and message only, never the error object: a row-level error's
+      // details quote the failing row, which holds the name and email (#40).
+      console.error(JSON.stringify({ level: 'error', event: 'signup_insert_failed', code: error.code, error: error.message }));
       return res.status(500).json({ error: 'Failed to join waitlist' });
     }
 
@@ -278,7 +307,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .eq('id', data.id);
 
               const claimUrl = 'https://lorem-curae-waitlist.vercel.app/member';
-              const html = `<p>${greetingHtml(firstName.value)}</p>
+              const html = `<p>${greetingHtml(firstNameValue)}</p>
 <p>You're one of our first 100 founding members on Curae.</p>
 <p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="${claimUrl}">Claim your spot</a></strong></p>

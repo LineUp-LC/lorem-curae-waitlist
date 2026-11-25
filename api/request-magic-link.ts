@@ -560,11 +560,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // GREETING IS FILLED LAST. The name is typed by the person, so a name written
+    // like a placeholder ("{{UNSUBSCRIBE_URL}}") must not be filled by a later step.
     const htmlWithSubstitutions = template.html
       .replace(/\{\{MAGIC_LINK\}\}/g, finalMagicLink)
-      .replace(/\{\{GREETING\}\}/g, () => greetingHtml(waitlist?.first_name))
       .replace(/\{\{POSITION_BLOCK\}\}/g, positionBlock)
-      .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, buildUnsubscribeUrl(waitlist?.unsubscribe_token));
+      .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, buildUnsubscribeUrl(waitlist?.unsubscribe_token))
+      .replace(/\{\{GREETING\}\}/g, () => greetingHtml(waitlist?.first_name));
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',

@@ -503,7 +503,7 @@ async function handleResendMagicLink(supabase: SupabaseClient, req: VercelReques
   // Check user exists
   const { data: user, error: userErr } = await supabase
     .from('waitlist')
-    .select('id, email, unsubscribed_at')
+    .select('id, email, first_name, unsubscribed_at')
     .eq('email', trimmedEmail)
     .maybeSingle();
 
@@ -537,7 +537,8 @@ async function handleResendMagicLink(supabase: SupabaseClient, req: VercelReques
       from: FROM_EMAIL,
       to: trimmedEmail,
       subject: 'Your secure sign-in link',
-      html: `<p>Here's your secure magic link to sign in:</p><p><a href="${linkData.properties.action_link}">Click here to sign in</a></p>`,
+      // Greets by first name like every other email (#40), "Hi there," without one.
+      html: `<p>${greetingHtml(user.first_name)}</p><p>Here's your secure magic link to sign in:</p><p><a href="${linkData.properties.action_link}">Click here to sign in</a></p>`,
     }),
   });
 
@@ -1277,10 +1278,12 @@ async function sendAndRecordDrip(
   slotsRemaining: string,
 ): Promise<SendAndRecord> {
   const template = dripTemplates[dripEvent];
+  // Greeting filled LAST (#40): the name is typed by the person, so a name written
+  // like a placeholder must not be filled by a later step.
   const html = template.html
-    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(user.first_name))
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrlFor(user.unsubscribe_token))
-    .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining);
+    .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining)
+    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(user.first_name));
 
   // SEND FIRST, THEN TOUCH THE LOG. Clearing the failed row before the send
   // would, on a failure, leave no record that we ever tried.

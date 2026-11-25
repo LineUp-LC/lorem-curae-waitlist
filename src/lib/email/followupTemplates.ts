@@ -499,21 +499,28 @@ export async function sendFollowupEmail(
   };
 
   const subjectWithSubstitutions = applyVars(template.subject);
-  const htmlWithSubstitutions = applyVars(template.html)
-    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(waitlistRow?.first_name))
+  const htmlBeforeGreeting = applyVars(template.html)
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrl);
 
   // A placeholder that survived substitution means a caller omitted a var. Refuse
   // rather than send "You are in Wave {{WAVE}}" -- and refuse BEFORE the send, which
   // is the only point at which it is still preventable.
-  const unresolved = [subjectWithSubstitutions, htmlWithSubstitutions]
+  //
+  // Checked BEFORE the greeting goes in (#40). The first name is typed by the
+  // person, so a name like "{{WAVE}}" must not read as an unfilled placeholder,
+  // block their email, or be quoted in this error.
+  const unresolved = [subjectWithSubstitutions, htmlBeforeGreeting]
     .join(" ")
-    .match(/\{\{(?!UNSUBSCRIBE_URL)[A-Z_]+\}\}/g);
+    .match(/\{\{(?!UNSUBSCRIBE_URL|GREETING\}\})[A-Z_]+\}\}/g);
   if (unresolved) {
     throw new Error(
       `[followupTemplates] ${templateKey} has unresolved placeholders ${[...new Set(unresolved)].join(", ")}. Not sending.`
     );
   }
+
+  // Greeting filled LAST, so nothing after it can act on the name.
+  const htmlWithSubstitutions = htmlBeforeGreeting
+    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(waitlistRow?.first_name));
 
   // Send email via Resend
   const emailResponse = await fetch('https://api.resend.com/emails', {
