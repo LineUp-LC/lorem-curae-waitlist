@@ -19,6 +19,20 @@ export default function AuthCallbackPage() {
         ? nextParam
         : null;
 
+    // A link Supabase already rejected (expired, used, invalid) arrives with
+    // error / error_description in the query or the hash. Nothing will sign
+    // in, so show the error now instead of after the 10 second wait.
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (
+      params.has('error') ||
+      params.has('error_description') ||
+      hashParams.has('error') ||
+      hashParams.has('error_description')
+    ) {
+      setStatus('error');
+      return;
+    }
+
     // Admin sign-in only: if an admin tab is already open, it answers on this
     // channel and this tab stays put with a close-this-tab note instead of
     // opening a second dashboard. No answer within 1500 ms, or no
@@ -36,14 +50,14 @@ export default function AuthCallbackPage() {
 
     const goNext = () => {
       if (safeNext !== '/admin') {
-        navigate(safeNext ?? '/member');
+        navigate(safeNext ?? '/member', { replace: true });
         return;
       }
       if (adminHandoffStarted) return;
       adminHandoffStarted = true;
 
       if (typeof BroadcastChannel === 'undefined') {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
         return;
       }
 
@@ -61,7 +75,7 @@ export default function AuthCallbackPage() {
       };
       replyTimer = setTimeout(() => {
         closeChannel();
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       }, 1500);
       channel.postMessage({ type: 'admin-signed-in' });
     };
@@ -76,7 +90,7 @@ export default function AuthCallbackPage() {
           goNext();
         } else if (event === 'SIGNED_OUT') {
           subscription.unsubscribe();
-          navigate('/waitlist');
+          navigate('/waitlist', { replace: true });
         }
       }
     );

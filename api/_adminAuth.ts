@@ -59,8 +59,11 @@ export async function validateAdminRequest(
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
 
+  // A valid session that is not an admin's is a refusal (403), not a bad
+  // token (401): the admin shell shows "not an admin" for one and a fresh
+  // sign-in for the other.
   if (!adminEmails.includes(user.email.toLowerCase())) {
-    return { ok: false, status: 401, error: 'Unauthorized' };
+    return { ok: false, status: 403, error: 'Forbidden' };
   }
 
   return { ok: true, supabase };
