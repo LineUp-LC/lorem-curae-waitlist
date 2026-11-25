@@ -615,7 +615,10 @@ async function handleExportUsers(supabase: SupabaseClient, req: VercelRequest, r
       // a tab as a formula, and names and emails are typed by the public. Every
       // TEXT cell that starts with one gets a leading apostrophe, so it opens as
       // plain text. Numbers and booleans are ours and are left alone.
-      if (typeof val === 'string' && /^[=+\-@\t]/.test(str)) str = `'${str}`;
+      // The set is the OWASP CSV Injection list: = + - @, tab (0x09), carriage
+      // return (0x0D), line feed (0x0A), and the full-width forms of = + - @
+      // (U+FF1D, U+FF0B, U+FF0D, U+FF20). Written as escapes on purpose.
+      if (typeof val === 'string' && /^[=+\-@\t\r\n\uFF1D\uFF0B\uFF0D\uFF20]/.test(str)) str = `'${str}`;
       return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
     }).join(',')
   );
