@@ -10,7 +10,8 @@ type PageState = 'loading' | 'ready' | 'not-found';
 
 interface MemberData {
   email: string;
-  slotsRemaining: number;
+  // null when founding_member_slots could not be read: the block is hidden, never 0.
+  slotsRemaining: number | null;
   waveNumber: number | null;
   isFoundingMember: boolean;
   foundingNumber: number | null;
@@ -65,7 +66,7 @@ export default function MemberPage() {
       // Fetch the user's waitlist row and founding-slots view in parallel.
       const [
         { data: row, error: rowErr },
-        { data: slotRow },
+        { data: slotRow, error: slotErr },
       ] = await Promise.all([
         supabase
           .from('waitlist')
@@ -87,7 +88,11 @@ export default function MemberPage() {
       // your account". A founder's spot is their stored founding_number.
       setData({
         email,
-        slotsRemaining: (slotRow as { slots_remaining: number } | null)?.slots_remaining ?? 0,
+        slotsRemaining: (() => {
+          if (slotErr) return null;
+          const n = (slotRow as { slots_remaining?: number } | null)?.slots_remaining;
+          return typeof n === 'number' && Number.isFinite(n) ? n : null;
+        })(),
         waveNumber: (row as { wave_number?: number | null }).wave_number ?? null,
         isFoundingMember: (row as { is_founding_member?: boolean }).is_founding_member ?? false,
         // The stored founding number from the person's own row (waitlist #43), the
@@ -314,15 +319,18 @@ export default function MemberPage() {
           </div>
         )}
 
-        {/* Founding spots remaining */}
-        <div>
-          <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
-            Founding spots remaining
-          </p>
-          <p className="font-serif text-5xl text-coral-600 leading-none">
-            {data?.slotsRemaining}
-          </p>
-        </div>
+        {/* Founding spots remaining. Hidden when the count could not be read:
+            a failed read must never say 0, which would tell people the list is full. */}
+        {data?.slotsRemaining != null && (
+          <div>
+            <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
+              Founding spots remaining
+            </p>
+            <p className="font-serif text-5xl text-coral-600 leading-none">
+              {data.slotsRemaining}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
