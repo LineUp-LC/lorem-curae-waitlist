@@ -71,8 +71,21 @@ function AdminLoginForm() {
           : 'Something went wrong. Please try again.',
       );
     } else {
-      setSentEmail(trimmed);
-      setLoginStatus('sent');
+      // The server answers a login with 200 and onWaitlist (#35): false means it
+      // sent nothing (not an admin and not on the list), so the sent screen would
+      // be untrue. Any other 2xx reply keeps the sent screen, as before.
+      const data: unknown = await response.json().catch(() => ({}));
+      const onWaitlist =
+        data !== null && typeof data === 'object' && 'onWaitlist' in data
+          ? (data as { onWaitlist: unknown }).onWaitlist
+          : undefined;
+      if (onWaitlist === false) {
+        setLoginStatus('error');
+        setLoginError('This email is not authorized for admin access.');
+      } else {
+        setSentEmail(trimmed);
+        setLoginStatus('sent');
+      }
     }
   };
 
