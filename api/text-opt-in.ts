@@ -85,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Claim the slot and record the opt-in in ONE locked database step
-    // (accept_text_offer, migration 20261124_text_offer_accept.sql). It
+    // (accept_text_offer, migration 20261124202256_text_offer_accept.sql). It
     // decrements slots_remaining inside the database, so a spot freed by a
     // removal meanwhile is never lost, and it re-checks Removed and
     // unsubscribed under the row lock, so an accept can never write
