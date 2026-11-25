@@ -42,14 +42,14 @@ export async function passOnTextOffer(
   // offer would strand them. Logged without the name.
   const { data: nameRow, error: nameErr } = await supabase
     .from('waitlist')
-    .select('first_name')
+    .select('first_name, unsubscribe_token')
     .eq('email', next.email)
     .maybeSingle();
   if (nameErr) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_name_read_failed', error: nameErr.message }));
   }
 
-  const sent = await sendTextOfferEmail(resendApiKey, next.email, greetingHtml(nameRow?.first_name));
+  const sent = await sendTextOfferEmail(resendApiKey, next.email, greetingHtml(nameRow?.first_name), nameRow?.unsubscribe_token ?? null);
   if (!sent.ok) {
     console.error('[text-offer] Cascade email failed:', sent.status ?? '', sent.error);
     return { offered: false, error: 'The next person was picked but the offer email failed' };

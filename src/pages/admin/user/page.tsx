@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getAdminToken } from '@/lib/adminAuth';
 import {
@@ -183,7 +183,15 @@ export default function UserDetailPage() {
   const [grantError, setGrantError] = useState<string | null>(null);
   const [grantNote, setGrantNote] = useState<string | null>(null);
 
+  // ONLY THE LATEST REQUEST MAY WRITE (waitlist #31). Each fetch takes a number;
+  // a reply whose number is no longer the latest is ignored, so a fast Next
+  // never shows an earlier person's reply on the new person's page.
+  const latestRequestRef = useRef(0);
+
   const fetchUserData = useCallback(async () => {
+    const requestId = ++latestRequestRef.current;
+    const isStale = () => requestId !== latestRequestRef.current;
+
     if (!email) {
       setError('No email provided');
       setLoading(false);
@@ -196,6 +204,7 @@ export default function UserDetailPage() {
       setNotFound(false);
 
       const adminToken = await getAdminToken();
+      if (isStale()) return;
       const response = await fetch(
         `/api/admin/get-waitlist-user?email=${encodeURIComponent(email)}`,
         {
@@ -206,6 +215,7 @@ export default function UserDetailPage() {
           },
         }
       );
+      if (isStale()) return;
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -219,6 +229,7 @@ export default function UserDetailPage() {
       }
 
       const result: UserDetailResponse = await response.json();
+      if (isStale()) return;
       setData(result);
       setForm({
         first_name: result.user.first_name,
@@ -232,10 +243,11 @@ export default function UserDetailPage() {
         is_tester: result.user.is_tester,
       });
     } catch (err) {
+      if (isStale()) return;
       console.error('[UserDetail] Failed to fetch:', err);
       setError(err instanceof Error ? err.message : 'Failed to load user details');
     } finally {
-      setLoading(false);
+      if (!isStale()) setLoading(false);
     }
   }, [email]);
 

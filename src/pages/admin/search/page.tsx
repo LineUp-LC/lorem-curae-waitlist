@@ -188,7 +188,9 @@ export default function GlobalSearchPage() {
 
       const adminToken = await getAdminToken();
 
-      const response = await fetch(`/api/admin/search?q=${encodeURIComponent(searchQuery.trim())}`, {
+      // The existing searchUsers action, which reads `email` (waitlist #21).
+      // There is no `search` action, so the old call always failed.
+      const response = await fetch(`/api/admin?action=searchUsers&email=${encodeURIComponent(searchQuery.trim())}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${adminToken}`,
@@ -203,8 +205,17 @@ export default function GlobalSearchPage() {
         throw new Error(`Search failed (${response.status})`);
       }
 
-      const data: SearchResults = await response.json();
-      setResults(data);
+      // searchUsers answers { results: rows } and searches people only, so the
+      // other sections stay empty.
+      const data: { results?: UserResult[] } = await response.json();
+      setResults({
+        users: Array.isArray(data.results) ? data.results : [],
+        email_events: [],
+        admin_actions: [],
+        feature_flags: [],
+        rate_limits: [],
+        waves: [],
+      });
     } catch (err) {
       console.error('[GlobalSearch] Search failed:', err);
       setError(err instanceof Error ? err.message : 'Search failed');
@@ -243,7 +254,7 @@ export default function GlobalSearchPage() {
       <div>
         <h1 className="text-2xl font-semibold text-sage-900">Global Search</h1>
         <p className="mt-1 text-sage-500">
-          Search users, emails, flags, waves, and more
+          Search people by email
         </p>
       </div>
 

@@ -621,9 +621,12 @@ async function handleBulkDeleteFallback(supabase: SupabaseClient, req: VercelReq
 async function handleExportUsers(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
   const limit = Math.min(parseInt(req.query.limit as string) || 500, 5000);
 
-  const { data, error } = await supabase
-    .from('waitlist')
-    .select('*')
+  // Removed people are left out of the export, the same filter the counts use
+  // (#26, waitlist #29). A failed read exports nothing rather than everyone.
+  const removed = await readRemovedIds(supabase);
+  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
+
+  const { data, error } = await excludeIds(supabase.from('waitlist').select('*'), removed.ids)
     .order('created_at', { ascending: true })
     .limit(limit);
 
@@ -982,35 +985,40 @@ async function handleGetWaitlistUser(supabase: SupabaseClient, req: VercelReques
   let prev: { email: string; waitlist_position: number } | null = null;
   let next: { email: string; waitlist_position: number } | null = null;
   let index: number | null = null;
+  let total: number | null = null;
 
-  const { count: total } = await supabase
-    .from('waitlist')
-    .select('*', { count: 'exact', head: true });
+  // Removed people are left out of the total, the position and prev/next, the
+  // same filter the counts use (#26, waitlist #31). A failed read shows no
+  // position and no neighbours rather than numbers that count Removed people.
+  // A Removed person's own page shows no position: they are not in the count.
+  const removed = await readRemovedIds(supabase);
+  if (removed.ok) {
+    const isRemoved = removed.ids.includes(user.id as string);
+    const { count: totalCount } = await excludeIds(
+      supabase.from('waitlist').select('*', { count: 'exact', head: true }),
+      removed.ids,
+    );
+    total = totalCount ?? null;
 
-  if (user.waitlist_position != null) {
-    const [{ data: p }, { data: n }, { count: idx }] = await Promise.all([
-      supabase
-        .from('waitlist')
-        .select('email, waitlist_position')
-        .lt('waitlist_position', user.waitlist_position)
-        .order('waitlist_position', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from('waitlist')
-        .select('email, waitlist_position')
-        .gt('waitlist_position', user.waitlist_position)
-        .order('waitlist_position', { ascending: true })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from('waitlist')
-        .select('*', { count: 'exact', head: true })
-        .lte('waitlist_position', user.waitlist_position),
-    ]);
-    prev = p ?? null;
-    next = n ?? null;
-    index = idx ?? null;
+    if (user.waitlist_position != null) {
+      const [{ data: p }, { data: n }, { count: idx }] = await Promise.all([
+        excludeIds(supabase.from('waitlist').select('email, waitlist_position'), removed.ids)
+          .lt('waitlist_position', user.waitlist_position)
+          .order('waitlist_position', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        excludeIds(supabase.from('waitlist').select('email, waitlist_position'), removed.ids)
+          .gt('waitlist_position', user.waitlist_position)
+          .order('waitlist_position', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+        excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids)
+          .lte('waitlist_position', user.waitlist_position),
+      ]);
+      prev = p ?? null;
+      next = n ?? null;
+      index = isRemoved ? null : (idx ?? null);
+    }
   }
 
   // Outreach row (#26). A failed or missing read is reported as such and never
@@ -1032,7 +1040,7 @@ async function handleGetWaitlistUser(supabase: SupabaseClient, req: VercelReques
     drips: dripErr ? null : (dripRows ?? []),
     drips_error: dripErr ? 'Failed to load the delivery log' : null,
     resendable_events: [...RESENDABLE_DRIP_EVENTS],
-    neighbors: { prev, next, index, total: total ?? null },
+    neighbors: { prev, next, index, total },
   });
 }
 
