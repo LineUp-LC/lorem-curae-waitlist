@@ -1,4 +1,4 @@
--- NOT APPLIED: Ethan types apply in chat; Claude applies it through the Supabase connector.
+-- APPLIED Nov 24 2026 (version 20261125042640) through the Supabase connector on Ethan's typed apply in chat; do not re-apply.
 --
 -- The admin founding switch can no longer pass the 100 cap (waitlist #44).
 --
