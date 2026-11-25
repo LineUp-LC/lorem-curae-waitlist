@@ -47,9 +47,11 @@ function getBreadcrumbLabel(pathname: string): string {
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
+  // The account actually signed in (AdminLayout), never a fixed address (#35).
+  signedInEmail: string | null;
 }
 
-export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
+export function AdminHeader({ onMenuClick, signedInEmail }: AdminHeaderProps) {
   const location = useLocation();
   const { isDark, toggle: toggleDarkMode } = useDarkMode();
   const currentLabel = getBreadcrumbLabel(location.pathname);
@@ -143,17 +145,19 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
           {/* User menu */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-sage-800">Admin User</p>
-              <p className="text-xs text-sage-500">admin@loremcurae.com</p>
+              <p className="text-xs text-sage-500">Signed in as</p>
+              <p className="text-sm font-medium text-sage-800">{signedInEmail ?? 'Unknown account'}</p>
             </div>
-            <button
-              className="w-9 h-9 rounded-full bg-forest-100 flex items-center justify-center hover:bg-forest-200 transition-colors"
-              aria-label="User menu"
+            {/* Decoration only: it opens nothing, so it is not a button (#36).
+                Sign out lives at the bottom of the side menu. */}
+            <div
+              className="w-9 h-9 rounded-full bg-forest-100 flex items-center justify-center"
+              aria-hidden="true"
             >
               <svg className="w-5 h-5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-            </button>
+            </div>
           </div>
         </div>
       </div>
