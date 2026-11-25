@@ -285,18 +285,17 @@ export default function MemberPage() {
           <p className="text-sage-900 text-sm break-all">{data?.email}</p>
         </div>
 
-        {/* Spot number. A founder's spot is their stored founding number (waitlist
-            #43); a founder with no stored number gets no block, never the count.
-            Everyone else still gets spotNumber, which is BROKEN: under RLS a
-            person can read only their own row, so the earlier-rows count is
-            always 0 and this reads #1 for every non-founder (own issue). */}
-        {!(data?.isFoundingMember && data.foundingNumber === null) && (
+        {/* Spot number: founders only, and only their stored founding number
+            (waitlist #43). Non-founders get no block (#45, pick A): the browser
+            can read only its own row, so an earlier-signups count would always
+            be 0 and read #1. A founder with no stored number gets no block. */}
+        {data?.isFoundingMember && data.foundingNumber !== null && (
           <div className="border-b border-sage-100 pb-8 mb-8">
             <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
               Your spot
             </p>
             <p className="font-serif text-5xl text-sage-900 leading-none">
-              #{data?.isFoundingMember ? data.foundingNumber : data?.spotNumber}
+              #{data.foundingNumber}
             </p>
           </div>
         )}
