@@ -391,7 +391,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
-    console.log(`[request-magic-link] Processing ${type} request for: ${trimmedEmail}`);
+    // The request type only, never the email (waitlist #30).
+    console.log(`[request-magic-link] Processing ${type} request`);
 
     // -------------------------------------------------------------------------
     // STEP: Create Supabase admin client
@@ -511,12 +512,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!linkData?.properties?.action_link) {
-      console.error(`[request-magic-link] No action_link in response:`, linkData);
+      // Only that it was missing: linkData holds the email and the link (waitlist #30).
+      console.error(`[request-magic-link] No action_link in response`);
       return res.status(500).json({ error: 'Magic link generation failed' });
     }
 
     const magicLink = linkData.properties.action_link;
-    console.log(`[request-magic-link] Magic link generated: ${magicLink.substring(0, 60)}...`);
+    console.log(`[request-magic-link] Magic link generated`);
 
     // Supabase ignores the redirectTo option in generateLink and instead appends
     // the project's Site URL as redirect_to. Rewrite it to the correct value.
@@ -599,8 +601,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      console.error(`[request-magic-link] Email sending failed: ${emailResponse.status}`, errorText);
+      // The status only: the provider's error text can repeat the address (waitlist #30).
+      console.error(`[request-magic-link] Email sending failed: ${emailResponse.status}`);
       return res.status(500).json({ error: 'Email sending failed' });
     }
 

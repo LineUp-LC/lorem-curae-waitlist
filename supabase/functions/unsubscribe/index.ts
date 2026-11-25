@@ -149,7 +149,7 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<boolean> 
   // offer would strand them. Logged without the name.
   const { data: nameRow, error: nameErr } = await supabase
     .from('waitlist')
-    .select('first_name')
+    .select('first_name, unsubscribe_token')
     .eq('email', next.email)
     .maybeSingle();
   if (nameErr) {
@@ -158,7 +158,7 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<boolean> 
 
   // Bounded (the shared send has the timeout): the unsubscribe page waits on
   // this. A timeout is logged like any other failed send.
-  const sent = await sendTextOfferEmail(resendApiKey, next.email, greetingHtml(nameRow?.first_name));
+  const sent = await sendTextOfferEmail(resendApiKey, next.email, greetingHtml(nameRow?.first_name), nameRow?.unsubscribe_token ?? null);
   if (!sent.ok) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', status: sent.status, error: sent.error }));
   }

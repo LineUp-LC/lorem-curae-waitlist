@@ -111,7 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     // The GENERAL founding decision is not made here any more (waitlist #43). The
     // assign_founding_number() BEFORE INSERT trigger makes it and stamps
-    // founding_number in one locked step (migration 20261125015332_founding_number.sql),
+    // founding_number in one locked step (migration 20261125024242_founding_number.sql),
     // so two signups at once cannot both take the 100th spot. This handler reads the
     // result back from the inserted row. Only the creator pool is still checked here.
     const MAX_TESTER_CREATORS = 10;
@@ -197,7 +197,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data, error } = await supabase
       .from('waitlist')
       .insert([insertPayload])
-      .select('id, created_at, status, wave_number, is_founding_member, is_founding_member_creator, founding_number')
+      .select('id, created_at, status, wave_number, is_founding_member, is_founding_member_creator, founding_number, unsubscribe_token')
       .single();
 
     if (error) {
@@ -287,7 +287,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
               // The one copy of this email (#35 item 6), shared with the pass-on
               // and the unsubscribe edge function. It never throws.
-              const sent = await sendTextOfferEmail(resendApiKey, trimmedEmail, greetingHtml(firstNameValue));
+              const sent = await sendTextOfferEmail(
+                resendApiKey,
+                trimmedEmail,
+                greetingHtml(firstNameValue),
+                (data.unsubscribe_token as string | null) ?? null,
+              );
               if (!sent.ok) {
                 console.error('[signup] Text opt-in offer email failed (non-fatal):', sent.status ?? '', sent.error);
               }
