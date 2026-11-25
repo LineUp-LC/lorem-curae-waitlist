@@ -472,6 +472,9 @@ async function handlePromoteWave(supabase: SupabaseClient, req: VercelRequest, r
     .from('waitlist')
     .update({ wave_number: target_wave, status: 'active' })
     .in('email', emails)
+    // Re-checked at the moment of the move, as openWave does (#35 item 4):
+    // someone moved out of the waiting pool since the read is left alone.
+    .eq('status', 'waiting_for_next_wave')
     .select(ADMIN_WAITLIST_COLUMNS);
 
   if (error) return res.status(500).json({ error: 'Failed to promote users' });
