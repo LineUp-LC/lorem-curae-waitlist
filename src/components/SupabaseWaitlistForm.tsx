@@ -254,7 +254,7 @@ export default function SupabaseWaitlistForm({
               <p
                 id="first-name-error"
                 role="alert"
-                className="text-coral-600 text-sm pl-6 animate-slide-up"
+                className="w-full text-center text-coral-600 text-sm animate-slide-up"
               >
                 {firstNameError}
               </p>
@@ -299,7 +299,7 @@ export default function SupabaseWaitlistForm({
               <p
                 id="email-error"
                 role="alert"
-                className="text-coral-600 text-sm pl-6 animate-slide-up"
+                className="w-full text-center text-coral-600 text-sm animate-slide-up"
               >
                 {errorMessage}
               </p>
