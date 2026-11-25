@@ -1,4 +1,4 @@
--- NOT APPLIED: Ethan applies it through the Supabase connector after typing apply.
+-- APPLIED Nov 24 2026 (version 20261125025824) through the Supabase connector on Ethan's typed apply in chat; do not re-apply. Proven by one real signup through the site (#22 on screen, in the database and in the welcome email).
 --
 -- Signups broke after 20261125024242_founding_number (waitlist issue 43).
 --
