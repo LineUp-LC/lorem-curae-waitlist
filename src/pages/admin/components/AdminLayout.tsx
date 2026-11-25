@@ -53,8 +53,8 @@ function AdminLoginForm() {
       body: JSON.stringify({
         email: trimmed,
         type: 'login',
-        // Same origin as this page: the server only accepts a redirect that starts
-        // with the request's own origin, and auth_next lives in this origin's storage.
+        // Same origin as this page: the server accepts only an exact list of allowed
+        // origins plus the /auth/callback path, and auth_next lives in this origin's storage.
         redirectTo: `${window.location.origin}/auth/callback?next=/admin`,
       }),
     });
@@ -71,8 +71,21 @@ function AdminLoginForm() {
           : 'Something went wrong. Please try again.',
       );
     } else {
-      setSentEmail(trimmed);
-      setLoginStatus('sent');
+      // The server answers a login with 200 and onWaitlist (#35): false means it
+      // sent nothing (not an admin and not on the list), so the sent screen would
+      // be untrue. Any other 2xx reply keeps the sent screen, as before.
+      const data: unknown = await response.json().catch(() => ({}));
+      const onWaitlist =
+        data !== null && typeof data === 'object' && 'onWaitlist' in data
+          ? (data as { onWaitlist: unknown }).onWaitlist
+          : undefined;
+      if (onWaitlist === false) {
+        setLoginStatus('error');
+        setLoginError('This email is not authorized for admin access.');
+      } else {
+        setSentEmail(trimmed);
+        setLoginStatus('sent');
+      }
     }
   };
 

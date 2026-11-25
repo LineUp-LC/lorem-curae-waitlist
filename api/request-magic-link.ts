@@ -432,9 +432,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : [];
     const isAdminEmail = adminEmails.includes(trimmedEmail);
 
+    // MEMBERSHIP IS DECIDED HERE, NOT IN THE BROWSER (waitlist #35). The member
+    // form can no longer look the email up itself: a signed-out browser may read
+    // no waitlist row. So a login answers 200 with onWaitlist, and the form shows
+    // the member confirmation or the not-on-waitlist screen from it. An email with
+    // no row (and not an admin) is sent nothing.
     if (type === 'login' && !waitlist && !isAdminEmail) {
-      console.log(`[request-magic-link] Email not on waitlist (login rejected)`);
-      return res.status(404).json({ error: 'not-on-waitlist' });
+      console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: 'not_on_waitlist', type }));
+      return res.status(200).json({ onWaitlist: false });
     }
 
     // A signup email goes only to someone who has a waitlist row (#35, #23).
@@ -465,7 +470,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       if (!contact.sendable) {
         console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: contact.reason, type }));
-        return res.status(200).json({ success: true });
+        // A login from a Removed or unsubscribed person is still a row on the
+        // list: same answer as a normal send, and nothing is sent.
+        return res.status(200).json(type === 'login' ? { success: true, onWaitlist: true } : { success: true });
       }
     }
 
@@ -604,7 +611,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // STEP: Return success
     // -------------------------------------------------------------------------
     console.log(`[request-magic-link] ========== REQUEST SUCCESS ==========`);
-    return res.status(200).json({ success: true });
+    // A login link was sent: a row on the list, or an admin email (whose link
+    // is real too, so the form's "on its way" is true for them).
+    return res.status(200).json(type === 'login' ? { success: true, onWaitlist: true } : { success: true });
 
   } catch (error: unknown) {
     console.error(`[request-magic-link] ========== REQUEST FAILED ==========`);
