@@ -119,6 +119,10 @@ const VALID_WAITLIST_STATUSES = new Set(['active', 'waiting_for_next_wave']);
 const ADMIN_WAITLIST_COLUMNS =
   'id, email, first_name, created_at, updated_at, wave_number, status, segment, wants_beta, wants_tester_access, is_tester, is_creator, is_founding_member, is_founding_member_creator, creator_wave_number, price_locked, waitlist_position, founding_number, unsubscribed_at, has_access, phone_number, text_opt_in';
 
+// The database's answer when turning founding on would pass the 100 cap
+// (sync_founding_number, migration 20261125033232_founding_cap_on_switch.sql).
+const FOUNDING_CAP_FULL_CODE = 'FC001';
+
 // Helper: Validate admin auth
 function validateAdminAuth(req: VercelRequest, adminSecret: string): boolean {
   const authHeader = req.headers.authorization;
@@ -310,6 +314,11 @@ async function handleUpdateUser(supabase: SupabaseClient, req: VercelRequest, re
     .select(ADMIN_WAITLIST_COLUMNS)
     .single();
 
+  // Turning founding on past the cap is refused by the database trigger and
+  // nothing is written (#44).
+  if (error?.code === FOUNDING_CAP_FULL_CODE) {
+    return res.status(409).json({ error: 'Founding spots are full (100 of 100). Nothing was changed.' });
+  }
   if (error) return res.status(500).json({ error: 'Failed to update user' });
   if (!data) return res.status(404).json({ error: 'User not found' });
 
