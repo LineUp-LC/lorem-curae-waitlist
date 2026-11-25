@@ -85,7 +85,7 @@ async function readToken(req: Request): Promise<string> {
 // REMOVED ON UNSUBSCRIBE (#26, decision 6a)
 // ----------------------------------------------------------------------------
 // Unsubscribing also marks the signup Removed through mark_waitlist_removed
-// (migration 20261124_add_waitlist_outreach.sql), which clears the phone number
+// (migration 20261124194749_add_waitlist_outreach.sql), which clears the phone number
 // and text opt-in and gives back a held text spot (decision 5a). If a spot or an
 // open offer was freed, it is passed to the next person: claim_next_text_offer
 // picks and stamps them (the same database function api/_textOffer.ts uses),

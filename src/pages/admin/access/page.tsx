@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { getAdminToken } from '@/lib/adminAuth';
 import {
   Button,
@@ -375,7 +376,14 @@ export default function AccessManagementPage() {
                       {index + 1}
                     </td>
                     <td className="px-4 py-3 text-sm text-sage-900 max-w-xs truncate">
-                      {user.email}
+                      {/* Opens the person page, as search does (#33). Removed rows
+                          stay faded but still open. */}
+                      <Link
+                        to={`/admin/user/${encodeURIComponent(user.email)}`}
+                        className="hover:underline underline-offset-2"
+                      >
+                        {user.email}
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-sm max-w-[10rem] truncate">
                       {user.first_name && user.first_name.trim() !== '' ? (

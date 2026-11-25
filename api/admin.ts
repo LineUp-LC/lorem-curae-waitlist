@@ -109,6 +109,20 @@ const UPDATABLE_USER_COLUMNS = new Set([
 // here so a bad value returns a readable 400 instead of an opaque 500.
 const VALID_WAITLIST_STATUSES = new Set(['active', 'waiting_for_next_wave']);
 
+// The waitlist columns a row sent to the admin browser may carry (#35 item 2).
+// unsubscribe_token is left out on purpose: it is the secret in every unsubscribe
+// link, and no admin screen shows it. Built from what the readers use: the person
+// page (src/pages/admin/user/page.tsx WaitlistUser), the search page (email,
+// created_at, wave_number), and the server code that reads these rows
+// (WaitlistRow, is_tester, waitlist_position, id). Add a column here before a
+// screen reads it. One literal string, so supabase-js can type the rows it returns.
+const ADMIN_WAITLIST_COLUMNS =
+  'id, email, first_name, created_at, updated_at, wave_number, status, segment, wants_beta, wants_tester_access, is_tester, is_creator, is_founding_member, is_founding_member_creator, creator_wave_number, price_locked, waitlist_position, founding_number, unsubscribed_at, has_access, phone_number, text_opt_in';
+
+// The database's answer when turning founding on would pass the 100 cap
+// (sync_founding_number, migration 20261125033232_founding_cap_on_switch.sql).
+const FOUNDING_CAP_FULL_CODE = 'FC001';
+
 // Helper: Validate admin auth
 function validateAdminAuth(req: VercelRequest, adminSecret: string): boolean {
   const authHeader = req.headers.authorization;
@@ -215,7 +229,7 @@ async function handleGetUser(supabase: SupabaseClient, req: VercelRequest, res: 
 
   const { data, error } = await supabase
     .from('waitlist')
-    .select('*')
+    .select(ADMIN_WAITLIST_COLUMNS)
     .eq('email', trimmedEmail)
     .maybeSingle();
 
@@ -230,7 +244,7 @@ async function handleSearchUsers(supabase: SupabaseClient, req: VercelRequest, r
 
   let query = supabase
     .from('waitlist')
-    .select('*')
+    .select(ADMIN_WAITLIST_COLUMNS)
     .order('created_at', { ascending: false })
     .limit(Math.min(parseInt(limit as string) || 50, 200));
 
@@ -297,9 +311,14 @@ async function handleUpdateUser(supabase: SupabaseClient, req: VercelRequest, re
     .from('waitlist')
     .update(updates)
     .eq('email', trimmedEmail)
-    .select('*')
+    .select(ADMIN_WAITLIST_COLUMNS)
     .single();
 
+  // Turning founding on past the cap is refused by the database trigger and
+  // nothing is written (#44).
+  if (error?.code === FOUNDING_CAP_FULL_CODE) {
+    return res.status(409).json({ error: 'Founding spots are full (100 of 100). Nothing was changed.' });
+  }
   if (error) return res.status(500).json({ error: 'Failed to update user' });
   if (!data) return res.status(404).json({ error: 'User not found' });
 
@@ -453,7 +472,10 @@ async function handlePromoteWave(supabase: SupabaseClient, req: VercelRequest, r
     .from('waitlist')
     .update({ wave_number: target_wave, status: 'active' })
     .in('email', emails)
-    .select('*');
+    // Re-checked at the moment of the move, as openWave does (#35 item 4):
+    // someone moved out of the waiting pool since the read is left alone.
+    .eq('status', 'waiting_for_next_wave')
+    .select(ADMIN_WAITLIST_COLUMNS);
 
   if (error) return res.status(500).json({ error: 'Failed to promote users' });
 
@@ -938,7 +960,7 @@ async function handleGetWaitlistUser(supabase: SupabaseClient, req: VercelReques
 
   const { data: user, error } = await supabase
     .from('waitlist')
-    .select('*')
+    .select(ADMIN_WAITLIST_COLUMNS)
     .eq('email', trimmedEmail)
     .maybeSingle();
 

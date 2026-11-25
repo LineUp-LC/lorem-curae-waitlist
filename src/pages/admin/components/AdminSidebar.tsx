@@ -1,4 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
+import { supabase } from '../../../lib/supabase';
 
 // ============================================================================
 // Types
@@ -200,9 +201,11 @@ const navGroups: NavGroup[] = [
 interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  // The account actually signed in (AdminLayout), never a fixed address (#35).
+  signedInEmail: string | null;
 }
 
-export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
+export function AdminSidebar({ isOpen, onClose, signedInEmail }: AdminSidebarProps) {
   return (
     <>
       {/* Mobile overlay */}
@@ -291,8 +294,19 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sage-700 dark:text-sage-200 truncate">Admin User</p>
-              <p className="text-xs text-sage-500 dark:text-sage-400 truncate">admin@loremcurae.com</p>
+              <p className="text-xs text-sage-500 dark:text-sage-400">Signed in as</p>
+              <p className="text-sm font-medium text-sage-700 dark:text-sage-200 truncate">
+                {signedInEmail ?? 'Unknown account'}
+              </p>
+              {/* The auth listener in AdminLayout turns the sign-out into the
+                  sign-in form (#36). */}
+              <button
+                type="button"
+                onClick={() => void supabase.auth.signOut()}
+                className="mt-1 text-xs font-medium text-forest-700 dark:text-forest-400 hover:underline underline-offset-2"
+              >
+                Sign out
+              </button>
             </div>
           </div>
         </div>

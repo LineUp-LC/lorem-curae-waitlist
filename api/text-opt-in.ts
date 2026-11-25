@@ -1,7 +1,39 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { passOnTextOffer } from './_textOffer.js';
 import { checkSendable } from './_outreach.js';
+
+// The ONE way an offer ends without an accept: a decline, or an accept that came
+// too late (#35 item 5). Only a row that was offered, and has neither accepted nor
+// already declined, is changed, and the spot passes on only when this write changed
+// it. Two declines, a decline racing an accept that already landed, a repeated late
+// accept, or a decline with no offer behind it all change nothing and pass nothing
+// on. accept_text_offer refuses a declined row under its own row lock, so the race
+// the other way round is covered there.
+async function declineAndPassOn(
+  supabase: SupabaseClient,
+  resendApiKey: string,
+  waitlistId: string,
+  createdAt: string,
+): Promise<{ ok: boolean }> {
+  const { data: declined, error } = await supabase
+    .from('waitlist')
+    .update({ text_opt_in_declined: true })
+    .eq('id', waitlistId)
+    .eq('text_opt_in', false)
+    .eq('text_opt_in_declined', false)
+    .not('text_opt_in_offer_sent_at', 'is', null)
+    .select('id');
+
+  if (error) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_decline_failed', error: error.message }));
+    return { ok: false };
+  }
+  if (declined && declined.length > 0) {
+    await passOnTextOffer(supabase, resendApiKey, createdAt);
+  }
+  return { ok: true };
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -66,12 +98,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const expiresAt = row.text_opt_in_expires_at ? new Date(row.text_opt_in_expires_at as string) : null;
     if (!expiresAt || expiresAt < new Date()) {
-      // Offer expired — treat as decline and cascade
-      await supabase
-        .from('waitlist')
-        .update({ text_opt_in_declined: true })
-        .eq('id', row.id);
-      await passOnTextOffer(supabase, resendApiKey, row.created_at as string);
+      // Offer expired: treated as a decline, through the same guarded write, so
+      // repeating the request (or an accept after a decline) never passes the
+      // spot on a second time.
+      const outcome = await declineAndPassOn(supabase, resendApiKey, row.id as string, row.created_at as string);
+      if (!outcome.ok) return res.status(500).json({ error: 'server-error' });
       return res.status(410).json({ error: 'offer-expired' });
     }
 
@@ -85,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Claim the slot and record the opt-in in ONE locked database step
-    // (accept_text_offer, migration 20261124_text_offer_accept.sql). It
+    // (accept_text_offer, migration 20261124202256_text_offer_accept.sql). It
     // decrements slots_remaining inside the database, so a spot freed by a
     // removal meanwhile is never lost, and it re-checks Removed and
     // unsubscribed under the row lock, so an accept can never write
@@ -123,12 +154,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // action === 'decline'
   // Decline passes the slot to the next person via cascade — slots_remaining
   // is NOT decremented here because the slot was never consumed.
-  await supabase
-    .from('waitlist')
-    .update({ text_opt_in_declined: true })
-    .eq('id', row.id);
-
-  await passOnTextOffer(supabase, resendApiKey, row.created_at as string);
+  const outcome = await declineAndPassOn(supabase, resendApiKey, row.id as string, row.created_at as string);
+  if (!outcome.ok) return res.status(500).json({ error: 'server-error' });
 
   return res.status(200).json({ success: true });
 }

@@ -1,5 +1,5 @@
 // Outreach status for a waitlist signup. Admin-only; stored in
-// public.waitlist_outreach (migration 20261124_add_waitlist_outreach.sql), never
+// public.waitlist_outreach (migration 20261124194749_add_waitlist_outreach.sql), never
 // on public.waitlist, whose own-row read policy would expose it to the person.
 //
 // SYNC PAIR: these five values are the CHECK constraint on

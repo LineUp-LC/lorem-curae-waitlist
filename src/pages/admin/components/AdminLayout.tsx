@@ -345,12 +345,16 @@ export function AdminLayout() {
     <DarkModeContext.Provider value={{ isDark, toggle: toggleDarkMode }}>
       <div className="min-h-screen bg-sage-50/50 dark:bg-sage-900 transition-colors lg:flex">
         {/* Sidebar */}
-        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <AdminSidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          signedInEmail={signedInEmail}
+        />
 
         {/* Main content area */}
         <div className="lg:flex-1 lg:min-w-0">
           {/* Header */}
-          <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
+          <AdminHeader onMenuClick={() => setSidebarOpen(true)} signedInEmail={signedInEmail} />
 
           {/* Page content */}
           <main className="p-4 sm:p-6 lg:p-8">

@@ -159,7 +159,9 @@ export default function MagicLinkLogin() {
           </svg>
         </div>
         <p className="text-sage-700 text-lg font-medium mb-2">
-          Check your email. Your magic link is on the way.
+          {/* True in every case the server answers success, including an
+              unsubscribed or Removed email that is sent nothing (#35, pick A). */}
+          If that email is on our list, a link is on its way.
         </p>
         <p className="text-sage-500 text-sm">
           Click the link in your email to sign in securely.

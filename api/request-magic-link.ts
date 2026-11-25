@@ -27,6 +27,25 @@ const UNSUBSCRIBE_URL_FALLBACK = 'mailto:hello@loremcurae.com?subject=Unsubscrib
 // still generates a link. Do not reintroduce {{MAGIC_LINK}} into a signup template.
 const SIGNUP_CTA_URL = 'https://loremcurae.com';
 
+// Where a login link may send someone after sign-in. Exact origins only; the
+// Supabase Redirect URLs allow-list is the second gate behind this one.
+const ALLOWED_REDIRECT_ORIGINS = new Set([
+  'https://www.loremcurae.com',
+  'https://loremcurae.com',
+  'https://lorem-curae-waitlist.vercel.app',
+]);
+const ALLOWED_REDIRECT_PATH = '/auth/callback';
+
+function isAllowedRedirect(redirectTo: unknown): redirectTo is string {
+  if (typeof redirectTo !== 'string' || redirectTo.length === 0) return false;
+  try {
+    const url = new URL(redirectTo);
+    return ALLOWED_REDIRECT_ORIGINS.has(url.origin) && url.pathname === ALLOWED_REDIRECT_PATH;
+  } catch {
+    return false;
+  }
+}
+
 function buildUnsubscribeUrl(token?: string | null): string {
   if (token) return `${UNSUBSCRIBE_BASE}?token=${token}`;
   return UNSUBSCRIBE_URL_FALLBACK;
@@ -184,18 +203,8 @@ const templates: Record<string, EmailTemplate> = {
     ),
   },
   founding_member_tester_consumer_login: { subject: LOGIN_SUBJECT, html: loginHtml() },
-
-  // ---- Founder text opt-in offer (sent via api/text-opt-in.ts cascade + api/signup.ts trigger) ----
-  text_opt_in_offer: {
-    subject: "A personal note from Ethan, you're in the first 100",
-    html: `<p>{{GREETING}}</p>
-<p>You're one of our first 100 founding members on Curae.</p>
-<p>I personally text the first 100. It's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
-<p><strong><a href="{{CLAIM_URL}}">Claim your spot</a></strong></p>
-<p>This offer expires in 48 hours. If you'd rather not, no worries, just ignore this email.</p>
-${SIGN_OFF}
-${FOOTER}`,
-  },
+  // The text opt-in offer email is not here: its one copy is
+  // supabase/functions/_shared/textOfferEmail.ts (sendTextOfferEmail).
 
   // ---- Consumer Waves (wave number is access timing only) ----
   consumer_wave_1_signup: {
@@ -428,6 +437,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'not-on-waitlist' });
     }
 
+    // A signup email goes only to someone who has a waitlist row (#35, #23).
+    // The real form calls this after its row is inserted, so only a direct call
+    // reaches here. Same reply as a normal send, so it reveals nothing.
+    if (type === 'signup' && !waitlist) {
+      console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: 'no_waitlist_row', type }));
+      return res.status(200).json({ success: true });
+    }
+
     // -------------------------------------------------------------------------
     // STEP: Removed and unsubscribed people get nothing (#26, decision 4a)
     //
@@ -464,18 +481,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (type === 'login') {
     console.log(`[request-magic-link] Generating magic link...`);
 
-    // Only allow redirectTo values that originate from this app (same Origin as
-    // the browser request). Falls back to the default callback URL for direct
-    // API calls or cross-origin attempts that could enable open-redirect attacks.
-    const requestOrigin =
-      typeof req.headers['origin'] === 'string' ? req.headers['origin'] : null;
-    const resolvedRedirectTo =
-      typeof redirectTo === 'string' &&
-      redirectTo.length > 0 &&
-      requestOrigin !== null &&
-      redirectTo.startsWith(requestOrigin)
-        ? redirectTo
-        : DEFAULT_REDIRECT_URL;
+    // Only allow a redirectTo on one of our own sites, at the callback path
+    // (#35 item 1). The origin is parsed and compared exactly, so a look-alike
+    // such as www.loremcurae.com.evil.com does not pass, and the caller's
+    // Origin header (which a direct API call can set to anything) is not
+    // trusted. Anything else falls back to the default callback URL.
+    const resolvedRedirectTo = isAllowedRedirect(redirectTo) ? redirectTo : DEFAULT_REDIRECT_URL;
 
     console.log('[request-magic-link] redirectTo being passed:', resolvedRedirectTo);
 

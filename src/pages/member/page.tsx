@@ -10,8 +10,8 @@ type PageState = 'loading' | 'ready' | 'not-found';
 
 interface MemberData {
   email: string;
-  spotNumber: number;
-  slotsRemaining: number;
+  // null when founding_member_slots could not be read: the block is hidden, never 0.
+  slotsRemaining: number | null;
   waveNumber: number | null;
   isFoundingMember: boolean;
   foundingNumber: number | null;
@@ -66,11 +66,11 @@ export default function MemberPage() {
       // Fetch the user's waitlist row and founding-slots view in parallel.
       const [
         { data: row, error: rowErr },
-        { data: slotRow },
+        { data: slotRow, error: slotErr },
       ] = await Promise.all([
         supabase
           .from('waitlist')
-          .select('id, created_at, wave_number, is_founding_member, founding_number, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
+          .select('id, wave_number, is_founding_member, founding_number, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
           .eq('email', email)
           .maybeSingle(),
         supabase.from('founding_member_slots').select('slots_remaining').single(),
@@ -83,25 +83,16 @@ export default function MemberPage() {
         return;
       }
 
-      // Spot number: count rows created before this user, then add 1.
-      // Uses created_at ascending order — same column the waitlist table is
-      // naturally ordered by on creation.
-      const { count: priorCount, error: countErr } = await supabase
-        .from('waitlist')
-        .select('id', { count: 'exact', head: true })
-        .lt('created_at', row.created_at as string);
-
-      if (cancelled) return;
-
-      if (countErr) {
-        setState('not-found');
-        return;
-      }
-
+      // No earlier-signups count here (#45): the browser can read only its own
+      // row, so it was always 0, and a failed count showed "We couldn't find
+      // your account". A founder's spot is their stored founding_number.
       setData({
         email,
-        spotNumber: (priorCount ?? 0) + 1,
-        slotsRemaining: (slotRow as { slots_remaining: number } | null)?.slots_remaining ?? 0,
+        slotsRemaining: (() => {
+          if (slotErr) return null;
+          const n = (slotRow as { slots_remaining?: number } | null)?.slots_remaining;
+          return typeof n === 'number' && Number.isFinite(n) ? n : null;
+        })(),
         waveNumber: (row as { wave_number?: number | null }).wave_number ?? null,
         isFoundingMember: (row as { is_founding_member?: boolean }).is_founding_member ?? false,
         // The stored founding number from the person's own row (waitlist #43), the
@@ -285,18 +276,17 @@ export default function MemberPage() {
           <p className="text-sage-900 text-sm break-all">{data?.email}</p>
         </div>
 
-        {/* Spot number. A founder's spot is their stored founding number (waitlist
-            #43); a founder with no stored number gets no block, never the count.
-            Everyone else still gets spotNumber, which is BROKEN: under RLS a
-            person can read only their own row, so the earlier-rows count is
-            always 0 and this reads #1 for every non-founder (own issue). */}
-        {!(data?.isFoundingMember && data.foundingNumber === null) && (
+        {/* Spot number: founders only, and only their stored founding number
+            (waitlist #43). Non-founders get no block (#45, pick A): the browser
+            can read only its own row, so an earlier-signups count would always
+            be 0 and read #1. A founder with no stored number gets no block. */}
+        {data?.isFoundingMember && data.foundingNumber !== null && (
           <div className="border-b border-sage-100 pb-8 mb-8">
             <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
               Your spot
             </p>
             <p className="font-serif text-5xl text-sage-900 leading-none">
-              #{data?.isFoundingMember ? data.foundingNumber : data?.spotNumber}
+              #{data.foundingNumber}
             </p>
           </div>
         )}
@@ -329,15 +319,18 @@ export default function MemberPage() {
           </div>
         )}
 
-        {/* Founding spots remaining */}
-        <div>
-          <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
-            Founding spots remaining
-          </p>
-          <p className="font-serif text-5xl text-coral-600 leading-none">
-            {data?.slotsRemaining}
-          </p>
-        </div>
+        {/* Founding spots remaining. Hidden when the count could not be read:
+            a failed read must never say 0, which would tell people the list is full. */}
+        {data?.slotsRemaining != null && (
+          <div>
+            <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-3">
+              Founding spots remaining
+            </p>
+            <p className="font-serif text-5xl text-coral-600 leading-none">
+              {data.slotsRemaining}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
