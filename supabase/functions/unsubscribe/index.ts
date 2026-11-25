@@ -26,6 +26,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { sendTextOfferEmail } from '../_shared/textOfferEmail.ts';
+import { greetingHtml } from '../_shared/greeting.ts';
 
 // The real domain (choice A1, Ethan 2026-11-24).
 const CONFIRM_PAGE = 'https://loremcurae.com/unsubscribe';
@@ -142,9 +143,22 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<boolean> 
   const next = Array.isArray(claimed) ? claimed[0] : claimed;
   if (!next?.email) return true;
 
+  // The greeting's first name (#40). claim_next_text_offer returns only the
+  // email, so it is read here by email. A failed read still sends, with
+  // "Hi there,": the claim already stamped this person's offer, and an unsent
+  // offer would strand them. Logged without the name.
+  const { data: nameRow, error: nameErr } = await supabase
+    .from('waitlist')
+    .select('first_name')
+    .eq('email', next.email)
+    .maybeSingle();
+  if (nameErr) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_name_read_failed', error: nameErr.message }));
+  }
+
   // Bounded (the shared send has the timeout): the unsubscribe page waits on
   // this. A timeout is logged like any other failed send.
-  const sent = await sendTextOfferEmail(resendApiKey, next.email);
+  const sent = await sendTextOfferEmail(resendApiKey, next.email, greetingHtml(nameRow?.first_name));
   if (!sent.ok) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_email_failed', status: sent.status, error: sent.error }));
   }

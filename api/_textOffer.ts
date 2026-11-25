@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { sendTextOfferEmail } from '../supabase/functions/_shared/textOfferEmail.js';
+import { greetingHtml } from './_greeting.js';
 
 // ----------------------------------------------------------------------------
 // Passing the text-offer spot to the next person. Moved here from
@@ -35,7 +36,20 @@ export async function passOnTextOffer(
   const next = (Array.isArray(data) ? data[0] : data) as { email?: string } | null | undefined;
   if (!next?.email) return { offered: false };
 
-  const sent = await sendTextOfferEmail(resendApiKey, next.email);
+  // The greeting's first name (#40). claim_next_text_offer returns only the
+  // email, so it is read here by email. A failed read still sends, with
+  // "Hi there,": the claim already stamped this person's offer, and an unsent
+  // offer would strand them. Logged without the name.
+  const { data: nameRow, error: nameErr } = await supabase
+    .from('waitlist')
+    .select('first_name')
+    .eq('email', next.email)
+    .maybeSingle();
+  if (nameErr) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_name_read_failed', error: nameErr.message }));
+  }
+
+  const sent = await sendTextOfferEmail(resendApiKey, next.email, greetingHtml(nameRow?.first_name));
   if (!sent.ok) {
     console.error('[text-offer] Cascade email failed:', sent.status ?? '', sent.error);
     return { offered: false, error: 'The next person was picked but the offer email failed' };

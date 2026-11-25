@@ -23,6 +23,8 @@ import {
 interface WaitlistUser {
   id: string;
   email: string;
+  // Null for people who signed up before the name was asked for (#40).
+  first_name: string | null;
   created_at: string;
   has_access: boolean;
   unsubscribed_at: string | null;
@@ -320,6 +322,9 @@ export default function AccessManagementPage() {
                   Email
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-sage-500 uppercase tracking-wider">
+                  First name
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-sage-500 uppercase tracking-wider">
                   Signed Up
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-sage-500 uppercase tracking-wider">
@@ -367,6 +372,13 @@ export default function AccessManagementPage() {
                     </td>
                     <td className="px-4 py-3 text-sm text-sage-900 max-w-xs truncate">
                       {user.email}
+                    </td>
+                    <td className="px-4 py-3 text-sm max-w-[10rem] truncate">
+                      {user.first_name && user.first_name.trim() !== '' ? (
+                        <span className="text-sage-900">{user.first_name}</span>
+                      ) : (
+                        <span className="text-sage-400">Not given</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-sage-500 whitespace-nowrap">
                       {formatDate(user.created_at)}

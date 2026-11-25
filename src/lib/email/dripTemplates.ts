@@ -19,6 +19,9 @@
 // supabase/functions/drip-scheduler/index.ts.
 //
 // Placeholders substituted by the sender at send time:
+//   {{GREETING}}          - "Hi <first name>," from greetingHtml (api/_greeting.ts in
+//                           Node, supabase/functions/_shared/greeting.ts in Deno), or
+//                           "Hi there," when no name is saved (#40)
 //   {{UNSUBSCRIBE_URL}}   — per-user unsubscribe URL
 //   {{SLOTS_REMAINING}}   - founding-rate slots left, from the founding_member_slots
 //                           view (column: slots_remaining), falling back to "A limited
@@ -64,7 +67,7 @@ export const dripTemplates: Record<DripEventType, DripTemplate> = {
   // split is ever reintroduced.
   welcome: {
     subject: "Here's how Curae works",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Curae starts with a scan.</p>
 <p>Point your camera at any product. We identify it, then read the ingredient list and check every ingredient against your skin profile. You get back an ingredient-by-ingredient breakdown, what we know about each one, and where to buy. Conflict detection and the compatible products list are included free. Premium adds the recommended action for resolving a conflict.</p>
 <p>You set up your skin profile once, when you join. After that it is scan, read, decide.</p>
@@ -75,7 +78,7 @@ ${FOOTER}`,
 
   scan_walkthrough: {
     subject: "What happens when you scan a product",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Here's what a scan does:</p>
 <p><strong>1. Identifies the product.</strong> Point the camera at the label or the barcode. If the label is hard to read, we ask you to confirm the name rather than guess it.</p>
 <p><strong>2. Checks every ingredient against your skin profile.</strong> Each one is marked safe, caution or avoid, with the reason. Where we do not have research behind an ingredient yet, we say so instead of guessing. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
@@ -88,7 +91,7 @@ ${FOOTER}`,
 
   scan_deep_dive: {
     subject: "What a scan actually unlocks",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>A scan isn't just a verdict on one product. Here's what it opens up:</p>
 <p><strong>Compatible products.</strong> Once we know what's in your current product, we can surface alternatives that actually fit — same function, ingredients your skin tolerates.</p>
 <p><strong>Where to buy.</strong> You see who stocks it and at what price, in one place instead of five tabs.</p>
@@ -102,7 +105,7 @@ ${FOOTER}`,
 
   re_engagement: {
     subject: "Still holding your spot",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Your Curae spot is still held. You signed up to scan products and see which ingredients actually work for your skin — that's still what we're building.</p>
 <p>If you'd like to stay on the list, no action needed. If you'd rather let your spot go, the unsubscribe link below does it in one click.</p>
 <p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>

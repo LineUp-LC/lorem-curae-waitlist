@@ -1,5 +1,12 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 
+// Required first name (waitlist #40). The form checks only that it is not blank.
+// The full check (length, characters) is validateFirstName in api/_greeting.ts,
+// run by api/signup.ts, whose message is shown under the field. Browser code does
+// not import from api/ (a dev server serves that path as routes), so this wording
+// is a SYNC PAIR with FIRST_NAME_ERRORS.blank there.
+const FIRST_NAME_BLANK_ERROR = 'Please enter your first name.';
+
 type WaitlistSegment = 'regular' | 'creator';
 
 interface SupabaseWaitlistFormProps {
@@ -7,6 +14,8 @@ interface SupabaseWaitlistFormProps {
 }
 
 interface WaitlistFormState {
+  firstName: string;
+  firstNameError: string;
   email: string;
   betaTesterInterest: boolean;
   status: 'idle' | 'submitting' | 'success' | 'duplicate' | 'error';
@@ -19,6 +28,8 @@ export default function SupabaseWaitlistForm({
   segment = 'regular' 
 }: SupabaseWaitlistFormProps) {
   const [formState, setFormState] = useState<WaitlistFormState>({
+    firstName: '',
+    firstNameError: '',
     email: '',
     betaTesterInterest: false,
     status: 'idle',
@@ -28,6 +39,14 @@ export default function SupabaseWaitlistForm({
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setFormState((prev) => ({
+      ...prev,
+      firstName: e.target.value,
+      firstNameError: '',
+    }));
   };
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -50,23 +69,26 @@ export default function SupabaseWaitlistForm({
 
     const trimmedEmail = formState.email.trim().toLowerCase();
 
-    if (!trimmedEmail) {
+    // Both fields are checked together, so a person who left both blank sees
+    // both messages at once rather than one per attempt.
+    const trimmedFirstName = formState.firstName.trim();
+    const firstNameError = trimmedFirstName === '' ? FIRST_NAME_BLANK_ERROR : '';
+    const emailError = !trimmedEmail
+      ? 'Please enter your email address.'
+      : !validateEmail(trimmedEmail)
+        ? 'Please enter a valid email address.'
+        : '';
+
+    if (firstNameError || emailError) {
       setFormState((prev) => ({
         ...prev,
-        errorMessage: 'Please enter your email address.',
+        firstNameError,
+        errorMessage: emailError,
       }));
       return;
     }
 
-    if (!validateEmail(trimmedEmail)) {
-      setFormState((prev) => ({
-        ...prev,
-        errorMessage: 'Please enter a valid email address.',
-      }));
-      return;
-    }
-
-    setFormState((prev) => ({ ...prev, status: 'submitting', errorMessage: '' }));
+    setFormState((prev) => ({ ...prev, status: 'submitting', firstNameError: '', errorMessage: '' }));
 
     try {
       // Sign up via API (handles founding member auto-assignment, wave assignment, cap checks)
@@ -74,6 +96,7 @@ export default function SupabaseWaitlistForm({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          first_name: trimmedFirstName,
           email: trimmedEmail,
           segment,
           wants_tester_access: formState.betaTesterInterest,
@@ -88,6 +111,19 @@ export default function SupabaseWaitlistForm({
           setFormState((prev) => ({
             ...prev,
             status: 'duplicate',
+          }));
+          return;
+        }
+
+        // The server refused the name (it runs the same check). Show its words
+        // under the name field rather than the generic error.
+        if (signupData.error === 'invalid_first_name') {
+          setFormState((prev) => ({
+            ...prev,
+            status: 'idle',
+            firstNameError: typeof signupData.message === 'string'
+              ? signupData.message
+              : FIRST_NAME_BLANK_ERROR,
           }));
           return;
         }
@@ -124,6 +160,8 @@ export default function SupabaseWaitlistForm({
         .catch((err) => console.error('[WaitlistForm] Email send error:', err));
 
       setFormState({
+        firstName: '',
+        firstNameError: '',
         email: '',
         betaTesterInterest: false,
         status: 'success',
@@ -140,7 +178,7 @@ export default function SupabaseWaitlistForm({
     }
   };
 
-  const { email, betaTesterInterest, status, errorMessage, position, isFoundingMember } = formState;
+  const { firstName, firstNameError, email, betaTesterInterest, status, errorMessage, position, isFoundingMember } = formState;
   const isSubmitting = status === 'submitting';
   const showFoundingMember =
     status === 'success' && isFoundingMember === true && typeof position === 'number';
@@ -185,6 +223,43 @@ export default function SupabaseWaitlistForm({
 
           {/* Input Group */}
           <div className="space-y-4">
+            {/* First name (required, waitlist #40). Styled like the email field. */}
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              autoComplete="given-name"
+              value={firstName}
+              onChange={handleFirstNameChange}
+              placeholder="First name"
+              disabled={isSubmitting}
+              aria-label="First name"
+              aria-required="true"
+              aria-invalid={!!firstNameError}
+              aria-describedby={firstNameError ? 'first-name-error' : undefined}
+              className={`
+                w-full rounded-full border bg-white
+                px-6 py-4 text-sage-800 placeholder-sage-400
+                transition-all duration-300 ease-out
+                focus:outline-none focus:ring-2 focus:ring-sage-500/30 focus:border-sage-500
+                disabled:opacity-60 disabled:cursor-not-allowed
+                ${firstNameError
+                  ? 'border-coral-400 focus:border-coral-500 focus:ring-coral-500/30'
+                  : 'border-slate-200 hover:border-sage-300'
+                }
+              `}
+            />
+
+            {firstNameError && (
+              <p
+                id="first-name-error"
+                role="alert"
+                className="w-full text-center text-coral-600 text-sm animate-slide-up"
+              >
+                {firstNameError}
+              </p>
+            )}
+
             <div className="relative">
               <input
                 type="email"
@@ -224,7 +299,7 @@ export default function SupabaseWaitlistForm({
               <p
                 id="email-error"
                 role="alert"
-                className="text-coral-600 text-sm pl-6 animate-slide-up"
+                className="w-full text-center text-coral-600 text-sm animate-slide-up"
               >
                 {errorMessage}
               </p>

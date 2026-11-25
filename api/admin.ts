@@ -16,6 +16,7 @@ import {
   OUTREACH_REMOVED,
 } from '../src/lib/outreachStatus.js';
 import { MAX_FOUNDING_MEMBERS } from '../src/lib/foundingMembers.js';
+import { greetingHtml, validateFirstName } from './_greeting.js';
 
 // ============================================================================
 // CONSOLIDATED ADMIN API
@@ -85,7 +86,12 @@ function adminSendRefusal(check: SendCheck): { status: number; error: string } |
 //   - wants_tester_access / wants_beta / text_opt_in: these are the PERSON's
 //     declarations, not ours. is_tester exists so an admin decision never
 //     overwrites a request (migration 20260918_add_waitlist_is_tester.sql).
+//
+// first_name is the one exception to "decisions only" (waitlist #40): it is
+// editable so an admin can fix a typo, under the same check as signup
+// (validateFirstName). It is never cleared: a blank is refused like at signup.
 const UPDATABLE_USER_COLUMNS = new Set([
+  'first_name',
   'wave_number',
   'status',
   'is_founding_member',
@@ -258,6 +264,14 @@ async function handleUpdateUser(supabase: SupabaseClient, req: VercelRequest, re
       error: `Not updatable through this endpoint: ${rejected.join(', ')}`,
       updatable: [...UPDATABLE_USER_COLUMNS],
     });
+  }
+
+  // Same check and wording as signup (validateFirstName, api/_greeting.ts). The
+  // trimmed value is what gets written.
+  if ('first_name' in updates) {
+    const firstName = validateFirstName(updates.first_name);
+    if (!firstName.ok) return res.status(400).json({ error: firstName.error });
+    updates.first_name = firstName.value;
   }
 
   if ('status' in updates && !VALID_WAITLIST_STATUSES.has(updates.status)) {
@@ -489,7 +503,7 @@ async function handleResendMagicLink(supabase: SupabaseClient, req: VercelReques
   // Check user exists
   const { data: user, error: userErr } = await supabase
     .from('waitlist')
-    .select('id, email, unsubscribed_at')
+    .select('id, email, first_name, unsubscribed_at')
     .eq('email', trimmedEmail)
     .maybeSingle();
 
@@ -523,7 +537,8 @@ async function handleResendMagicLink(supabase: SupabaseClient, req: VercelReques
       from: FROM_EMAIL,
       to: trimmedEmail,
       subject: 'Your secure sign-in link',
-      html: `<p>Here's your secure magic link to sign in:</p><p><a href="${linkData.properties.action_link}">Click here to sign in</a></p>`,
+      // Greets by first name like every other email (#40), "Hi there," without one.
+      html: `<p>${greetingHtml(user.first_name)}</p><p>Here's your secure magic link to sign in:</p><p><a href="${linkData.properties.action_link}">Click here to sign in</a></p>`,
     }),
   });
 
@@ -590,12 +605,20 @@ async function handleExportUsers(supabase: SupabaseClient, req: VercelRequest, r
   if (error) return res.status(500).json({ error: 'Failed to export users' });
 
   // Generate CSV
-  const headers = ['email', 'segment', 'wave_number', 'status', 'is_creator', 'is_founding_member', 'is_founding_member_creator', 'wants_tester_access', 'created_at'];
+  const headers = ['email', 'first_name', 'segment', 'wave_number', 'status', 'is_creator', 'is_founding_member', 'is_founding_member_creator', 'wants_tester_access', 'created_at'];
   const rows = (data || []).map(row =>
     headers.map(h => {
       const val = row[h];
       if (val === null || val === undefined) return '';
-      const str = String(val);
+      let str = String(val);
+      // FORMULA GUARD (#40). A spreadsheet runs a cell that starts with = + - @ or
+      // a tab as a formula, and names and emails are typed by the public. Every
+      // TEXT cell that starts with one gets a leading apostrophe, so it opens as
+      // plain text. Numbers and booleans are ours and are left alone.
+      // The set is the OWASP CSV Injection list: = + - @, tab (0x09), carriage
+      // return (0x0D), line feed (0x0A), and the full-width forms of = + - @
+      // (U+FF1D, U+FF0B, U+FF0D, U+FF20). Written as escapes on purpose.
+      if (typeof val === 'string' && /^[=+\-@\t\r\n\uFF1D\uFF0B\uFF0D\uFF20]/.test(str)) str = `'${str}`;
       return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
     }).join(',')
   );
@@ -776,7 +799,7 @@ async function handleEmailSummary(supabase: SupabaseClient, res: VercelResponse)
 async function handleWaitlistUsers(supabase: SupabaseClient, res: VercelResponse) {
   const { data, error } = await supabase
     .from('waitlist')
-    .select('id, email, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access, waitlist_outreach(outreach_status, last_emailed_on, resignup_attempts)')
+    .select('id, email, first_name, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access, waitlist_outreach(outreach_status, last_emailed_on, resignup_attempts)')
     .order('created_at', { ascending: true });
   if (error) return res.status(500).json({ error: 'Failed to fetch waitlist users' });
 
@@ -1184,7 +1207,7 @@ async function handleResendDripEmail(supabase: SupabaseClient, req: VercelReques
 
   const { data: user, error: userErr } = await supabase
     .from('waitlist')
-    .select('id, email, unsubscribed_at, unsubscribe_token')
+    .select('id, email, first_name, unsubscribed_at, unsubscribe_token')
     .eq('email', trimmedEmail)
     .maybeSingle();
 
@@ -1252,15 +1275,18 @@ type SendAndRecord =
 async function sendAndRecordDrip(
   supabase: SupabaseClient,
   resendApiKey: string,
-  user: { email: string; unsubscribe_token: string | null },
+  user: { email: string; first_name: string | null; unsubscribe_token: string | null },
   dripEvent: DripEventType,
   logRowId: string,
   slotsRemaining: string,
 ): Promise<SendAndRecord> {
   const template = dripTemplates[dripEvent];
+  // Greeting filled LAST (#40): the name is typed by the person, so a name written
+  // like a placeholder must not be filled by a later step.
   const html = template.html
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrlFor(user.unsubscribe_token))
-    .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining);
+    .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining)
+    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(user.first_name));
 
   // SEND FIRST, THEN TOUCH THE LOG. Clearing the failed row before the send
   // would, on a failure, leave no record that we ever tried.

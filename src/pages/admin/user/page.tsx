@@ -8,6 +8,7 @@ import {
   CardBody,
   CardHeader,
   ErrorBanner,
+  Input,
   LoadingState,
   Select,
   Toggle,
@@ -25,6 +26,8 @@ import { OUTREACH_REMOVED, type OutreachRecord } from '@/lib/outreachStatus';
 interface WaitlistUser {
   id: string;
   email: string;
+  // Null for people who signed up before the name was asked for (#40).
+  first_name: string | null;
   created_at: string;
   updated_at: string | null;
   wave_number: number | null;
@@ -216,6 +219,7 @@ export default function UserDetailPage() {
       const result: UserDetailResponse = await response.json();
       setData(result);
       setForm({
+        first_name: result.user.first_name,
         wave_number: result.user.wave_number,
         status: result.user.status,
         is_founding_member: result.user.is_founding_member,
@@ -689,6 +693,21 @@ export default function UserDetailPage() {
           )}
 
           <div className="grid gap-6 md:grid-cols-2">
+            {/* First name (#40). Checked on save with the same rule as signup; a
+                blank is refused, so a saved name can be corrected but not cleared. */}
+            <Input
+              label="First name"
+              value={form.first_name ?? ''}
+              placeholder="Not given"
+              hint="Used to greet them in every email."
+              onChange={(e) => {
+                // Emptying the box for someone with no saved name is "no change"
+                // (null), not a blank to save, so the form does not turn dirty.
+                const value = e.target.value;
+                setForm((f) => ({ ...f, first_name: value === '' && user.first_name == null ? null : value }));
+              }}
+            />
+
             <Select
               label="Wave"
               value={form.wave_number === null || form.wave_number === undefined ? '' : String(form.wave_number)}
@@ -796,6 +815,7 @@ export default function UserDetailPage() {
                 disabled={dirtyKeys.length === 0 || saving}
                 onClick={() =>
                   setForm({
+                    first_name: user.first_name,
                     wave_number: user.wave_number,
                     status: user.status,
                     is_founding_member: user.is_founding_member,
