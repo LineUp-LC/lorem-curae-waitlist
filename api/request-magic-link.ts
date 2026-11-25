@@ -446,6 +446,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'not-on-waitlist' });
     }
 
+    // A signup email goes only to someone who has a waitlist row (#35, #23).
+    // The real form calls this after its row is inserted, so only a direct call
+    // reaches here. Same reply as a normal send, so it reveals nothing.
+    if (type === 'signup' && !waitlist) {
+      console.log(JSON.stringify({ level: 'info', event: 'magic_link_suppressed', reason: 'no_waitlist_row', type }));
+      return res.status(200).json({ success: true });
+    }
+
     // -------------------------------------------------------------------------
     // STEP: Removed and unsubscribed people get nothing (#26, decision 4a)
     //
