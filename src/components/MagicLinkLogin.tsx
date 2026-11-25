@@ -1,5 +1,4 @@
 import { useState, type FormEvent, type ChangeEvent } from "react";
-import { supabase } from "../lib/supabase";
 
 type MagicLinkStatus = 'idle' | 'loading' | 'success' | 'not-on-waitlist' | 'error';
 
@@ -10,12 +9,6 @@ interface MagicLinkState {
 }
 
 export default function MagicLinkLogin() {
-  console.log("MagicLinkLogin component rendered");
-  console.log("ENV_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
-  console.log(
-    "ENV_SUPABASE_ANON_KEY:",
-    import.meta.env.VITE_SUPABASE_ANON_KEY?.slice(0, 6) + "...(masked)"
-  );
   const [formState, setFormState] = useState<MagicLinkState>({
     email: "",
     status: "idle",
@@ -43,7 +36,6 @@ export default function MagicLinkLogin() {
     e.preventDefault();
 
     const trimmedEmail = email.trim().toLowerCase();
-    console.log("trimmedEmail:", trimmedEmail, JSON.stringify(trimmedEmail));
 
     // Frontend validation
     if (!trimmedEmail) {
@@ -65,56 +57,36 @@ export default function MagicLinkLogin() {
     setFormState((prev) => ({ ...prev, status: "loading", errorMessage: "" }));
 
     try {
-      // Check if email is on the waitlist first
-      const { data: waitlistEntry, error: lookupError } = await supabase
-        .from("waitlist")
-        .select("id")
-        .eq("email", trimmedEmail)
-        .maybeSingle();
-      console.log("waitlistEntry:", waitlistEntry);
-      console.log("lookupError:", lookupError);
-
-      if (lookupError) {
-        throw lookupError;
-      }
-
-      // If not on waitlist, show appropriate message
-      if (!waitlistEntry) {
-        setFormState((prev) => ({
-          ...prev,
-          status: "not-on-waitlist",
-          errorMessage: "",
-        }));
-        return;
-      }
-
-      // Email is on waitlist, request magic link via our custom API
-      // This bypasses Supabase's built-in emails and uses our role-based templates
-      console.log('[MagicLinkLogin] Sending request to /api/request-magic-link');
-      console.log('[MagicLinkLogin] Request body:', JSON.stringify({ email: trimmedEmail, type: 'login' }));
-
+      // The server decides whether this email is on the waitlist (#35). The
+      // browser cannot look it up: a signed-out visitor may read no waitlist row,
+      // so a browser lookup always came back empty and every member was told
+      // they were not on the list.
       const response = await fetch('/api/request-magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail, type: 'login' }),
       });
 
-      console.log('[MagicLinkLogin] Response status:', response.status);
-
-      let responseData;
+      let responseData: { onWaitlist?: unknown; error?: unknown } = {};
       try {
         responseData = await response.json();
-        console.log('[MagicLinkLogin] Response body:', JSON.stringify(responseData));
       } catch {
-        console.error('[MagicLinkLogin] Failed to parse response as JSON');
-        responseData = {};
+        console.error('[MagicLinkLogin] Response was not JSON, status', response.status);
       }
 
       if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to send magic link');
+        throw new Error(typeof responseData.error === 'string' ? responseData.error : `Request failed (${response.status})`);
       }
 
-      console.log('[MagicLinkLogin] Magic link email sent successfully');
+      // Only an explicit true or false is an answer. Anything else (an old
+      // server, a malformed reply) is a failure, never a guess either way.
+      if (responseData.onWaitlist === false) {
+        setFormState((prev) => ({ ...prev, status: "not-on-waitlist", errorMessage: "" }));
+        return;
+      }
+      if (responseData.onWaitlist !== true) {
+        throw new Error('Unexpected reply from the sign-in service');
+      }
 
       setFormState((prev) => ({
         ...prev,
@@ -159,9 +131,7 @@ export default function MagicLinkLogin() {
           </svg>
         </div>
         <p className="text-sage-700 text-lg font-medium mb-2">
-          {/* True in every case the server answers success, including an
-              unsubscribed or Removed email that is sent nothing (#35, pick A). */}
-          If that email is on our list, a link is on its way.
+          Check your inbox. Your sign-in link is on its way.
         </p>
         <p className="text-sage-500 text-sm">
           Click the link in your email to sign in securely.
