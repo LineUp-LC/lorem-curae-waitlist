@@ -291,7 +291,11 @@ export default function MemberPage() {
             Your spot
           </p>
           <p className="font-serif text-5xl text-sage-900 leading-none">
-            #{data?.spotNumber}
+            {/* A founder's spot is their stored founding number (waitlist #43).
+                Everyone else still gets spotNumber, which is BROKEN: under RLS a
+                person can read only their own row, so the earlier-rows count is
+                always 0 and this reads #1 for every non-founder (own issue). */}
+            #{data?.isFoundingMember && data.foundingNumber !== null ? data.foundingNumber : data?.spotNumber}
           </p>
         </div>
 

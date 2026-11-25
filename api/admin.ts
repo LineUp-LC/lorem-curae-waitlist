@@ -802,7 +802,7 @@ async function handleEmailSummary(supabase: SupabaseClient, res: VercelResponse)
 async function handleWaitlistUsers(supabase: SupabaseClient, res: VercelResponse) {
   const { data, error } = await supabase
     .from('waitlist')
-    .select('id, email, first_name, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access, waitlist_outreach(outreach_status, last_emailed_on, resignup_attempts)')
+    .select('id, email, first_name, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, founding_number, wants_tester_access, waitlist_outreach(outreach_status, last_emailed_on, resignup_attempts)')
     .order('created_at', { ascending: true });
   if (error) return res.status(500).json({ error: 'Failed to fetch waitlist users' });
 
