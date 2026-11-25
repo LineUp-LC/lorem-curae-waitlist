@@ -62,10 +62,61 @@
 --          WHERE o.waitlist_id = w.id AND o.outreach_status = 'removed'
 --       ) AS is_removed
 --     ) r;
---   -- undo_waitlist_removed: re-run its definition from
---   -- 20261124_add_waitlist_outreach.sql (the demote UPDATE without founding_number).
+--   -- undo_waitlist_removed: the live definition read 2026-11-24 (lock first,
+--   -- demote UPDATE without founding_number). It must be restored BEFORE the
+--   -- column is dropped, or undo's full-spots branch fails at run time.
+--   CREATE OR REPLACE FUNCTION public.undo_waitlist_removed(p_waitlist_id uuid, p_new_status text, p_founding_cap integer)
+--    RETURNS TABLE(founding_kept boolean)
+--    LANGUAGE plpgsql
+--    SET search_path TO 'public'
+--   AS $function$
+--   DECLARE
+--     v_status   text;
+--     v_founding boolean;
+--     v_count    bigint;
+--     v_kept     boolean := true;
+--   BEGIN
+--     IF p_new_status IS NULL OR p_new_status NOT IN ('not_sent', 'sent', 'replied', 'quiet') THEN
+--       RAISE EXCEPTION 'undo needs a status other than removed, got %', p_new_status USING ERRCODE = '22023';
+--     END IF;
+--     IF p_founding_cap IS NULL OR p_founding_cap <= 0 THEN
+--       RAISE EXCEPTION 'undo needs a positive founding cap, got %', p_founding_cap USING ERRCODE = '22023';
+--     END IF;
+--     PERFORM pg_advisory_xact_lock(hashtext('waitlist_founding_cap'));
+--     SELECT w.is_founding_member INTO v_founding
+--       FROM public.waitlist w WHERE w.id = p_waitlist_id FOR UPDATE;
+--     IF NOT FOUND THEN
+--       RAISE EXCEPTION 'waitlist row % not found', p_waitlist_id USING ERRCODE = 'P0002';
+--     END IF;
+--     SELECT o.outreach_status INTO v_status
+--       FROM public.waitlist_outreach o WHERE o.waitlist_id = p_waitlist_id FOR UPDATE;
+--     IF NOT FOUND THEN
+--       RAISE EXCEPTION 'no outreach row for %', p_waitlist_id USING ERRCODE = 'P0002';
+--     END IF;
+--     IF v_status <> 'removed' THEN
+--       RAISE EXCEPTION 'signup % is not removed', p_waitlist_id USING ERRCODE = '55000';
+--     END IF;
+--     IF COALESCE(v_founding, false) THEN
+--       SELECT count(*) INTO v_count
+--         FROM public.waitlist w
+--        WHERE w.is_founding_member = true
+--          AND NOT EXISTS (SELECT 1 FROM public.waitlist_outreach o
+--                           WHERE o.waitlist_id = w.id AND o.outreach_status = 'removed');
+--       IF v_count >= p_founding_cap THEN
+--         UPDATE public.waitlist SET is_founding_member = false, price_locked = false
+--          WHERE id = p_waitlist_id;
+--         v_kept := false;
+--       END IF;
+--     END IF;
+--     UPDATE public.waitlist_outreach
+--        SET outreach_status = p_new_status, removed_cleared_at = now()
+--      WHERE waitlist_id = p_waitlist_id;
+--     RETURN QUERY SELECT v_kept;
+--   END;
+--   $function$;
 --   UPDATE public.waitlist SET is_founding_member = false
 --    WHERE id = '68441bf8-f39e-472e-8cd9-366eea416914';
+--   DROP TABLE IF EXISTS public.founding_number_counter;
 --   DROP INDEX IF EXISTS public.waitlist_founding_number_key;
 --   ALTER TABLE public.waitlist DROP COLUMN IF EXISTS founding_number;
 --   COMMIT;
@@ -101,6 +152,29 @@ UPDATE public.waitlist w
      WHERE is_founding_member = true
   ) n
  WHERE w.id = n.id;
+
+-- ----------------------------------------------------------------------------
+-- 3b. The last number ever given (a high-water mark, never lowered)
+--
+-- max(founding_number) + 1 would hand out a number again once its holder is
+-- deleted or turned off (found in review). This one-row counter only goes up,
+-- so a number is never given to two people. It is a table, not a sequence,
+-- because a sequence is not rolled back: every duplicate-email signup (the
+-- unique violation fires after the BEFORE INSERT trigger) would burn a number
+-- and leave gaps. Only the SECURITY DEFINER triggers below touch it.
+-- Access: anon and authenticated read, change, add and delete no rows (no
+-- grant, RLS on, no policy); service role all rows (it bypasses RLS).
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.founding_number_counter (
+    only_row     boolean PRIMARY KEY DEFAULT true CHECK (only_row),
+    last_number  integer NOT NULL
+);
+ALTER TABLE public.founding_number_counter ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.founding_number_counter FROM PUBLIC, anon, authenticated;
+
+INSERT INTO public.founding_number_counter (only_row, last_number)
+SELECT true, COALESCE(max(founding_number), 0) FROM public.waitlist
+ON CONFLICT (only_row) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
 -- 4. One locked step on insert (and number upkeep on update)
@@ -142,9 +216,9 @@ BEGIN
 
   IF v_count < 100 THEN  -- SYNC PAIR: MAX_FOUNDING_MEMBERS
     NEW.is_founding_member := true;
-    SELECT COALESCE(max(founding_number), 0) + 1
-      INTO NEW.founding_number
-      FROM public.waitlist;
+    UPDATE public.founding_number_counter
+       SET last_number = last_number + 1
+     RETURNING last_number INTO NEW.founding_number;
   ELSE
     NEW.is_founding_member := false;
     NEW.founding_number    := NULL;
@@ -178,9 +252,9 @@ BEGIN
     IF COALESCE(NEW.is_founding_member, false) THEN
       IF OLD.founding_number IS NULL THEN
         PERFORM pg_advisory_xact_lock(hashtext('waitlist_founding_cap'));
-        SELECT COALESCE(max(founding_number), 0) + 1
-          INTO NEW.founding_number
-          FROM public.waitlist;
+        UPDATE public.founding_number_counter
+           SET last_number = last_number + 1
+         RETURNING last_number INTO NEW.founding_number;
       ELSE
         NEW.founding_number := OLD.founding_number;
       END IF;
@@ -226,8 +300,8 @@ CREATE OR REPLACE VIEW public.founding_member_slots AS
 -- ----------------------------------------------------------------------------
 -- 6. undo_waitlist_removed: same rule, and a demoted person loses the number
 --
--- Identical to the live definition (read 2026-11-24) except the demote UPDATE also
--- clears founding_number. (trg_sync_founding_number would clear it anyway; it is
+-- Identical to the live definition (read 2026-11-24) except: the row lock is taken
+-- before the cap lock, and the demote UPDATE also clears founding_number. (trg_sync_founding_number would clear it anyway; it is
 -- written here so the function says what it does.) CREATE OR REPLACE keeps its
 -- grants.
 -- ----------------------------------------------------------------------------
@@ -250,8 +324,9 @@ BEGIN
     RAISE EXCEPTION 'undo needs a positive founding cap, got %', p_founding_cap USING ERRCODE = '22023';
   END IF;
 
-  PERFORM pg_advisory_xact_lock(hashtext('waitlist_founding_cap'));
-
+  -- Row lock FIRST, then the cap lock (changed from the live order, found in
+  -- review): the admin founding switch holds the row lock when its trigger asks
+  -- for the cap lock, so the same order here means the two can never deadlock.
   SELECT w.is_founding_member INTO v_founding
     FROM public.waitlist w
    WHERE w.id = p_waitlist_id
@@ -259,6 +334,8 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'waitlist row % not found', p_waitlist_id USING ERRCODE = 'P0002';
   END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtext('waitlist_founding_cap'));
 
   SELECT o.outreach_status INTO v_status
     FROM public.waitlist_outreach o
@@ -310,6 +387,7 @@ COMMIT;
 --          count(*) filter (where not is_founding_member and founding_number is not null)
 --     from waitlist;
 -- 3. Counter (expect 20, 80, true):  select * from public.founding_member_slots;
+--    High-water mark (expect 21):     select last_number from public.founding_number_counter;
 -- 4. Counter still readable by the public page (expect true, true):
 --   select has_table_privilege('anon','public.founding_member_slots','SELECT'),
 --          (select reloptions is null from pg_class where relname = 'founding_member_slots');
