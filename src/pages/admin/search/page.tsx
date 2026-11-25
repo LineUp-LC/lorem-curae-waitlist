@@ -254,7 +254,7 @@ export default function GlobalSearchPage() {
       <div>
         <h1 className="text-2xl font-semibold text-sage-900">Global Search</h1>
         <p className="mt-1 text-sage-500">
-          Search users, emails, flags, waves, and more
+          Search people by email
         </p>
       </div>
 
