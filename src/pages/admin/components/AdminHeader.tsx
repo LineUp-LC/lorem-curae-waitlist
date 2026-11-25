@@ -145,8 +145,8 @@ export function AdminHeader({ onMenuClick, signedInEmail }: AdminHeaderProps) {
           {/* User menu */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <p className="text-xs text-sage-500">Signed in as</p>
-              <p className="text-sm font-medium text-sage-800">{signedInEmail ?? 'Unknown account'}</p>
+              <p className="text-xs text-sage-500 dark:text-sage-300">Signed in as</p>
+              <p className="text-sm font-medium text-sage-800 dark:text-white">{signedInEmail ?? 'Unknown account'}</p>
             </div>
             {/* Decoration only: it opens nothing, so it is not a button (#36).
                 Sign out lives at the bottom of the side menu. */}
