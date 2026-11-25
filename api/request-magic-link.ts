@@ -6,6 +6,7 @@ import {
   foundingPositionBlock,
 } from './_emails/foundingWelcome.js';
 import { checkSendable } from './_outreach.js';
+import { greetingHtml } from './_greeting.js';
 
 console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 
@@ -43,6 +44,7 @@ type UserRole =
 
 interface WaitlistRecord {
   email?: string;
+  first_name?: string | null;
   segment?: string;
   wave_number: number | null;
   creator_wave_number: number | null;
@@ -87,8 +89,10 @@ function ordinal(n: number): string {
   }
 }
 
+// Every template opens with <p>{{GREETING}}</p>, filled per send from the saved
+// first name (greetingHtml in api/_greeting.ts), "Hi there," when there is none.
 function loginHtml(): string {
-  return `<p>Hi there,</p>
+  return `<p>{{GREETING}}</p>
 <p>Here's your sign-in link.</p>
 <p><strong><a href="{{MAGIC_LINK}}">Sign in to Curae</a></strong></p>
 <p>It expires in 1 hour.</p>
@@ -111,7 +115,7 @@ function signupHtml(opening: string, accessLine: string, isTester = false): stri
     "Reply to this email with what you want Curae to check, or a feature you'd want at launch or later. I read every one.",
   ];
   const waitBlock = waitLines.map((line, i) => `${i + 1}. ${line}`).join('<br/>');
-  return `<p>Hi there,</p>
+  return `<p>{{GREETING}}</p>
 <p>${opening}</p>
 <p>${SCAN_LINE}</p>
 {{POSITION_BLOCK}}<p>${accessLine}</p>
@@ -183,7 +187,7 @@ const templates: Record<string, EmailTemplate> = {
   // ---- Founder text opt-in offer (sent via api/text-opt-in.ts cascade + api/signup.ts trigger) ----
   text_opt_in_offer: {
     subject: "A personal note from Ethan, you're in the first 100",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>You're one of our first 100 founding members on Curae.</p>
 <p>I personally text the first 100. It's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="{{CLAIM_URL}}">Claim your spot</a></strong></p>
@@ -323,7 +327,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     console.log(`[request-magic-link] ========== REQUEST START ==========`);
     console.log(`[request-magic-link] Method: ${req.method}`);
-    console.log(`[request-magic-link] Body: ${JSON.stringify(req.body)}`);
+    // Field NAMES only, never values: the body can carry personal details (#40).
+    console.log(`[request-magic-link] Body fields: ${Object.keys(req.body || {}).join(', ')}`);
 
     // -------------------------------------------------------------------------
     // STEP: Validate environment variables
@@ -399,7 +404,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: waitlist, error: waitlistError } = await supabase
       .from('waitlist')
-      .select('id, wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token, unsubscribed_at, created_at')
+      .select('id, first_name, wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token, unsubscribed_at, created_at')
       .eq('email', trimmedEmail)
       .maybeSingle();
 
@@ -408,7 +413,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Failed to fetch waitlist record' });
     }
 
-    console.log(`[request-magic-link] Waitlist record:`, waitlist);
+    // The row's id only, never the row: it holds the person's name and email (#40).
+    console.log(`[request-magic-link] Waitlist record: ${waitlist ? `found (id ${waitlist.id})` : 'none'}`);
 
     // For login, require waitlist membership unless the email is an admin
     const adminEmails = process.env.SUPABASE_ADMIN_EMAILS
@@ -556,6 +562,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const htmlWithSubstitutions = template.html
       .replace(/\{\{MAGIC_LINK\}\}/g, finalMagicLink)
+      .replace(/\{\{GREETING\}\}/g, () => greetingHtml(waitlist?.first_name))
       .replace(/\{\{POSITION_BLOCK\}\}/g, positionBlock)
       .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, buildUnsubscribeUrl(waitlist?.unsubscribe_token));
 

@@ -1165,6 +1165,7 @@ const WaitlistLandingPage = () => {
         }
 
         .lc-form-wrapper input[type="email"]:focus,
+        .lc-form-wrapper input[type="text"]:focus,
         .lc-magic-link-section input[type="email"]:focus {
           border-color: #C4704D !important;
           box-shadow: 0 0 0 3px rgba(196, 112, 77, 0.15) !important;
@@ -1600,7 +1601,7 @@ const WaitlistLandingPage = () => {
         <div className="lc-cta-card">
           <h2 className="lc-cta-title">Join before launch.</h2>
           <p className="lc-cta-sub">
-            One email. Today's price, kept, while spots remain.
+            Two quick fields. Today's price, kept, while spots remain.
           </p>
 
           <div className="lc-form-wrapper">

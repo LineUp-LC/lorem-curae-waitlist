@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { MAX_FOUNDING_MEMBERS, MAX_FOUNDING_MEMBER_CREATORS } from '../src/lib/foundingMembers.js';
 import { excludeIds, readRemovedIds } from './_outreach.js';
+import { greetingHtml, validateFirstName } from './_greeting.js';
 
 // ----------------------------------------------------------------------------
 // API HANDLER - Waitlist Signup
@@ -37,7 +38,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // C13 (2026-09-26): creator signups are closed. Curae has no creator product (apps/mobile/PRODUCT.md),
     // so an `is_creator` in the request body is ignored and every signup is a consumer signup. The
     // column and the admin checkbox stay; they no longer change a role or an email.
-    const { email, segment, wants_tester_access } = req.body || {};
+    const { email, segment, wants_tester_access, first_name } = req.body || {};
+
+    // Required first name (waitlist #40). The same check, and the same wording, as
+    // the form (validateFirstName in api/_greeting.ts). Checked first because it is
+    // the first field on the form.
+    const firstName = validateFirstName(first_name);
+    if (!firstName.ok) {
+      return res.status(400).json({ error: 'invalid_first_name', message: firstName.error });
+    }
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -144,6 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     const insertPayload: Record<string, unknown> = {
       email: trimmedEmail,
+      first_name: firstName.value,
       segment: segment || 'regular',
       wants_tester_access: testerCapReached ? false : (wants_tester_access || false),
       is_creator: isCreator,
@@ -268,7 +278,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .eq('id', data.id);
 
               const claimUrl = 'https://lorem-curae-waitlist.vercel.app/member';
-              const html = `<p>Hi there,</p>
+              const html = `<p>${greetingHtml(firstName.value)}</p>
 <p>You're one of our first 100 founding members on Curae.</p>
 <p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="${claimUrl}">Claim your spot</a></strong></p>

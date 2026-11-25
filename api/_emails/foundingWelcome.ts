@@ -1,7 +1,11 @@
 // The founding member welcome email (approved design, 2026-11-19).
 // FOUNDING_WELCOME_HTML is founding-welcome.html byte for byte: do not reformat it.
-// Its placeholders are {{LOGO_URL}}, {{POSITION_BLOCK}} and {{UNSUBSCRIBE_URL}}; the
-// handler in api/request-magic-link.ts fills them. The template carries its own
+// ONE APPROVED EXCEPTION (Ethan, Nov 24 2026, waitlist #40): the opening "Hi there,"
+// became {{GREETING}}, so the email greets by first name. Nothing else changed.
+// Its placeholders are {{LOGO_URL}}, {{GREETING}}, {{POSITION_BLOCK}} and
+// {{UNSUBSCRIBE_URL}}; the handler in api/request-magic-link.ts fills them.
+// {{GREETING}} is filled by greetingHtml (api/_greeting.ts): "Hi Maya," with the
+// name HTML-escaped, or "Hi there," when no name is saved. The template carries its own
 // sign-off and footer, so the shared SIGN_OFF and FOOTER are never appended to it.
 
 export const FOUNDING_WELCOME_LOGO_URL = 'https://loremcurae.com/email/curae-email-logo.png';
@@ -40,7 +44,7 @@ export const FOUNDING_WELCOME_HTML = `<!doctype html>
 </td></tr>
 
 <tr><td style="padding:28px 40px 0 40px;font-family:'DM Sans',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#0F0F0F;">
-<p style="margin:0 0 16px 0;">Hi there,</p>
+<p style="margin:0 0 16px 0;">{{GREETING}}</p>
 <p style="margin:0 0 16px 0;">You're officially on the Curae founding member list. Welcome in!</p>
 <p style="margin:0 0 16px 0;">We've all been there. A product is trending, the reviews look promising, and suddenly it's in your cart. But is it actually a good fit for your skin?</p>
 <p style="margin:0 0 16px 0;">That's the question we're making easier to answer.</p>

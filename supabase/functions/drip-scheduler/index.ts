@@ -13,6 +13,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { greetingHtml } from '../_shared/greeting.ts';
 
 // ----------------------------------------------------------------------------
 // CONFIG
@@ -74,7 +75,7 @@ interface DripTemplate {
 const dripTemplates: Record<DripEventType, DripTemplate> = {
   welcome: {
     subject: "Here's how Curae works",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Curae starts with a scan.</p>
 <p>Point your camera at any product. We identify it, then read the ingredient list and check every ingredient against your skin profile. You get back an ingredient-by-ingredient breakdown, what we know about each one, and where to buy. Conflict detection and the compatible products list are included free. Premium adds the recommended action for resolving a conflict.</p>
 <p>You set up your skin profile once, when you join. After that it is scan, read, decide.</p>
@@ -84,7 +85,7 @@ ${FOOTER}`,
   },
   scan_walkthrough: {
     subject: 'What happens when you scan a product',
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Here's what a scan does:</p>
 <p><strong>1. Identifies the product.</strong> Point the camera at the label or the barcode. If the label is hard to read, we ask you to confirm the name rather than guess it.</p>
 <p><strong>2. Checks every ingredient against your skin profile.</strong> Each one is marked safe, caution or avoid, with the reason. Where we do not have research behind an ingredient yet, we say so instead of guessing. Fragrance you've flagged as a trigger? An ingredient that clashes with something already on your shelf? You see it free. Premium adds the recommended action for resolving it.</p>
@@ -96,7 +97,7 @@ ${FOOTER}`,
   },
   scan_deep_dive: {
     subject: 'What a scan actually unlocks',
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>A scan isn't just a verdict on one product. Here's what it opens up:</p>
 <p><strong>Compatible products.</strong> Once we know what's in your current product, we can surface alternatives that actually fit — same function, ingredients your skin tolerates.</p>
 <p><strong>Where to buy.</strong> You see who stocks it and at what price, in one place instead of five tabs.</p>
@@ -109,7 +110,7 @@ ${FOOTER}`,
   },
   re_engagement: {
     subject: 'Still holding your spot',
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Your Curae spot is still held. You signed up to scan products and see which ingredients actually work for your skin — that's still what we're building.</p>
 <p>If you'd like to stay on the list, no action needed. If you'd rather let your spot go, the unsubscribe link below does it in one click.</p>
 <p><strong><a href="${DRIP_CTA_URL}">See what we are building</a></strong></p>
@@ -134,6 +135,7 @@ interface OutreachEmbed {
 interface SignupRow {
   id: string;
   email: string;
+  first_name: string | null;
   unsubscribed_at: string | null;
   unsubscribe_token: string;
   // One-to-one embed from waitlist_outreach (#26). May arrive as an object or a
@@ -160,7 +162,7 @@ async function fetchCohort(
 
   const { data, error } = await supabase
     .from('waitlist')
-    .select('id, email, unsubscribed_at, unsubscribe_token, waitlist_outreach(outreach_status)')
+    .select('id, email, first_name, unsubscribed_at, unsubscribe_token, waitlist_outreach(outreach_status)')
     .gte('created_at', start.toISOString())
     .lt('created_at', end.toISOString());
 
@@ -192,6 +194,7 @@ async function fetchSlotsRemaining(
 
 async function sendDripEmail(
   to: string,
+  firstName: string | null,
   dripEvent: DripEventType,
   slotsRemaining: string,
   unsubscribeUrl: string,
@@ -201,6 +204,7 @@ async function sendDripEmail(
   if (!template) throw new Error(`Unknown drip event: ${dripEvent}`);
 
   const html = template.html
+    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(firstName))
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrl)
     .replace(/\{\{SLOTS_REMAINING\}\}/g, slotsRemaining);
 
@@ -361,7 +365,7 @@ serve(async (_req: Request) => {
         let sendError: string | null = null;
         try {
           const unsubscribeUrl = `${UNSUBSCRIBE_BASE}?token=${user.unsubscribe_token}`;
-          await sendDripEmail(user.email, dripEvent, slotsRemaining, unsubscribeUrl, resendApiKey);
+          await sendDripEmail(user.email, user.first_name, dripEvent, slotsRemaining, unsubscribeUrl, resendApiKey);
         } catch (err) {
           sendError = (err as Error).message;
         }

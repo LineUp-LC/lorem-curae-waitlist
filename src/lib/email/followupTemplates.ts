@@ -19,6 +19,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { checkSendable } from '../../../api/_outreach.js';
+import { greetingHtml } from '../../../api/_greeting.js';
 
 // ----------------------------------------------------------------------------
 // CONFIGURATION (from environment)
@@ -99,7 +100,7 @@ const SIGN_OFF = `<p>Ethan Jones<br/>Founder, Curae</p>`;
 // nothing to sign into yet. These end on the public site instead.
 function statusChangeHtml(...bodyLines: string[]): string {
   const body = bodyLines.map((line) => `<p>${line}</p>`).join("\n");
-  return `<p>Hi there,</p>
+  return `<p>{{GREETING}}</p>
 ${body}
 <p><strong><a href="${FOLLOWUP_CTA_URL}">See what we are building</a></strong></p>
 ${SIGN_OFF}
@@ -107,7 +108,7 @@ ${FOOTER}`;
 }
 
 function accessOpenedHtml(bodyLine: string, ctaLabel = "Sign in and scan"): string {
-  return `<p>Hi there,</p>
+  return `<p>{{GREETING}}</p>
 <p>${bodyLine}</p>
 <p>${SCAN_LINE}</p>
 <p><strong><a href="${FOLLOWUP_CTA_URL}">${ctaLabel}</a></strong></p>
@@ -200,7 +201,7 @@ export const followupTemplates: Record<string, EmailTemplate> = {
   // ---- Role Upgrades (NON-FOUNDING ONLY) ----
   role_upgraded_to_tester_consumer: {
     subject: "You're now a tester",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Your access has been upgraded to tester. You can scan products and try features before anyone else.</p>
 <p>${SCAN_LINE}</p>
 <p><strong><a href="${FOLLOWUP_CTA_URL}">Sign in and scan</a></strong></p>
@@ -209,7 +210,7 @@ ${FOOTER}`,
   },
   role_upgraded_generic: {
     subject: "Your Curae access changed",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Your Curae access has been upgraded. Sign in to see what's available.</p>
 <p><strong><a href="${FOLLOWUP_CTA_URL}">Sign in</a></strong></p>
 ${SIGN_OFF}
@@ -219,7 +220,7 @@ ${FOOTER}`,
   // ---- Role Downgrades ----
   role_downgraded_generic: {
     subject: "Your Curae access changed",
-    html: `<p>Hi there,</p>
+    html: `<p>{{GREETING}}</p>
 <p>Your Curae access level has changed. You can still sign in and use the features available at your current level.</p>
 <p><strong><a href="${FOLLOWUP_CTA_URL}">Sign in</a></strong></p>
 <p>If you have questions about this change, reply to this email.</p>
@@ -365,9 +366,10 @@ export async function sendFollowupEmail(
   });
 
   // Fetch the id + unsubscribe token for this user. Falls back to mailto if missing.
+  // first_name fills {{GREETING}} ("Hi there," when it is null, #40).
   const { data: waitlistRow, error: tokenErr } = await supabase
     .from('waitlist')
-    .select('id, unsubscribe_token, unsubscribed_at')
+    .select('id, first_name, unsubscribe_token, unsubscribed_at')
     .eq('email', email.trim().toLowerCase())
     .maybeSingle();
 
@@ -498,6 +500,7 @@ export async function sendFollowupEmail(
 
   const subjectWithSubstitutions = applyVars(template.subject);
   const htmlWithSubstitutions = applyVars(template.html)
+    .replace(/\{\{GREETING\}\}/g, () => greetingHtml(waitlistRow?.first_name))
     .replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubscribeUrl);
 
   // A placeholder that survived substitution means a caller omitted a var. Refuse
