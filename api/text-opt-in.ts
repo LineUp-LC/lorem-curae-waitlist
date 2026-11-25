@@ -123,12 +123,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // action === 'decline'
   // Decline passes the slot to the next person via cascade — slots_remaining
   // is NOT decremented here because the slot was never consumed.
-  await supabase
+  // Only a person who has neither accepted nor already declined is changed, and
+  // the spot passes on only when this write changed their row (#35 item 5). A
+  // decline racing an accept that already landed changes nothing, so the spot
+  // they just took is never passed on.
+  const { data: declined, error: declineErr } = await supabase
     .from('waitlist')
     .update({ text_opt_in_declined: true })
-    .eq('id', row.id);
+    .eq('id', row.id)
+    .eq('text_opt_in', false)
+    .eq('text_opt_in_declined', false)
+    .select('id');
 
-  await passOnTextOffer(supabase, resendApiKey, row.created_at as string);
+  if (declineErr) {
+    console.error(JSON.stringify({ level: 'error', event: 'text_offer_decline_failed', error: declineErr.message }));
+    return res.status(500).json({ error: 'server-error' });
+  }
+
+  if (declined && declined.length > 0) {
+    await passOnTextOffer(supabase, resendApiKey, row.created_at as string);
+  }
 
   return res.status(200).json({ success: true });
 }
