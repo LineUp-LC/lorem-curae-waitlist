@@ -1,4 +1,4 @@
--- NOT APPLIED: Ethan types apply in chat; Claude applies it through the Supabase connector.
+-- APPLIED Nov 24 2026 (version 20261125024242) through the Supabase connector on Ethan's typed apply; do not re-apply. The connector ran the statements between BEGIN and COMMIT without those two lines.
 --
 -- One founding number per founding member (waitlist #43, Ethan's picks 1c and 2a,
 -- Nov 24 2026).
