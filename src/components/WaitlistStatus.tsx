@@ -25,8 +25,10 @@ export default function WaitlistStatus() {
   }, [user]);
 
   // UI states
+  // Signed out, or the sign-in check has not answered yet: say nothing. A
+  // visitor who has not joined must never read that they are on the list (#41).
   if (!user) {
-    return <p>You're on the waitlist. We release access in waves.</p>;
+    return null;
   }
 
   if (!entry || entry.wave_number === null) {
