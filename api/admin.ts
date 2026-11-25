@@ -120,7 +120,7 @@ const ADMIN_WAITLIST_COLUMNS =
   'id, email, first_name, created_at, updated_at, wave_number, status, segment, wants_beta, wants_tester_access, is_tester, is_creator, is_founding_member, is_founding_member_creator, creator_wave_number, price_locked, waitlist_position, founding_number, unsubscribed_at, has_access, phone_number, text_opt_in';
 
 // The database's answer when turning founding on would pass the 100 cap
-// (sync_founding_number, migration 20261125033232_founding_cap_on_switch.sql).
+// (sync_founding_number, migration 20261125042640_founding_cap_on_switch.sql).
 const FOUNDING_CAP_FULL_CODE = 'FC001';
 
 // Helper: Validate admin auth
