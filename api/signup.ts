@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { MAX_FOUNDING_MEMBER_CREATORS } from '../src/lib/foundingMembers.js';
 import { excludeIds, readRemovedIds } from './_outreach.js';
 import { greetingHtml, validateFirstName } from './_greeting.js';
+import { sendTextOfferEmail } from '../supabase/functions/_shared/textOfferEmail.js';
 
 // ----------------------------------------------------------------------------
 // API HANDLER - Waitlist Signup
@@ -284,27 +285,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 })
                 .eq('id', data.id);
 
-              const claimUrl = 'https://lorem-curae-waitlist.vercel.app/member';
-              const html = `<p>${greetingHtml(firstNameValue)}</p>
-<p>You're one of our first 100 founding members on Curae.</p>
-<p>I personally text the first 100 — it's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
-<p><strong><a href="${claimUrl}">Claim your spot</a></strong></p>
-<p>This offer expires in 48 hours. If you'd rather not, no worries — just ignore this email.</p>
-<p>— Ethan Jones<br/>Founder, Curae</p>`;
-
-              await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${resendApiKey}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  from: 'Curae <hello@loremcurae.com>',
-                  to: trimmedEmail,
-                  subject: "A personal note from Ethan — you're in the first 100",
-                  html,
-                }),
-              });
+              // The one copy of this email (#35 item 6), shared with the pass-on
+              // and the unsubscribe edge function. It never throws.
+              const sent = await sendTextOfferEmail(resendApiKey, trimmedEmail, greetingHtml(firstNameValue));
+              if (!sent.ok) {
+                console.error('[signup] Text opt-in offer email failed (non-fatal):', sent.status ?? '', sent.error);
+              }
             }
           }
         } catch (err) {
