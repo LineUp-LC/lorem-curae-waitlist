@@ -53,8 +53,8 @@ function AdminLoginForm() {
       body: JSON.stringify({
         email: trimmed,
         type: 'login',
-        // Same origin as this page: the server only accepts a redirect that starts
-        // with the request's own origin, and auth_next lives in this origin's storage.
+        // Same origin as this page: the server accepts only an exact list of allowed
+        // origins plus the /auth/callback path, and auth_next lives in this origin's storage.
         redirectTo: `${window.location.origin}/auth/callback?next=/admin`,
       }),
     });
