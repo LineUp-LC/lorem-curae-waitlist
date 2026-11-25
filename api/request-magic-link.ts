@@ -52,6 +52,7 @@ interface WaitlistRecord {
   is_creator: boolean;
   is_founding_member: boolean;
   is_founding_member_creator?: boolean;
+  founding_number?: number | null;
   wants_tester_access: boolean;
   unsubscribe_token?: string;
   created_at?: string;
@@ -404,7 +405,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: waitlist, error: waitlistError } = await supabase
       .from('waitlist')
-      .select('id, first_name, wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, unsubscribe_token, unsubscribed_at, created_at')
+      .select('id, first_name, wants_tester_access, is_creator, wave_number, creator_wave_number, is_founding_member, founding_number, unsubscribe_token, unsubscribed_at, created_at')
       .eq('email', trimmedEmail)
       .maybeSingle();
 
@@ -527,26 +528,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     console.log(`[request-magic-link] Sending email for role: ${role}...`);
 
-    // RANK IS COMPUTED, NOT READ FROM waitlist_position.
+    // THE FOUNDING EMAIL PRINTS THE STORED founding_number (waitlist #43), the same
+    // number the success screen, member page and admin show. It is stamped once at
+    // signup and never counted here. A missing number prints the rank-free paragraph.
     //
-    // assign_waitlist_position() is MAX(waitlist_position) + 1 at insert and is never
-    // recomputed, so a deletion leaves a permanent gap and nobody advances. The column
-    // is therefore an ID, not a rank: it already overstates by one (21 people occupy
-    // positions 2..22, because position 1 was deleted), and the drift grows with every
-    // deletion. Counting rows that joined earlier is the number the reader means.
-    //
-    // A FAILED COUNT SENDS NO POSITION LINE rather than a wrong one. The placeholder is
-    // a whole paragraph for exactly this reason.
+    // The NON-founding line ("You're Nth on the list") is still a count of rows that
+    // joined earlier, not waitlist_position: that column is MAX + 1 at insert with a
+    // permanent gap wherever a row was deleted, so it is an ID, not a rank. A failed
+    // count sends no position line rather than a wrong one.
     const isFoundingWelcome = templateKey === 'founding_member_signup';
     let positionBlock = isFoundingWelcome ? foundingPositionBlock(null) : '';
-    if (type === 'signup' && waitlist?.created_at) {
-      let rankQuery = supabase
+    if (type === 'signup' && isFoundingWelcome) {
+      positionBlock = foundingPositionBlock(
+        typeof waitlist?.founding_number === 'number' ? waitlist.founding_number : null,
+      );
+    } else if (type === 'signup' && waitlist?.created_at) {
+      const { count: priorCount, error: rankErr } = await supabase
         .from('waitlist')
         .select('id', { count: 'exact', head: true })
         .lt('created_at', waitlist.created_at as string);
-      // The founding email says "on the founding member list", so it ranks among founding members only.
-      if (isFoundingWelcome) rankQuery = rankQuery.eq('is_founding_member', true);
-      const { count: priorCount, error: rankErr } = await rankQuery;
       if (rankErr) {
         console.warn(JSON.stringify({
           level: 'warn',
@@ -554,9 +554,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           error: rankErr.message,
         }));
       } else if (priorCount !== null) {
-        positionBlock = isFoundingWelcome
-          ? foundingPositionBlock(priorCount + 1)
-          : `<p>You\u2019re <strong>${ordinal(priorCount + 1)}</strong> on the list.</p>`;
+        positionBlock = `<p>You\u2019re <strong>${ordinal(priorCount + 1)}</strong> on the list.</p>`;
       }
     }
 

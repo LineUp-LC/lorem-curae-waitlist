@@ -10,11 +10,11 @@
 
 export const FOUNDING_WELCOME_LOGO_URL = 'https://loremcurae.com/email/curae-email-logo.png';
 
-// A known founding-only rank prints "#N"; a rank that could not be computed (null,
+// The person's stored founding_number (waitlist #43) prints "#N"; a missing one (null,
 // or not a positive whole number) prints the rank-free paragraph, never "#undefined".
-export function foundingPositionBlock(rank: number | null): string {
-  if (rank !== null && Number.isInteger(rank) && rank > 0) {
-    return `<p style="margin:0;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-size:56px;line-height:1.05;font-weight:500;color:#A35F42;">#${rank}</p>
+export function foundingPositionBlock(foundingNumber: number | null): string {
+  if (foundingNumber !== null && Number.isInteger(foundingNumber) && foundingNumber > 0) {
+    return `<p style="margin:0;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-size:56px;line-height:1.05;font-weight:500;color:#A35F42;">#${foundingNumber}</p>
 <p style="margin:8px 0 0 0;font-size:16px;line-height:1.5;color:#0F0F0F;">on the founding member list. You'll be among the first to hear when access opens.</p>`;
   }
   return `<p style="margin:0;font-size:16px;line-height:1.5;color:#0F0F0F;">You'll be among the first to hear when access opens.</p>`;

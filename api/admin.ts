@@ -77,9 +77,12 @@ function adminSendRefusal(check: SendCheck): { status: number; error: string } |
 // 2026-09-18.
 //
 // The list is admin DECISIONS only. Three deliberate exclusions:
-//   - waitlist_position: changes founding classification and the running order.
-//     No use case has been stated for editing it by hand, and it is one of the
-//     two columns that made the open write a real hole.
+//   - waitlist_position: the running order (it decided founding classification
+//     until waitlist #43). No use case has been stated for editing it by hand,
+//     and it is one of the two columns that made the open write a real hole.
+//   - founding_number (waitlist #43) is not listed either: it is stamped once by
+//     the database and never renumbered. Toggling is_founding_member gives or
+//     clears it (trg_sync_founding_number); a direct write is ignored there.
 //   - has_access: owned by the grant-access action, which does more than set
 //     the boolean. Setting it here would look like granting access and would
 //     not grant it.
@@ -799,7 +802,7 @@ async function handleEmailSummary(supabase: SupabaseClient, res: VercelResponse)
 async function handleWaitlistUsers(supabase: SupabaseClient, res: VercelResponse) {
   const { data, error } = await supabase
     .from('waitlist')
-    .select('id, email, first_name, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, wants_tester_access, waitlist_outreach(outreach_status, last_emailed_on, resignup_attempts)')
+    .select('id, email, first_name, created_at, has_access, unsubscribed_at, wave_number, creator_wave_number, is_creator, is_founding_member, founding_number, wants_tester_access, waitlist_outreach(outreach_status, last_emailed_on, resignup_attempts)')
     .order('created_at', { ascending: true });
   if (error) return res.status(500).json({ error: 'Failed to fetch waitlist users' });
 

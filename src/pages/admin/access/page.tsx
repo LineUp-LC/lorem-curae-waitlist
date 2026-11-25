@@ -32,6 +32,8 @@ interface WaitlistUser {
   creator_wave_number: number | null;
   is_creator: boolean;
   is_founding_member: boolean;
+  // Stamped once when the person became a founder; never renumbered (waitlist #43).
+  founding_number: number | null;
   wants_tester_access: boolean;
   // Outreach row (#26). Null when it was missing: shown as unknown, never as
   // Not sent, and the row cannot be ticked.
@@ -64,7 +66,9 @@ interface GrantResult {
 // ---------------------------------------------------------------------------
 
 function getRoleLabel(user: WaitlistUser): string {
-  if (user.is_founding_member) return 'Founding';
+  if (user.is_founding_member) {
+    return user.founding_number != null ? `Founding #${user.founding_number}` : 'Founding';
+  }
   if (user.wants_tester_access) return user.is_creator ? 'Tester Creator' : 'Tester';
   if (user.is_creator && user.creator_wave_number) return `Creator C${user.creator_wave_number}`;
   if (user.wave_number) return `Wave ${user.wave_number}`;

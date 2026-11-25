@@ -42,6 +42,8 @@ interface WaitlistUser {
   creator_wave_number: number | null;
   price_locked: boolean;
   waitlist_position: number | null;
+  // Stamped once when the person became a founder; never renumbered (waitlist #43).
+  founding_number: number | null;
   unsubscribed_at: string | null;
   has_access: boolean;
   phone_number: string | null;
@@ -470,7 +472,11 @@ export default function UserDetailPage() {
             <Badge variant={user.status === 'active' ? 'success' : 'warning'}>
               {formatStatus(user.status)}
             </Badge>
-            {user.is_founding_member && <Badge variant="purple">Founding member</Badge>}
+            {user.is_founding_member && (
+              <Badge variant="purple">
+                {user.founding_number != null ? `Founding #${user.founding_number}` : 'Founding member'}
+              </Badge>
+            )}
             {user.is_tester && <Badge variant="info">Tester</Badge>}
             {user.unsubscribed_at && <Badge variant="error">Unsubscribed</Badge>}
           </div>
@@ -741,7 +747,7 @@ export default function UserDetailPage() {
           <div className="mt-6 space-y-4 border-t border-sage-100 pt-6">
             <Toggle
               label="Founding member"
-              description="Grants founding standing on this record."
+              description="Grants founding standing on this record. Turning it on gives the next founding number; turning it off clears the number."
               checked={Boolean(form.is_founding_member)}
               onChange={(e) =>
                 setForm((f) => ({ ...f, is_founding_member: e.target.checked }))
@@ -750,7 +756,7 @@ export default function UserDetailPage() {
 
             <Toggle
               label="Price locked"
-              description="Does not move the public counter. That counts positions at or under 100, and never reads this flag."
+              description="Does not move the public counter. That counts founding members who are not Removed, and never reads this flag."
               checked={Boolean(form.price_locked)}
               onChange={(e) => setForm((f) => ({ ...f, price_locked: e.target.checked }))}
             />
