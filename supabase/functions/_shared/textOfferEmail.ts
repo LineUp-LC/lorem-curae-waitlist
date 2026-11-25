@@ -18,16 +18,16 @@ export const TEXT_OFFER_SEND_TIMEOUT_MS = 8000;
 // greetingHtml (api/_greeting.ts in Node, ./greeting.ts in Deno): "Hi Maya,"
 // with the name already HTML-escaped, or "Hi there,". Never pass a raw name.
 //
-// Known problem, deliberately not changed here (issue 22): the six comment
-// lines below sit inside the template string, so they are sent in the email.
-export function textOfferHtml(greeting: string): string {
-  return `<p>${greeting}</p>
-// THE 100 BELOW IS THE TEXT POOL, NOT THE FOUNDING CAP. They are unrelated and
+// THE 100 IN THE EMAIL IS THE TEXT POOL, NOT THE FOUNDING CAP. They are unrelated and
 // coincidentally equal since 2026-09-18, when the founding cap moved 1000 -> 100.
 // This one is text_opt_in_config.slots_remaining: a mutable counter, decremented on
 // accept, that cascades to the next person when someone declines. The founding cap is
 // MAX_FOUNDING_MEMBERS (src/lib/foundingMembers.ts) and the founding_member_slots view.
 // Do not merge them, and do not replace either number with the other constant.
+// (These lines used to sit inside the template string and were sent in the
+// email, issue 22. Keep comments out of the string below.)
+export function textOfferHtml(greeting: string): string {
+  return `<p>${greeting}</p>
 <p>You're one of our first 100 founding members on Curae.</p>
 <p>I personally text the first 100. It's the fastest way to tell me what's working, what isn't, and what you want built next.</p>
 <p><strong><a href="${TEXT_OFFER_CLAIM_URL}">Claim your spot</a></strong></p>
