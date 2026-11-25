@@ -14,6 +14,7 @@ interface MemberData {
   slotsRemaining: number;
   waveNumber: number | null;
   isFoundingMember: boolean;
+  foundingNumber: number | null;
   textOptIn: boolean;
   textOptInDeclined: boolean;
   textOptInOfferSentAt: string | null;
@@ -69,7 +70,7 @@ export default function MemberPage() {
       ] = await Promise.all([
         supabase
           .from('waitlist')
-          .select('id, created_at, wave_number, is_founding_member, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
+          .select('id, created_at, wave_number, is_founding_member, founding_number, text_opt_in, text_opt_in_declined, text_opt_in_offer_sent_at, text_opt_in_expires_at')
           .eq('email', email)
           .maybeSingle(),
         supabase.from('founding_member_slots').select('slots_remaining').single(),
@@ -103,6 +104,12 @@ export default function MemberPage() {
         slotsRemaining: (slotRow as { slots_remaining: number } | null)?.slots_remaining ?? 0,
         waveNumber: (row as { wave_number?: number | null }).wave_number ?? null,
         isFoundingMember: (row as { is_founding_member?: boolean }).is_founding_member ?? false,
+        // The stored founding number from the person's own row (waitlist #43), the
+        // same number the signup screen and welcome email show. Never counted here.
+        foundingNumber: (() => {
+          const n = (row as { founding_number?: number | null }).founding_number;
+          return typeof n === 'number' && Number.isInteger(n) && n > 0 ? n : null;
+        })(),
         textOptIn: (row as { text_opt_in?: boolean }).text_opt_in ?? false,
         textOptInDeclined: (row as { text_opt_in_declined?: boolean }).text_opt_in_declined ?? false,
         textOptInOfferSentAt: (row as { text_opt_in_offer_sent_at?: string | null }).text_opt_in_offer_sent_at ?? null,
@@ -311,7 +318,7 @@ export default function MemberPage() {
               Your contribution
             </p>
             <p className="text-sage-700 text-sm">
-              Founding Member #{data.spotNumber}. Every product you scan makes Curae sharper for the next person.
+              {data.foundingNumber !== null ? `Founding Member #${data.foundingNumber}. ` : 'Founding Member. '}Every product you scan makes Curae sharper for the next person.
             </p>
           </div>
         )}

@@ -20,7 +20,7 @@ interface WaitlistFormState {
   betaTesterInterest: boolean;
   status: 'idle' | 'submitting' | 'success' | 'duplicate' | 'error';
   errorMessage: string;
-  position?: number;
+  foundingNumber?: number;
   isFoundingMember?: boolean;
 }
 
@@ -166,7 +166,7 @@ export default function SupabaseWaitlistForm({
         betaTesterInterest: false,
         status: 'success',
         errorMessage: '',
-        position: typeof signupData.position === 'number' ? signupData.position : undefined,
+        foundingNumber: typeof signupData.founding_number === 'number' ? signupData.founding_number : undefined,
         isFoundingMember: signupData.is_founding_member === true,
       });
     } finally {
@@ -178,10 +178,10 @@ export default function SupabaseWaitlistForm({
     }
   };
 
-  const { firstName, firstNameError, email, betaTesterInterest, status, errorMessage, position, isFoundingMember } = formState;
+  const { firstName, firstNameError, email, betaTesterInterest, status, errorMessage, foundingNumber, isFoundingMember } = formState;
   const isSubmitting = status === 'submitting';
   const showFoundingMember =
-    status === 'success' && isFoundingMember === true && typeof position === 'number';
+    status === 'success' && isFoundingMember === true && typeof foundingNumber === 'number';
 
   // Segment-specific content
   const content = {
@@ -383,7 +383,7 @@ export default function SupabaseWaitlistForm({
               {status === 'duplicate'
                 ? "You're already on the waitlist"
                 : showFoundingMember
-                  ? `You're in, Founding Member #${position}.`
+                  ? `You're in, Founding Member #${foundingNumber}.`
                   : successHeading}
             </h3>
             <p className="text-sage-600 text-lg font-light">

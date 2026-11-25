@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { MAX_FOUNDING_MEMBERS, MAX_FOUNDING_MEMBER_CREATORS } from '../src/lib/foundingMembers.js';
+import { MAX_FOUNDING_MEMBER_CREATORS } from '../src/lib/foundingMembers.js';
 import { excludeIds, readRemovedIds } from './_outreach.js';
 import { greetingHtml, validateFirstName } from './_greeting.js';
 
@@ -108,19 +108,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
     // STEP: Check founding member caps (separate pools)
     // -------------------------------------------------------------------------
-    // MAX_FOUNDING_MEMBERS is imported -- see src/lib/foundingMembers.ts for why it is
-    // not declared here any more. It is a SYNC PAIR with the founding_member_slots view.
+    // The GENERAL founding decision is not made here any more (waitlist #43). The
+    // assign_founding_number() BEFORE INSERT trigger makes it and stamps
+    // founding_number in one locked step (migration 20261125015332_founding_number.sql),
+    // so two signups at once cannot both take the 100th spot. This handler reads the
+    // result back from the inserted row. Only the creator pool is still checked here.
     const MAX_TESTER_CREATORS = 10;
     const MAX_TESTER_CONSUMERS = 20;
 
     const isCreator = false;
 
-    let foundingCapReached = false;
     let foundingCreatorCapReached = false;
 
-    // Removed people are left out of the founding and tester counts (#26,
-    // decision 3b: Removed frees a founding spot). If the Removed set cannot be
-    // read, fail the signup like a failed count does rather than guess.
+    // Removed people are left out of the tester count (#26). If the Removed set
+    // cannot be read, fail the signup like a failed count does rather than guess.
     const removed = await readRemovedIds(supabase);
     if (!removed.ok) {
       console.error('[signup] Could not read removed signups for the caps');
@@ -140,22 +141,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       foundingCreatorCapReached = (count ?? 0) >= MAX_FOUNDING_MEMBER_CREATORS;
-    } else {
-      // Non-creator signup: check the general founding member pool.
-      const { count, error: countError } = await excludeIds(
-        supabase
-          .from('waitlist')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_founding_member', true),
-        removed.ids,
-      );
-
-      if (countError) {
-        console.error('[signup] Error counting founding members:', countError);
-        return res.status(500).json({ error: 'Server error during signup' });
-      }
-
-      foundingCapReached = (count ?? 0) >= MAX_FOUNDING_MEMBERS;
     }
 
     // -------------------------------------------------------------------------
@@ -204,21 +189,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         insertPayload.wave_number = 1;
         insertPayload.status = 'active';
       }
-    } else {
-      if (!foundingCapReached) {
-        // Auto-assign as general Founding Member
-        insertPayload.is_founding_member = true;
-      } else {
-        // General founding cap reached, assign to wave 1
-        insertPayload.wave_number = 1;
-        insertPayload.status = 'active';
-      }
     }
+    // Non-creator: nothing is set here. The trigger decides is_founding_member and
+    // founding_number, and gives a non-founder wave 1 / active as this code used to.
 
     const { data, error } = await supabase
       .from('waitlist')
       .insert([insertPayload])
-      .select('id, created_at, status, wave_number, is_founding_member, is_founding_member_creator')
+      .select('id, created_at, status, wave_number, is_founding_member, is_founding_member_creator, founding_number')
       .single();
 
     if (error) {
@@ -346,22 +324,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Spot number: count rows created before this one, then add 1 (same method
-    // as the member dashboard). Surfaced so the confirmation screen can greet
-    // founding members by their existing spot number.
-    let position: number | undefined;
-    if (data.created_at) {
-      const { count: priorCount } = await supabase
-        .from('waitlist')
-        .select('id', { count: 'exact', head: true })
-        .lt('created_at', data.created_at as string);
-      position = (priorCount ?? 0) + 1;
-    }
+    // The founding number is the stored one, read back from the inserted row
+    // (waitlist #43). It is never counted: every surface prints this same number.
+    const foundingNumber =
+      data.is_founding_member && Number.isInteger(data.founding_number) && (data.founding_number as number) > 0
+        ? (data.founding_number as number)
+        : undefined;
 
     return res.status(200).json({
       status: 'active',
       wave: data.wave_number,
-      ...(position !== undefined && { position }),
+      ...(foundingNumber !== undefined && { founding_number: foundingNumber }),
       ...(testerCapReached && { testerCapReached: true }),
       ...(data.is_founding_member && { is_founding_member: true }),
       ...(data.is_founding_member_creator && { is_founding_member_creator: true }),

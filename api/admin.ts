@@ -77,9 +77,12 @@ function adminSendRefusal(check: SendCheck): { status: number; error: string } |
 // 2026-09-18.
 //
 // The list is admin DECISIONS only. Three deliberate exclusions:
-//   - waitlist_position: changes founding classification and the running order.
-//     No use case has been stated for editing it by hand, and it is one of the
-//     two columns that made the open write a real hole.
+//   - waitlist_position: the running order (it decided founding classification
+//     until waitlist #43). No use case has been stated for editing it by hand,
+//     and it is one of the two columns that made the open write a real hole.
+//   - founding_number (waitlist #43) is not listed either: it is stamped once by
+//     the database and never renumbered. Toggling is_founding_member gives or
+//     clears it (trg_sync_founding_number); a direct write is ignored there.
 //   - has_access: owned by the grant-access action, which does more than set
 //     the boolean. Setting it here would look like granting access and would
 //     not grant it.
