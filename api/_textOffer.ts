@@ -8,7 +8,7 @@ import { greetingHtml } from './_greeting.js';
 // (decision 5a, tracked in #26).
 //
 // The next person is picked AND stamped by claim_next_text_offer (migration
-// 20261124_add_waitlist_outreach.sql), which also leaves Removed people out.
+// 20261124194749_add_waitlist_outreach.sql), which also leaves Removed people out.
 // The unsubscribe edge function calls the same database function.
 // ----------------------------------------------------------------------------
 

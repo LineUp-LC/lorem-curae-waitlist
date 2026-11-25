@@ -20,7 +20,7 @@
 -- A missing outreach row reads as outreach_unreadable (fail closed, same as
 -- readOutreachStatus in api/_outreach.ts).
 --
--- Name sorts after 20261124_add_waitlist_outreach.sql, which it depends on
+-- Name sorts after 20261124194749_add_waitlist_outreach.sql, which it depends on
 -- (waitlist_outreach, text_opt_in_config).
 --
 -- APPLIED Nov 24 2026 about 20:22 UTC through the Supabase connector (name text_offer_accept), on Ethan's apply. Apply before deploying the api/text-opt-in.ts that calls it;
