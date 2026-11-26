@@ -4,7 +4,7 @@ import { supabase } from '../../../lib/supabase';
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'error' | 'other-tab'>('loading');
+  const [status, setStatus] = useState<'loading' | 'error' | 'bad-link' | 'other-tab'>('loading');
 
   useEffect(() => {
     // sessionStorage is the reliable source — set by AdminLayout before the
@@ -20,16 +20,18 @@ export default function AuthCallbackPage() {
         : null;
 
     // A link Supabase already rejected (expired, used, invalid) arrives with
-    // error / error_description in the query or the hash. Nothing will sign
+    // error / error_code / error_description in the query or the hash. Nothing will sign
     // in, so show the error now instead of after the 10 second wait.
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     if (
       params.has('error') ||
+      params.has('error_code') ||
       params.has('error_description') ||
       hashParams.has('error') ||
+      hashParams.has('error_code') ||
       hashParams.has('error_description')
     ) {
-      setStatus('error');
+      setStatus('bad-link');
       return;
     }
 
@@ -130,11 +132,15 @@ export default function AuthCallbackPage() {
     );
   }
 
-  if (status === 'error') {
+  if (status === 'error' || status === 'bad-link') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream-50">
         <div className="text-center">
-          <p className="text-sage-700 mb-4">Something went wrong. Please try again.</p>
+          <p className="text-sage-700 mb-4">
+            {status === 'bad-link'
+              ? 'This sign-in link expired or was already used. Request a new one.'
+              : 'Something went wrong. Please try again.'}
+          </p>
           <a href="/waitlist" className="text-coral-600 underline">
             Return to waitlist
           </a>

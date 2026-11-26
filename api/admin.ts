@@ -1379,8 +1379,8 @@ async function sendAndRecordDrip(
 // Answers one question: is the caller's session an admin?
 //
 // It does no work of its own. validateAdminRequest has already decided by the
-// time this runs, so REACHING this handler at all is the answer, and a
-// non-admin gets the same 401 every other action gives.
+// time this runs, so REACHING this handler at all is the answer. As for every
+// other action, a bad or expired token gets 401 and a signed-in non-admin 403.
 //
 // It exists because SUPABASE_ADMIN_EMAILS is server-side only and the browser
 // cannot read it, so the admin shell has no way to know whether a session is
