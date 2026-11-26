@@ -4,7 +4,7 @@ import { supabase } from '../../../lib/supabase';
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'error' | 'other-tab'>('loading');
+  const [status, setStatus] = useState<'loading' | 'error' | 'bad-link' | 'other-tab'>('loading');
 
   useEffect(() => {
     // sessionStorage is the reliable source — set by AdminLayout before the
@@ -18,6 +18,22 @@ export default function AuthCallbackPage() {
       nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')
         ? nextParam
         : null;
+
+    // A link Supabase already rejected (expired, used, invalid) arrives with
+    // error / error_code / error_description in the query or the hash. Nothing will sign
+    // in, so show the error now instead of after the 10 second wait.
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (
+      params.has('error') ||
+      params.has('error_code') ||
+      params.has('error_description') ||
+      hashParams.has('error') ||
+      hashParams.has('error_code') ||
+      hashParams.has('error_description')
+    ) {
+      setStatus('bad-link');
+      return;
+    }
 
     // Admin sign-in only: if an admin tab is already open, it answers on this
     // channel and this tab stays put with a close-this-tab note instead of
@@ -36,14 +52,14 @@ export default function AuthCallbackPage() {
 
     const goNext = () => {
       if (safeNext !== '/admin') {
-        navigate(safeNext ?? '/member');
+        navigate(safeNext ?? '/member', { replace: true });
         return;
       }
       if (adminHandoffStarted) return;
       adminHandoffStarted = true;
 
       if (typeof BroadcastChannel === 'undefined') {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
         return;
       }
 
@@ -61,7 +77,7 @@ export default function AuthCallbackPage() {
       };
       replyTimer = setTimeout(() => {
         closeChannel();
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       }, 1500);
       channel.postMessage({ type: 'admin-signed-in' });
     };
@@ -76,7 +92,7 @@ export default function AuthCallbackPage() {
           goNext();
         } else if (event === 'SIGNED_OUT') {
           subscription.unsubscribe();
-          navigate('/waitlist');
+          navigate('/waitlist', { replace: true });
         }
       }
     );
@@ -116,11 +132,15 @@ export default function AuthCallbackPage() {
     );
   }
 
-  if (status === 'error') {
+  if (status === 'error' || status === 'bad-link') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream-50">
         <div className="text-center">
-          <p className="text-sage-700 mb-4">Something went wrong. Please try again.</p>
+          <p className="text-sage-700 mb-4">
+            {status === 'bad-link'
+              ? 'This sign-in link expired or was already used. Request a new one.'
+              : 'Something went wrong. Please try again.'}
+          </p>
           <a href="/waitlist" className="text-coral-600 underline">
             Return to waitlist
           </a>

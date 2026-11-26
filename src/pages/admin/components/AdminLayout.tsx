@@ -29,7 +29,7 @@ export function useDarkMode() {
 
 type LoginStatus = 'idle' | 'sending' | 'sent' | 'error';
 
-function AdminLoginForm() {
+function AdminLoginForm({ notice }: { notice?: string }) {
   const [email, setEmail] = useState('');
   const [loginStatus, setLoginStatus] = useState<LoginStatus>('idle');
   const [loginError, setLoginError] = useState('');
@@ -43,23 +43,30 @@ function AdminLoginForm() {
     setLoginStatus('sending');
     setLoginError('');
 
-    // Store destination before the magic link flow so the callback can restore
-    // it even if Supabase strips query params from the redirect URL.
-    sessionStorage.setItem('auth_next', '/admin');
-
-    const response = await fetch('/api/request-magic-link', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: trimmed,
-        type: 'login',
-        // Same origin as this page: the server accepts only an exact list of allowed
-        // origins plus the /auth/callback path, and auth_next lives in this origin's storage.
-        redirectTo: `${window.location.origin}/auth/callback?next=/admin`,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch('/api/request-magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmed,
+          type: 'login',
+          // Same origin as this page: the server accepts only an exact list of allowed
+          // origins plus the /auth/callback path, and auth_next lives in this origin's storage.
+          redirectTo: `${window.location.origin}/auth/callback?next=/admin`,
+        }),
+      });
+    } catch {
+      // No reply at all (offline, DNS, blocked). Without this the button stayed
+      // on "Sending..." for good.
+      sessionStorage.removeItem('auth_next');
+      setLoginStatus('error');
+      setLoginError("Couldn't reach the server. Check your connection and try again.");
+      return;
+    }
 
     if (!response.ok) {
+      sessionStorage.removeItem('auth_next');
       const data: unknown = await response.json().catch(() => ({}));
       const apiError = data !== null && typeof data === 'object' && 'error' in data ? (data as { error: unknown }).error : null;
       setLoginStatus('error');
@@ -80,9 +87,14 @@ function AdminLoginForm() {
           ? (data as { onWaitlist: unknown }).onWaitlist
           : undefined;
       if (onWaitlist === false) {
+        sessionStorage.removeItem('auth_next');
         setLoginStatus('error');
         setLoginError('This email is not authorized for admin access.');
       } else {
+        // Store the destination only once a link is really on its way, so the
+        // callback can restore it even if Supabase strips query params from the
+        // redirect URL. A failed request leaves nothing behind.
+        sessionStorage.setItem('auth_next', '/admin');
         setSentEmail(trimmed);
         setLoginStatus('sent');
       }
@@ -121,6 +133,11 @@ function AdminLoginForm() {
     <div className="min-h-screen bg-sage-50/50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-2xl border border-sage-200 p-8 shadow-sm">
         <h1 className="text-sage-900 text-xl font-semibold mb-1">Admin sign in</h1>
+        {notice && (
+          <p role="status" className="text-sage-700 text-sm bg-sage-50 border border-sage-200 rounded-lg px-3 py-2 mb-3">
+            {notice}
+          </p>
+        )}
         <p className="text-sage-500 text-sm mb-6">
           Enter your email to receive a magic link.
         </p>
@@ -165,7 +182,7 @@ function AdminLoginForm() {
 // thing. /api/request-magic-link only checks that the address is on the
 // WAITLIST, so any waitlist member with an account could sign in and render
 // the whole console. Nothing leaked, because every data call goes through
-// validateAdminRequest and 401s, but drawing the console for them is wrong.
+// validateAdminRequest and is refused, but drawing the console for them is wrong.
 //
 // Admin membership lives in SUPABASE_ADMIN_EMAILS, which is server-side only
 // and deliberately unreadable from the browser, so the shell has to ask.
@@ -173,9 +190,13 @@ function AdminLoginForm() {
 // 'forbidden' and 'error' are separate on purpose. A check that could not RUN
 // is not a "no": it must not silently pass, and it must not show a login form
 // to someone who is already signed in.
+//
+// 'expired' is the server's 401 (a bad or expired token), 'forbidden' its 403
+// (a good session that is not an admin's).
 type AuthStatus =
   | 'loading'
   | 'unauthenticated'
+  | 'expired'
   | 'authorized'
   | 'forbidden'
   | 'error';
@@ -198,8 +219,20 @@ export function AdminLayout() {
   // whether that session is an ADMIN session.
   useEffect(() => {
     let cancelled = false;
+    // Only the first check of this run shows the spinner. Later auth events
+    // (token refresh, a second tab signing in) re-check quietly, so the
+    // console and whatever is open in it stay put.
+    let firstCheck = true;
+    // Every call takes a number; a reply that is not the latest call's is
+    // dropped, so a whoami answer landing after a sign-out cannot set
+    // 'authorized' over it.
+    let latestCheck = 0;
 
     const resolve = async (session: Session | null) => {
+      const checkId = ++latestCheck;
+      const quiet = !firstCheck;
+      firstCheck = false;
+
       if (!session) {
         if (!cancelled) {
           setSignedInEmail(null);
@@ -210,19 +243,26 @@ export function AdminLayout() {
 
       if (!cancelled) {
         setSignedInEmail(session.user.email ?? null);
-        setAuthStatus('loading');
+        if (!quiet) setAuthStatus('loading');
       }
+
+      const isStale = () => cancelled || checkId !== latestCheck;
 
       try {
         const res = await fetch('/api/admin?action=whoami', {
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
-        if (cancelled) return;
+        if (isStale()) return;
         if (res.ok) setAuthStatus('authorized');
-        else if (res.status === 401) setAuthStatus('forbidden');
-        else setAuthStatus('error');
+        else if (res.status === 401) setAuthStatus('expired');
+        else if (res.status === 403) setAuthStatus('forbidden');
+        // A quiet re-check that could not run does not take down a console
+        // that was already authorized; every data call is still checked
+        // server-side.
+        else setAuthStatus((prev) => (quiet && prev === 'authorized' ? prev : 'error'));
       } catch {
-        if (!cancelled) setAuthStatus('error');
+        if (isStale()) return;
+        setAuthStatus((prev) => (quiet && prev === 'authorized' ? prev : 'error'));
       }
     };
 
@@ -269,6 +309,8 @@ export function AdminLayout() {
       root.classList.remove('dark');
     }
     localStorage.setItem('admin-dark-mode', String(isDark));
+    // Leaving the admin area must not hand dark mode to the public pages.
+    return () => root.classList.remove('dark');
   }, [isDark]);
 
   const toggleDarkMode = () => setIsDark((prev) => !prev);
@@ -285,6 +327,11 @@ export function AdminLayout() {
   // Unauthenticated — show magic link login form
   if (authStatus === 'unauthenticated') {
     return <AdminLoginForm />;
+  }
+
+  // The server could not accept this session's token (401): bad or expired.
+  if (authStatus === 'expired') {
+    return <AdminLoginForm notice="Your session expired. Please sign in again." />;
   }
 
   // Signed in, but not an admin. Deliberately not the login form: they are
