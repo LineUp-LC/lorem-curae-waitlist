@@ -5,7 +5,7 @@ import { sendFollowupEmail } from '../src/lib/email/followupTemplates.js';
 import type { UserRole, FollowupEventType } from '../src/lib/email/followupTemplates.js';
 import { dripTemplates } from '../src/lib/email/dripTemplates.js';
 import type { DripEventType } from '../src/lib/email/dripTemplates.js';
-import { checkSendable, excludeIds, firstEmbedded, readOutreachStatus, readRemovedIds } from './_outreach.js';
+import { checkSendable, firstEmbedded, NOT_REMOVED_VIEW, readOutreachStatus } from './_outreach.js';
 import type { SendCheck } from './_outreach.js';
 import { passOnTextOffer } from './_textOffer.js';
 import {
@@ -193,11 +193,10 @@ async function handleHealthCheck(supabase: SupabaseClient, res: VercelResponse) 
 }
 
 async function handleGetStats(supabase: SupabaseClient, res: VercelResponse) {
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
-  const count = () => excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids);
+  // Removed people are left out (#26), filtered in the database (waitlist 32).
+  const count = () => supabase.from(NOT_REMOVED_VIEW).select('*', { count: 'exact', head: true });
 
-  const [total, founding, foundingCreator, wave1, wave2, wave3, fallback] = await Promise.all([
+  const results = await Promise.all([
     count(),
     count().eq('is_founding_member', true),
     count().eq('is_founding_member_creator', true),
@@ -206,6 +205,8 @@ async function handleGetStats(supabase: SupabaseClient, res: VercelResponse) {
     count().eq('wave_number', 3),
     count().eq('status', 'waiting_for_next_wave'),
   ]);
+  if (results.some((r) => r.error)) return res.status(500).json({ error: 'Failed to read signup counts' });
+  const [total, founding, foundingCreator, wave1, wave2, wave3, fallback] = results;
 
   return res.status(200).json({
     total_users: total.count ?? 0,
@@ -396,15 +397,12 @@ async function handleOpenWave(supabase: SupabaseClient, req: VercelRequest, res:
   }
 
   // Removed people are not moved into a wave (#26). A filtered UPDATE cannot
-  // filter on waitlist_outreach, so read the eligible ids first, then update
-  // exactly those.
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
-
-  const { data: waiting, error: waitingErr } = await excludeIds(
-    supabase.from('waitlist').select('id').eq('status', 'waiting_for_next_wave'),
-    removed.ids,
-  );
+  // filter on waitlist_outreach, so read the eligible ids first (from the
+  // not-Removed view, waitlist 32), then update exactly those.
+  const { data: waiting, error: waitingErr } = await supabase
+    .from(NOT_REMOVED_VIEW)
+    .select('id')
+    .eq('status', 'waiting_for_next_wave');
   if (waitingErr) return res.status(500).json({ error: 'Failed to open wave' });
 
   const waitingIds = (waiting ?? []).map((r: { id: string }) => r.id);
@@ -450,18 +448,14 @@ async function handlePromoteWave(supabase: SupabaseClient, req: VercelRequest, r
 
   // Removed people are not promoted (#26). Excluded BEFORE the limit, so the
   // batch still fills to `limit` from the people who remain.
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
-
-  const { data: fallbackUsers } = await excludeIds(
-    supabase
-      .from('waitlist')
-      .select('email')
-      .eq('status', 'waiting_for_next_wave'),
-    removed.ids,
-  )
+  // Read from the not-Removed view (waitlist 32); a failed read promotes nobody.
+  const { data: fallbackUsers, error: fallbackErr } = await supabase
+    .from(NOT_REMOVED_VIEW)
+    .select('email')
+    .eq('status', 'waiting_for_next_wave')
     .order('created_at', { ascending: true })
     .limit(limit);
+  if (fallbackErr) return res.status(500).json({ error: 'Failed to read waiting signups. Nobody was promoted.' });
 
   if (!fallbackUsers?.length) {
     return res.status(200).json({ promoted_count: 0, promoted_users: [] });
@@ -580,27 +574,35 @@ async function handleBulkDeleteFallback(supabase: SupabaseClient, req: VercelReq
 
   // Removed and unsubscribed people are never bulk-deleted (#26, decision 4a):
   // their record is what stops us contacting them again. They are skipped and
-  // counted. If the Removed set cannot be read, nothing is deleted.
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups. Nothing was deleted.' });
-  const removedIds = new Set(removed.ids);
-
-  const { data: waiting, error: waitingErr } = await supabase
-    .from('waitlist')
-    .select('id, unsubscribed_at')
-    .eq('status', 'waiting_for_next_wave')
-    .order('created_at', { ascending: true });
-  if (waitingErr) return res.status(500).json({ error: 'Failed to read fallback users. Nothing was deleted.' });
-
-  const rows = (waiting ?? []) as { id: string; unsubscribed_at: string | null }[];
-  const protectedRows = rows.filter(r => r.unsubscribed_at || removedIds.has(r.id));
-  const deletable = rows.filter(r => !r.unsubscribed_at && !removedIds.has(r.id));
+  // counted. If any read fails, nothing is deleted.
+  //
+  // NO READ HERE IS EVER CUT OFF (waitlist issue 33 item 2). The old code read
+  // every waiting row in one request, and PostgREST stops at 1,000 rows, so past
+  // that the skipped count was short and later people were never looked at. Now
+  // the database filters: the deletable rows come from the not-Removed view with
+  // the limit applied (at most 100 rows), and the skipped count is the
+  // difference of two exact counts, which carry no row limit.
   // The panel promises at most 100 per request; enforce it here too.
   const cap = Math.min(100, Math.max(0, Math.floor(Number(limit) || 0)));
-  const ids = deletable.slice(0, cap).map(r => r.id);
+  const [allWaiting, deletableWaiting, deletableRows] = await Promise.all([
+    supabase.from('waitlist').select('id', { count: 'exact', head: true }).eq('status', 'waiting_for_next_wave'),
+    supabase.from(NOT_REMOVED_VIEW).select('id', { count: 'exact', head: true })
+      .eq('status', 'waiting_for_next_wave').is('unsubscribed_at', null),
+    supabase.from(NOT_REMOVED_VIEW).select('id')
+      .eq('status', 'waiting_for_next_wave').is('unsubscribed_at', null)
+      .order('created_at', { ascending: true })
+      .limit(Math.max(cap, 1)),
+  ]);
+  if (allWaiting.error || deletableWaiting.error || deletableRows.error
+      || allWaiting.count == null || deletableWaiting.count == null) {
+    return res.status(500).json({ error: 'Failed to read fallback users. Nothing was deleted.' });
+  }
+
+  const skippedCount = Math.max(0, allWaiting.count - deletableWaiting.count);
+  const ids = cap === 0 ? [] : ((deletableRows.data ?? []) as { id: string }[]).map(r => r.id);
 
   if (ids.length === 0) {
-    return res.status(200).json({ deleted_count: 0, skipped_count: protectedRows.length });
+    return res.status(200).json({ deleted_count: 0, skipped_count: skippedCount });
   }
 
   const { data: deleted, error } = await supabase
@@ -614,7 +616,7 @@ async function handleBulkDeleteFallback(supabase: SupabaseClient, req: VercelReq
 
   return res.status(200).json({
     deleted_count: deleted?.length ?? 0,
-    skipped_count: protectedRows.length,
+    skipped_count: skippedCount,
   });
 }
 
@@ -623,10 +625,10 @@ async function handleExportUsers(supabase: SupabaseClient, req: VercelRequest, r
 
   // Removed people are left out of the export, the same filter the counts use
   // (#26, waitlist #29). A failed read exports nothing rather than everyone.
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
-
-  const { data, error } = await excludeIds(supabase.from('waitlist').select('*'), removed.ids)
+  // Read from the not-Removed view (waitlist 32); a failed read is a 500.
+  const { data, error } = await supabase
+    .from(NOT_REMOVED_VIEW)
+    .select('*')
     .order('created_at', { ascending: true })
     .limit(limit);
 
@@ -663,18 +665,20 @@ async function handleWaitlistAnalytics(supabase: SupabaseClient, res: VercelResp
   thirtyDaysAgo.setUTCHours(0, 0, 0, 0);
 
   // Removed people are left out of every waitlist count (#26).
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups' });
-  const count = () => excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids);
+  // Filtered in the database through the not-Removed view (waitlist 32).
+  const count = () => supabase.from(NOT_REMOVED_VIEW).select('*', { count: 'exact', head: true });
 
   const [total, founding, foundingCreator, last30Days, waveDist, statusDist] = await Promise.all([
     count(),
     count().eq('is_founding_member', true),
     count().eq('is_founding_member_creator', true),
-    excludeIds(supabase.from('waitlist').select('created_at'), removed.ids).gte('created_at', thirtyDaysAgo.toISOString()),
-    excludeIds(supabase.from('waitlist').select('wave_number'), removed.ids),
-    excludeIds(supabase.from('waitlist').select('status'), removed.ids),
+    supabase.from(NOT_REMOVED_VIEW).select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
+    supabase.from(NOT_REMOVED_VIEW).select('wave_number'),
+    supabase.from(NOT_REMOVED_VIEW).select('status'),
   ]);
+  if ([total, founding, foundingCreator, last30Days, waveDist, statusDist].some((r) => r.error)) {
+    return res.status(500).json({ error: 'Failed to read waitlist analytics' });
+  }
 
   // Aggregate by day
   const dayCounts = new Map<string, number>();
@@ -762,12 +766,10 @@ async function handleRegenerateToken(supabase: SupabaseClient, req: VercelReques
 async function handleSummary(supabase: SupabaseClient, res: VercelResponse) {
   // Removed people are left out of the COUNTS (#26). The recent-signups list
   // below is a list, not a count, and is left as it was.
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to fetch summary data' });
-
+  // Counts read the not-Removed view (waitlist 32).
   const [totalResult, waveResult, recentResult] = await Promise.all([
-    excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids),
-    excludeIds(supabase.from('waitlist').select('wave_number'), removed.ids).not('wave_number', 'is', null),
+    supabase.from(NOT_REMOVED_VIEW).select('*', { count: 'exact', head: true }),
+    supabase.from(NOT_REMOVED_VIEW).select('wave_number').not('wave_number', 'is', null),
     supabase.from('waitlist').select('email, created_at, wave_number').order('created_at', { ascending: false }).limit(10),
   ]);
   if (totalResult.error || waveResult.error || recentResult.error) {
@@ -842,14 +844,11 @@ async function handleWaitlistUsers(supabase: SupabaseClient, res: VercelResponse
 
 async function handleTextOptInUsers(supabase: SupabaseClient, res: VercelResponse) {
   // This list is who gets texted by hand, so Removed people are left out (#26).
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to fetch opted-in users' });
-
+  // Read from the not-Removed view (waitlist 32); a failed read is a 500.
   const [usersResult, configResult] = await Promise.all([
-    excludeIds(
-      supabase.from('waitlist').select('email, phone_number, wave_number, is_founding_member, text_opt_in_offer_sent_at, created_at').eq('text_opt_in', true),
-      removed.ids,
-    ).order('created_at', { ascending: true }),
+    supabase.from(NOT_REMOVED_VIEW).select('email, phone_number, wave_number, is_founding_member, text_opt_in_offer_sent_at, created_at')
+      .eq('text_opt_in', true)
+      .order('created_at', { ascending: true }),
     supabase.from('text_opt_in_config').select('slots_remaining').single(),
   ]);
   if (usersResult.error) return res.status(500).json({ error: 'Failed to fetch opted-in users' });
@@ -891,10 +890,17 @@ async function handleGrantAccess(supabase: SupabaseClient, req: VercelRequest, r
   if (fetchErr || !rows) return res.status(500).json({ error: 'Failed to fetch waitlist records' });
 
   // Removed people are skipped (#26): granting sends an access email. If the
-  // Removed set cannot be read, grant nobody.
-  const removed = await readRemovedIds(supabase);
-  if (!removed.ok) return res.status(500).json({ error: 'Failed to read removed signups. Nobody was granted.' });
-  const removedIds = new Set(removed.ids);
+  // Removed set cannot be read, grant nobody. Only the requested ids are read
+  // back from the not-Removed view (waitlist 32); an id missing from it is
+  // Removed. The requested ids were already in the address above.
+  const { data: notRemovedRows, error: notRemovedErr } = await supabase
+    .from(NOT_REMOVED_VIEW)
+    .select('id')
+    .in('id', (rows as WaitlistRow[]).map((r) => r.id));
+  if (notRemovedErr || !notRemovedRows) {
+    return res.status(500).json({ error: 'Failed to read removed signups. Nobody was granted.' });
+  }
+  const notRemovedIds = new Set((notRemovedRows as { id: string }[]).map((r) => r.id));
 
   let granted = 0, skipped = 0, failed = 0;
   const results: Array<{ email: string; status: 'granted' | 'skipped' | 'failed'; reason?: string }> = [];
@@ -902,7 +908,7 @@ async function handleGrantAccess(supabase: SupabaseClient, req: VercelRequest, r
   for (const row of rows as WaitlistRow[]) {
     if (row.has_access) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'already_granted' }); continue; }
     if (row.unsubscribed_at) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'unsubscribed' }); continue; }
-    if (removedIds.has(row.id)) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'removed' }); continue; }
+    if (!notRemovedIds.has(row.id)) { skipped++; results.push({ email: row.email, status: 'skipped', reason: 'removed' }); continue; }
     const { error: updateErr } = await supabase.from('waitlist').update({ has_access: true }).eq('id', row.id);
     if (updateErr) { failed++; results.push({ email: row.email, status: 'failed', reason: updateErr.message }); continue; }
     const role = determineUserRole(row);
@@ -991,33 +997,35 @@ async function handleGetWaitlistUser(supabase: SupabaseClient, req: VercelReques
   // same filter the counts use (#26, waitlist #31). A failed read shows no
   // position and no neighbours rather than numbers that count Removed people.
   // A Removed person's own page shows no position: they are not in the count.
-  const removed = await readRemovedIds(supabase);
-  if (removed.ok) {
-    const isRemoved = removed.ids.includes(user.id as string);
-    const { count: totalCount } = await excludeIds(
-      supabase.from('waitlist').select('*', { count: 'exact', head: true }),
-      removed.ids,
-    );
+  // All of it reads the not-Removed view (waitlist 32).
+  const [{ data: selfRow, error: selfErr }, { count: totalCount, error: totalErr }] = await Promise.all([
+    supabase.from(NOT_REMOVED_VIEW).select('id').eq('id', user.id).maybeSingle(),
+    supabase.from(NOT_REMOVED_VIEW).select('*', { count: 'exact', head: true }),
+  ]);
+  if (!selfErr && !totalErr) {
+    const isRemoved = !selfRow;
     total = totalCount ?? null;
 
     if (user.waitlist_position != null) {
-      const [{ data: p }, { data: n }, { count: idx }] = await Promise.all([
-        excludeIds(supabase.from('waitlist').select('email, waitlist_position'), removed.ids)
+      const [pRes, nRes, idxRes] = await Promise.all([
+        supabase.from(NOT_REMOVED_VIEW).select('email, waitlist_position')
           .lt('waitlist_position', user.waitlist_position)
           .order('waitlist_position', { ascending: false })
           .limit(1)
           .maybeSingle(),
-        excludeIds(supabase.from('waitlist').select('email, waitlist_position'), removed.ids)
+        supabase.from(NOT_REMOVED_VIEW).select('email, waitlist_position')
           .gt('waitlist_position', user.waitlist_position)
           .order('waitlist_position', { ascending: true })
           .limit(1)
           .maybeSingle(),
-        excludeIds(supabase.from('waitlist').select('*', { count: 'exact', head: true }), removed.ids)
+        supabase.from(NOT_REMOVED_VIEW).select('*', { count: 'exact', head: true })
           .lte('waitlist_position', user.waitlist_position),
       ]);
-      prev = p ?? null;
-      next = n ?? null;
-      index = isRemoved ? null : (idx ?? null);
+      if (!pRes.error && !nRes.error && !idxRes.error) {
+        prev = pRes.data ?? null;
+        next = nRes.data ?? null;
+        index = isRemoved ? null : (idxRes.count ?? null);
+      }
     }
   }
 

@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createHash } from 'node:crypto';
 import {
   FOUNDING_WELCOME_HTML,
   FOUNDING_WELCOME_LOGO_URL,
@@ -7,6 +9,40 @@ import {
 } from './_emails/foundingWelcome.js';
 import { checkSendable } from './_outreach.js';
 import { greetingHtml } from './_greeting.js';
+
+// ----------------------------------------------------------------------------
+// REQUEST LIMIT (our own counter, Ethan's pick). SYNC PAIR: the same two
+// helpers are in api/signup.ts; the limits themselves live only in
+// public.hit_request_limit (migration 20261126010142_waitlist_scale_safety.sql).
+// Keys leave this server as SHA-256 hashes, never the raw email or address.
+// FAIL OPEN: if the counter cannot be reached (error, odd reply, or 3 s with
+// no answer), the request is allowed and one line is logged, with no email.
+// ----------------------------------------------------------------------------
+const REQUEST_LIMIT_TIMEOUT_MS = 3000;
+
+function firstForwardedFor(req: VercelRequest): string | null {
+  const header = req.headers['x-forwarded-for'];
+  const value = Array.isArray(header) ? header[0] : header;
+  const first = value?.split(',')[0]?.trim();
+  return first ? first : null;
+}
+
+async function underRequestLimit(supabase: SupabaseClient, kind: 'email' | 'ip', raw: string): Promise<boolean> {
+  const keyHash = createHash('sha256').update(`${kind}:${raw}`).digest('hex');
+  try {
+    const { data, error } = await supabase
+      .rpc('hit_request_limit', { p_kind: kind, p_key_hash: keyHash })
+      .abortSignal(AbortSignal.timeout(REQUEST_LIMIT_TIMEOUT_MS));
+    if (error || typeof data !== 'boolean') {
+      console.error(JSON.stringify({ level: 'error', event: 'request_limit_unavailable', kind, error: error?.message ?? 'bad_reply' }));
+      return true;
+    }
+    return data;
+  } catch (err) {
+    console.error(JSON.stringify({ level: 'error', event: 'request_limit_unavailable', kind, error: err instanceof Error ? err.message : String(err) }));
+    return true;
+  }
+}
 
 console.log('[request-magic-link] Module loaded at', new Date().toISOString());
 
@@ -407,6 +443,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     console.log(`[request-magic-link] Supabase admin client created`);
+
+    // -------------------------------------------------------------------------
+    // STEP: Request limit, email key and network key (login and signup)
+    // Before any read, link or send. Both keys are counted on every request.
+    // Over either limit: 429 and nothing is sent. If the counter cannot be
+    // reached, the request goes through (fail open).
+    // -------------------------------------------------------------------------
+    const forwardedFor = firstForwardedFor(req);
+    const [emailAllowed, networkAllowed] = await Promise.all([
+      underRequestLimit(supabase, 'email', trimmedEmail),
+      forwardedFor ? underRequestLimit(supabase, 'ip', forwardedFor) : Promise.resolve(true),
+    ]);
+    if (!emailAllowed || !networkAllowed) {
+      console.log(`[request-magic-link] Request limit reached (${type})`);
+      return res.status(429).json({ error: 'too_many_requests' });
+    }
 
     // -------------------------------------------------------------------------
     // STEP: Fetch waitlist record

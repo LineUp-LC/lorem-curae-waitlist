@@ -92,13 +92,10 @@ export function BulkDeleteFallbackPanel() {
             </svg>
             <div className="space-y-1">
               <p className="text-sm font-medium text-coral-800">
-                This action permanently deletes fallback users (wave_number = null).
+                This permanently deletes people waiting for the next wave (status: waiting for next wave), oldest signups first.
               </p>
               <p className="text-sm text-coral-700">
                 This cannot be undone.
-              </p>
-              <p className="text-sm text-coral-700">
-                This action is rate-limited and logged.
               </p>
               <p className="text-sm text-coral-700">
                 Maximum 100 users per request.

@@ -107,6 +107,16 @@ export default function SupabaseWaitlistForm({
       const signupData = await signupRes.json();
 
       if (!signupRes.ok) {
+        // Request limit (429 too_many_requests): nothing was written. Draft wording.
+        if (signupRes.status === 429) {
+          setFormState((prev) => ({
+            ...prev,
+            status: 'error',
+            errorMessage: 'Too many tries. Please wait a few minutes and try again.',
+          }));
+          return;
+        }
+
         if (signupData.error === 'duplicate') {
           setFormState((prev) => ({
             ...prev,

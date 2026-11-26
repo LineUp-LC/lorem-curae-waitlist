@@ -8,7 +8,7 @@ import type { OutreachStatus } from '../src/lib/outreachStatus.js';
 // FAIL CLOSED. A send path that cannot read someone's outreach row does not
 // send: "we could not tell whether they asked us to stop" must never read as
 // "they did not". A count that cannot read the Removed set returns an error
-// rather than a number that silently includes them.
+// rather than a number that silently includes them (NOT_REMOVED_VIEW below).
 // ----------------------------------------------------------------------------
 
 export type OutreachStatusRead =
@@ -55,29 +55,14 @@ export async function checkSendable(
   return { sendable: true };
 }
 
-export type RemovedIdsRead ={ ok: true; ids: string[] } | { ok: false };
-
-export async function readRemovedIds(supabase: SupabaseClient): Promise<RemovedIdsRead> {
-  const { data, error } = await supabase
-    .from('waitlist_outreach')
-    .select('waitlist_id')
-    .eq('outreach_status', OUTREACH_REMOVED);
-  if (error || !data) {
-    console.error(JSON.stringify({ level: 'error', event: 'removed_ids_read_failed', error: error?.message }));
-    return { ok: false };
-  }
-  return { ok: true, ids: (data as { waitlist_id: string }[]).map((r) => r.waitlist_id) };
-}
-
-// Adds "id not in (removed ids)" to a waitlist query. The ids are uuids read
-// from our own table, so they need no escaping. With none removed, the query is
-// returned unchanged (PostgREST rejects an empty in-list).
-export function excludeIds<T extends { not(column: string, operator: string, value: unknown): T }>(
-  query: T,
-  ids: string[],
-): T {
-  return ids.length === 0 ? query : query.not('id', 'in', `(${ids.join(',')})`);
-}
+// Waitlist rows that are not Removed, filtered IN THE DATABASE (waitlist issue
+// 32). Replaces readRemovedIds + excludeIds, which read every Removed id into
+// the server and put them all in the request address; past about 1,000 Removed
+// people that address was too long and the read failed. The view is
+// service-role only (migration 20261126010142_waitlist_scale_safety.sql).
+// FAIL CLOSED: every caller checks the query error and answers with a server
+// error. A failed read never becomes "everyone" or zero.
+export const NOT_REMOVED_VIEW = 'waitlist_not_removed';
 
 // One-to-one embeds can come back as an object or a one-element array
 // depending on how PostgREST reads the relationship. Normalise both.

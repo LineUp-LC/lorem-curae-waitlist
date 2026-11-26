@@ -1,9 +1,45 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createHash } from 'node:crypto';
 import { MAX_FOUNDING_MEMBER_CREATORS } from '../src/lib/foundingMembers.js';
-import { excludeIds, readRemovedIds } from './_outreach.js';
+import { NOT_REMOVED_VIEW } from './_outreach.js';
 import { greetingHtml, validateFirstName } from './_greeting.js';
 import { sendTextOfferEmail } from '../supabase/functions/_shared/textOfferEmail.js';
+
+// ----------------------------------------------------------------------------
+// REQUEST LIMIT (our own counter, Ethan's pick). SYNC PAIR: the same two
+// helpers are in api/request-magic-link.ts; the limits themselves live only in
+// public.hit_request_limit (migration 20261126010142_waitlist_scale_safety.sql).
+// Keys leave this server as SHA-256 hashes, never the raw email or address.
+// FAIL OPEN: if the counter cannot be reached (error, odd reply, or 3 s with
+// no answer), the request is allowed and one line is logged, with no email.
+// ----------------------------------------------------------------------------
+const REQUEST_LIMIT_TIMEOUT_MS = 3000;
+
+function firstForwardedFor(req: VercelRequest): string | null {
+  const header = req.headers['x-forwarded-for'];
+  const value = Array.isArray(header) ? header[0] : header;
+  const first = value?.split(',')[0]?.trim();
+  return first ? first : null;
+}
+
+async function underRequestLimit(supabase: SupabaseClient, kind: 'email' | 'ip', raw: string): Promise<boolean> {
+  const keyHash = createHash('sha256').update(`${kind}:${raw}`).digest('hex');
+  try {
+    const { data, error } = await supabase
+      .rpc('hit_request_limit', { p_kind: kind, p_key_hash: keyHash })
+      .abortSignal(AbortSignal.timeout(REQUEST_LIMIT_TIMEOUT_MS));
+    if (error || typeof data !== 'boolean') {
+      console.error(JSON.stringify({ level: 'error', event: 'request_limit_unavailable', kind, error: error?.message ?? 'bad_reply' }));
+      return true;
+    }
+    return data;
+  } catch (err) {
+    console.error(JSON.stringify({ level: 'error', event: 'request_limit_unavailable', kind, error: err instanceof Error ? err.message : String(err) }));
+    return true;
+  }
+}
 
 // ----------------------------------------------------------------------------
 // API HANDLER - Waitlist Signup
@@ -68,6 +104,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
 
+    // -------------------------------------------------------------------------
+    // STEP: Request limit, network key (before any read or write)
+    // Over the limit: 429 and nothing is written or sent. If the counter cannot
+    // be reached, the signup goes through (fail open).
+    // -------------------------------------------------------------------------
+    const forwardedFor = firstForwardedFor(req);
+    if (forwardedFor && !(await underRequestLimit(supabase, 'ip', forwardedFor))) {
+      return res.status(429).json({ error: 'too_many_requests' });
+    }
+
     // DUPLICATE: identical response wherever it is detected. Before #40 every
     // signup for an email already on the list got this 409; it still does,
     // with or without a name (see the first-name step below).
@@ -121,14 +167,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let foundingCreatorCapReached = false;
 
-    // Removed people are left out of the tester count (#26). If the Removed set
-    // cannot be read, fail the signup like a failed count does rather than guess.
-    const removed = await readRemovedIds(supabase);
-    if (!removed.ok) {
-      console.error('[signup] Could not read removed signups for the caps');
-      return res.status(500).json({ error: 'Server error during signup' });
-    }
-
     if (isCreator) {
       // Creator signup: check the founding member creator pool
       const { count, error: countError } = await supabase
@@ -152,14 +190,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (wants_tester_access) {
       const maxTesterCap = isCreator ? MAX_TESTER_CREATORS : MAX_TESTER_CONSUMERS;
 
-      const { count: testerCount, error: testerCountError } = await excludeIds(
-        supabase
-          .from('waitlist')
-          .select('*', { count: 'exact', head: true })
-          .eq('wants_tester_access', true)
-          .eq('is_creator', isCreator),
-        removed.ids,
-      );
+      // Removed people are left out of the tester count (#26), filtered in the
+      // database (waitlist 32). A failed read fails the signup rather than guess.
+      const { count: testerCount, error: testerCountError } = await supabase
+        .from(NOT_REMOVED_VIEW)
+        .select('*', { count: 'exact', head: true })
+        .eq('wants_tester_access', true)
+        .eq('is_creator', isCreator);
 
       if (testerCountError) {
         console.error('[signup] Error counting testers:', testerCountError);
