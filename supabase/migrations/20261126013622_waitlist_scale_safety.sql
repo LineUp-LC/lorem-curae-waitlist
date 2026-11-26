@@ -1,5 +1,5 @@
 -- ============================================================================
--- NOT APPLIED: Ethan applies through the connector.
+-- APPLIED Nov 25 2026 (version 20261126013622) through the Supabase connector on Ethan's typed apply in chat; do not re-apply.
 -- ============================================================================
 -- WAITLIST SCALE SAFETY: the not-Removed view (waitlist issue 32) and the
 -- sign-in / signup request limiter (Ethan picked our own counter, Nov 25 2026).

@@ -78,7 +78,7 @@ export function BulkDeleteFallbackPanel() {
           </div>
           <div>
             <h2 className="text-lg font-medium text-coral-800">Bulk Delete Fallback Users</h2>
-            <p className="text-sm text-coral-600">Remove users with no wave assignment</p>
+            <p className="text-sm text-coral-600">Delete people waiting for the next wave</p>
           </div>
         </div>
       </div>
