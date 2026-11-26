@@ -6,6 +6,7 @@ import {
   foundingPositionBlock,
 } from './_emails/foundingWelcome.js';
 import { checkSendable } from './_outreach.js';
+import { firstForwardedFor, underRequestLimit } from './_rateLimit.js';
 import { greetingHtml } from './_greeting.js';
 
 console.log('[request-magic-link] Module loaded at', new Date().toISOString());
@@ -407,6 +408,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     console.log(`[request-magic-link] Supabase admin client created`);
+
+    // -------------------------------------------------------------------------
+    // STEP: Request limit, email key and network key (login and signup)
+    // Before any read, link or send. Login counts both keys; signup counts the email key only.
+    // Over either limit: 429 and nothing is sent. If the counter cannot be
+    // reached, the request goes through (fail open).
+    // -------------------------------------------------------------------------
+    const forwardedFor = firstForwardedFor(req);
+    const [emailAllowed, networkAllowed] = await Promise.all([
+      underRequestLimit(supabase, 'email', trimmedEmail),
+      // A signup already counted the network key in api/signup.ts, so only a login counts it here.
+      type === 'login' && forwardedFor ? underRequestLimit(supabase, 'ip', forwardedFor) : Promise.resolve(true),
+    ]);
+    if (!emailAllowed || !networkAllowed) {
+      console.log(`[request-magic-link] Request limit reached (${type})`);
+      return res.status(429).json({ error: 'too_many_requests' });
+    }
 
     // -------------------------------------------------------------------------
     // STEP: Fetch waitlist record

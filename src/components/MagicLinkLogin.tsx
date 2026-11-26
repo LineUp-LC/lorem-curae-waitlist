@@ -74,6 +74,16 @@ export default function MagicLinkLogin() {
         console.error('[MagicLinkLogin] Response was not JSON, status', response.status);
       }
 
+      // Request limit (429 too_many_requests): nothing was sent. Draft wording.
+      if (response.status === 429) {
+        setFormState((prev) => ({
+          ...prev,
+          status: "error",
+          errorMessage: "Too many tries. Please wait a few minutes and try again.",
+        }));
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(typeof responseData.error === 'string' ? responseData.error : `Request failed (${response.status})`);
       }

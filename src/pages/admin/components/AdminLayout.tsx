@@ -71,7 +71,10 @@ function AdminLoginForm({ notice }: { notice?: string }) {
       const apiError = data !== null && typeof data === 'object' && 'error' in data ? (data as { error: unknown }).error : null;
       setLoginStatus('error');
       setLoginError(
-        apiError === 'not-on-waitlist'
+        // Request limit (429 too_many_requests): nothing was sent. Draft wording.
+        response.status === 429
+          ? 'Too many tries. Please wait a few minutes and try again.'
+          : apiError === 'not-on-waitlist'
           ? 'This email is not authorized for admin access.'
           : typeof apiError === 'string'
           ? apiError

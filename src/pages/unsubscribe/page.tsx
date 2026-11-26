@@ -11,6 +11,13 @@ import LegalShell from '../../components/feature/LegalShell';
 // POSTs the token to the edge function. That POST checks the token and marks the
 // person unsubscribed and Removed.
 //
+// THE CODE LEAVES THE ADDRESS BAR AT ONCE (waitlist issue 33 item 1). Links
+// already sent arrive as ?token=..., which is the only way the code reaches this
+// page. It is read once when the page opens, then removed from the address with
+// history.replaceState, so it does not linger in the address bar, history,
+// screenshots or a copied link. The button sends it in the POST body only, never
+// in the request address. Opening the page still changes nothing.
+//
 // Why a page on this site and not on the function: the function's default
 // supabase.co domain serves HTML as plain text, so a button there would show
 // as raw markup.
@@ -28,7 +35,8 @@ function unsubscribeEndpoint(): string | null {
 
 const UnsubscribePage = () => {
   const [params] = useSearchParams();
-  const token = (params.get('token') ?? '').trim();
+  // Read ONCE, when the page opens; the address is cleared right after.
+  const [token] = useState(() => (params.get('token') ?? '').trim());
   const tokenLooksValid = UUID_RE.test(token);
 
   const [phase, setPhase] = useState<Phase>(tokenLooksValid ? 'ready' : 'invalid');
@@ -38,10 +46,14 @@ const UnsubscribePage = () => {
     document.title = 'Unsubscribe | Curae';
   }, []);
 
+  // Remove the code from the address bar. Other query parts and the router's
+  // history state are kept.
   useEffect(() => {
-    setPhase(tokenLooksValid ? 'ready' : 'invalid');
-    setErrorText(null);
-  }, [token, tokenLooksValid]);
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('token')) return;
+    url.searchParams.delete('token');
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  }, []);
 
   const handleConfirm = async () => {
     const endpoint = unsubscribeEndpoint();
@@ -53,7 +65,8 @@ const UnsubscribePage = () => {
     setPhase('submitting');
     setErrorText(null);
     try {
-      const res = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`, {
+      // The code goes in the body only, never in the request address.
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token }),

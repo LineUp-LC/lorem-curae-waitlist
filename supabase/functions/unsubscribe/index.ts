@@ -6,14 +6,16 @@
 //
 // GET CHANGES NOTHING (#26, decision 2a). Mail scanners and link previewers open
 // links by themselves, so a GET only redirects to the confirmation page on the
-// website (https://loremcurae.com/unsubscribe?token=...). That page's "Yes,
-// unsubscribe me" button
-// sends:
-//   POST /functions/v1/unsubscribe?token=<unsubscribe_token>
-// and only the POST checks the token, sets unsubscribed_at and marks the person
-// Removed. A POST with the token in the URL is also what a mail client's
-// one-click unsubscribe (RFC 8058) sends, if List-Unsubscribe headers are added
-// later.
+// website (https://loremcurae.com/unsubscribe?token=...). That page reads the
+// token, removes it from its address bar at once, and its "Yes, unsubscribe me"
+// button sends:
+//   POST /functions/v1/unsubscribe   body { "token": "<unsubscribe_token>" }
+// with the token in the BODY, not the URL (waitlist issue 33 item 1). Only the
+// POST checks the token, sets unsubscribed_at and marks the person Removed.
+// A POST with ?token= in the URL is still accepted, for a page already open in
+// someone's browser from before this change and for a mail client's one-click
+// unsubscribe (RFC 8058), if List-Unsubscribe headers are added later. The GET
+// link format in emails already sent is unchanged.
 //
 // The page lives on the website because this function's default supabase.co
 // domain serves HTML as plain text (checked live: the old HTML page arrived as
@@ -59,26 +61,26 @@ function json(req: Request, body: Record<string, unknown>, status = 200): Respon
   });
 }
 
-// Token from the URL first (the page and RFC 8058 both put it there), then a
-// JSON or form body.
+// Token from a JSON or form body first (the page sends it there, waitlist issue
+// 33 item 1), then the old ?token= in the URL (an already-open older page, and
+// RFC 8058 one-click).
 async function readToken(req: Request): Promise<string> {
-  const fromUrl = new URL(req.url).searchParams.get('token');
-  if (fromUrl) return fromUrl.trim();
   const type = req.headers.get('content-type') ?? '';
+  let fromBody = '';
   try {
     if (type.includes('application/json')) {
       const body = await req.json();
-      return typeof body?.token === 'string' ? body.token.trim() : '';
-    }
-    if (type.includes('application/x-www-form-urlencoded') || type.includes('multipart/form-data')) {
+      fromBody = typeof body?.token === 'string' ? body.token.trim() : '';
+    } else if (type.includes('application/x-www-form-urlencoded') || type.includes('multipart/form-data')) {
       const form = await req.formData();
       const t = form.get('token');
-      return typeof t === 'string' ? t.trim() : '';
+      fromBody = typeof t === 'string' ? t.trim() : '';
     }
   } catch {
-    return '';
+    fromBody = '';
   }
-  return '';
+  if (fromBody) return fromBody;
+  return (new URL(req.url).searchParams.get('token') ?? '').trim();
 }
 
 // ----------------------------------------------------------------------------
