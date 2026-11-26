@@ -22,7 +22,7 @@ export default function AdminToolsPage() {
               Caution: These tools perform bulk operations
             </p>
             <p className="text-sm text-cream-700 mt-1">
-              All actions on this page are logged and may be irreversible. Please use with care.
+              These tools may be irreversible. Please use them with care.
             </p>
           </div>
         </div>
