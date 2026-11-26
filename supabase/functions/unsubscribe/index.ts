@@ -28,6 +28,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { sendTextOfferEmail } from '../_shared/textOfferEmail.ts';
+import { TEXT_OFFERS_ENABLED } from '../_shared/textOffers.ts';
 import { greetingHtml } from '../_shared/greeting.ts';
 
 // The real domain (choice A1, Ethan 2026-11-24).
@@ -128,6 +129,10 @@ async function markRemoved(supabase: any, waitlistId: string): Promise<boolean> 
   const row = Array.isArray(marked) ? marked[0] : marked;
   const passOnAfter: string | null = row?.pass_on_after ?? null;
   if (!passOnAfter) return true;
+
+  // Off behind TEXT_OFFERS_ENABLED (../_shared/textOffers.ts): the Removed
+  // mark above still happens; the freed spot is passed to nobody.
+  if (!TEXT_OFFERS_ENABLED) return true;
 
   // Check the key BEFORE claiming: a claim stamps the next person's offer, and
   // a stamped offer with no email would strand them.

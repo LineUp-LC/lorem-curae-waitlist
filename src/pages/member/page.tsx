@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { TEXT_OFFERS_ENABLED } from '../../../supabase/functions/_shared/textOffers';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -166,8 +167,8 @@ export default function MemberPage() {
       </a>
 
       <div className="w-full max-w-xs">
-        {/* Text opt-in — confirmed */}
-        {(data?.textOptIn || optInStatus === 'accepted') && (
+        {/* Text opt-in — confirmed. Hidden while TEXT_OFFERS_ENABLED is false. */}
+        {TEXT_OFFERS_ENABLED && (data?.textOptIn || optInStatus === 'accepted') && (
           <div className="border-b border-sage-100 pb-8 mb-8">
             <p className="text-sage-500 text-xs font-medium uppercase tracking-widest mb-2">
               Personal texts
@@ -176,8 +177,10 @@ export default function MemberPage() {
           </div>
         )}
 
-        {/* Text opt-in — banner (offer active, not yet accepted or declined) */}
-        {!data?.textOptIn &&
+        {/* Text opt-in — banner (offer active, not yet accepted or declined).
+            Hidden while TEXT_OFFERS_ENABLED is false. */}
+        {TEXT_OFFERS_ENABLED &&
+          !data?.textOptIn &&
           !data?.textOptInDeclined &&
           optInStatus !== 'accepted' &&
           optInStatus !== 'declined' &&
@@ -301,7 +304,7 @@ export default function MemberPage() {
               Wave {data.waveNumber}
             </p>
           ) : data?.isFoundingMember ? (
-            <p className="text-sage-700 text-sm">Founding Member — Priority Access</p>
+            <p className="text-sage-700 text-sm">Founding Member · Priority Access</p>
           ) : (
             <p className="text-sage-400 text-sm">No wave assigned yet</p>
           )}

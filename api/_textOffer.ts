@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { sendTextOfferEmail } from '../supabase/functions/_shared/textOfferEmail.js';
+import { TEXT_OFFERS_ENABLED } from '../supabase/functions/_shared/textOffers.js';
 import { greetingHtml } from './_greeting.js';
 
 // ----------------------------------------------------------------------------
@@ -27,6 +28,10 @@ export async function passOnTextOffer(
   resendApiKey: string,
   afterCreatedAt: string,
 ): Promise<{ offered: boolean; error?: string }> {
+  // Off behind TEXT_OFFERS_ENABLED (supabase/functions/_shared/textOffers.ts):
+  // nobody is claimed or emailed. Covers decline, late accept and admin Removed.
+  if (!TEXT_OFFERS_ENABLED) return { offered: false };
+
   const { data, error } = await supabase.rpc('claim_next_text_offer', { p_after: afterCreatedAt });
   if (error) {
     console.error(JSON.stringify({ level: 'error', event: 'text_offer_claim_failed', error: error.message }));

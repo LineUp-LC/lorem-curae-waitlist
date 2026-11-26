@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { passOnTextOffer } from './_textOffer.js';
+import { TEXT_OFFERS_ENABLED } from '../supabase/functions/_shared/textOffers.js';
 import { checkSendable } from './_outreach.js';
 
 // The ONE way an offer ends without an accept: a decline, or an accept that came
@@ -38,6 +39,12 @@ async function declineAndPassOn(
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Off behind TEXT_OFFERS_ENABLED (supabase/functions/_shared/textOffers.ts):
+  // every accept and decline gets the no-offer answer, before any read or write.
+  if (!TEXT_OFFERS_ENABLED) {
+    return res.status(400).json({ error: 'no-offer-active' });
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;

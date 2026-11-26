@@ -5,6 +5,7 @@ import { NOT_REMOVED_VIEW } from './_outreach.js';
 import { firstForwardedFor, underRequestLimit } from './_rateLimit.js';
 import { greetingHtml, validateFirstName } from './_greeting.js';
 import { sendTextOfferEmail } from '../supabase/functions/_shared/textOfferEmail.js';
+import { TEXT_OFFERS_ENABLED } from '../supabase/functions/_shared/textOffers.js';
 
 // ----------------------------------------------------------------------------
 // API HANDLER - Waitlist Signup
@@ -253,8 +254,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Fire-and-forget: do not block or fail the signup response if this errors.
     // NOTE: Sent immediately — a proper 24h delay queue is deferred (no
     // scheduler infrastructure exists yet).
+    // Off behind TEXT_OFFERS_ENABLED (supabase/functions/_shared/textOffers.ts):
+    // no stamp and no offer email while it is false.
     const resendApiKey = process.env.RESEND_API_KEY;
-    if (resendApiKey && data.created_at) {
+    if (TEXT_OFFERS_ENABLED && resendApiKey && data.created_at) {
       (async () => {
         try {
           const { count: priorCount } = await supabase
