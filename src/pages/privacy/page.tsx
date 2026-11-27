@@ -24,8 +24,8 @@ const PrivacyPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 lg:p-12">
             <header className="mb-12 text-center">
               <h1 className="text-3xl lg:text-4xl font-light text-forest-900 mb-4">Privacy Policy</h1>
-              <p className="text-gray-600 text-lg">Last Updated: November 24, 2026</p>
-              <p className="text-gray-500 text-sm mt-1">Effective Date: November 24, 2026</p>
+              <p className="text-gray-600 text-lg">Last Updated: November 27, 2026</p>
+              <p className="text-gray-500 text-sm mt-1">Effective Date: November 27, 2026</p>
             </header>
 
             <div className="prose prose-lg max-w-none space-y-10">
@@ -76,11 +76,9 @@ const PrivacyPage = () => {
                       <li>An optional profile photo, if you choose to add one (stored while your account is active and deleted when you delete your account)</li>
                     </ul>
 
-                    <p className="font-semibold mb-2">Waitlist and Text Updates (optional):</p>
+                    <p className="font-semibold mb-2">Waitlist (optional):</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
                       <li>Your first name and email address, when you join the waitlist on loremcurae.com. We use your first name only to greet you in the emails we send you.</li>
-                      <li><strong>Your phone number, only if you choose to give it.</strong> Founding members are offered the option to receive occasional text updates directly from the founder. Giving a number is entirely optional, you can decline the offer, and you can ask us to remove it at any time by emailing ethanjones@loremcurae.com.</li>
-                      <li>We use your phone number only to send you those updates. <strong>We do not use it for advertising, we do not share it with advertisers or data brokers, and we never sell it.</strong></li>
                     </ul>
 
                     <p className="font-semibold mb-2">Skin Profile Data (collected during onboarding survey):</p>
@@ -315,7 +313,7 @@ const PrivacyPage = () => {
                   <li><strong>Skin profile data:</strong> Retained as long as your account is active. Deleted upon account deletion.</li>
                   <li><strong>Scan data and product interactions:</strong> Retained for as long as your account is active to power your scan history and recommendations.</li>
                   <li><strong>Analytics data:</strong> Product-usage analytics (via PostHog) may be retained to understand and improve the Service, including in aggregated, anonymized form. You can request deletion of your individual analytics records by contacting us.</li>
-                  <li><strong>Waitlist first name, email and phone number:</strong> Retained while you remain on the waitlist. Removed when you ask us to remove you, or when the waitlist closes and you have not become an account holder. A phone number given for text updates is deleted when you ask us to stop texting you. If you ask us to stop contacting you, we keep your waitlist record, marked so we never contact you again, along with short internal notes seen only by our team. We delete your phone number.</li>
+                  <li><strong>Waitlist first name and email:</strong> Retained while you remain on the waitlist. Removed when you ask us to remove you, or when the waitlist closes and you have not become an account holder. If you ask us to stop contacting you, we keep your waitlist record, marked so we never contact you again, along with short internal notes seen only by our team.</li>
                   <li><strong>Data sent to AI processing providers:</strong> Scan images <strong>and the profile and product details sent with them</strong> are held by Anthropic only for as long as its commercial terms require, for processing and abuse monitoring. <strong>Deleting your Curae account removes the data we hold. It does not retroactively delete copies a processing provider may still hold inside its own retention window.</strong></li>
                 </ul>
               </section>
@@ -456,6 +454,7 @@ const PrivacyPage = () => {
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg mt-6">
                   <p className="font-semibold text-forest-900 mb-2">Changelog</p>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700 leading-relaxed">
+                    <li><strong>November 27, 2026:</strong> Removed the optional text updates for founding members, which we no longer offer, and the phone number lines that went with them. We no longer collect phone numbers.</li>
                     <li><strong>November 24, 2026:</strong> The waitlist now asks for your first name. Added it to what we collect when you join, with its one use: greeting you in the emails we send you. Added it to the waitlist retention terms, where it is kept and removed on the same terms as your waitlist email.</li>
                     <li><strong>November 24, 2026:</strong> Explained what happens if you ask us to stop contacting you: we keep your waitlist record, marked so we never contact you again, along with short internal notes seen only by our team, and we delete your phone number.</li>
                     <li><strong>November 21, 2026:</strong> Brought this policy in line with the app. Scan results are now described as a fit verdict, since the app no longer shows compatibility scores, and no score is sent to our AI provider. Removed the line about climate, season, and UV data, which is never sent, and corrected "What you can turn off": the app has no switch for this today. Reaction reports no longer record when a reaction started or a typed note, so those were removed. Removed "goals you set and modify", since the app has no goals feature beyond the main skin goal you give in the survey. Replaced em dashes with other punctuation; the meaning is unchanged.</li>
