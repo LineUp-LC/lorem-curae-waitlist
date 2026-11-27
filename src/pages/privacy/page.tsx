@@ -76,7 +76,7 @@ const PrivacyPage = () => {
                       <li>An optional profile photo, if you choose to add one (stored while your account is active and deleted when you delete your account)</li>
                     </ul>
 
-                    <p className="font-semibold mb-2">Waitlist and Text Updates (optional):</p>
+                    <p className="font-semibold mb-2">Waitlist (optional):</p>
                     <ul className="list-disc pl-6 space-y-2 leading-relaxed mb-4">
                       <li>Your first name and email address, when you join the waitlist on loremcurae.com. We use your first name only to greet you in the emails we send you.</li>
                     </ul>
