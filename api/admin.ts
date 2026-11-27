@@ -390,6 +390,28 @@ async function handleDeleteUser(supabase: SupabaseClient, req: VercelRequest, re
   return res.status(200).json({ deleted: true, email: trimmedEmail });
 }
 
+// A plain read stops at the database's 1,000-row default, quietly (waitlist issue
+// 56). Read in pages of PAGE_SIZE until one comes back short. The query must have
+// a stable .order() so pages neither overlap nor skip. FAIL CLOSED: any page error
+// is the whole read's error, never a partial list.
+const PAGE_SIZE = 1000;
+const OPEN_WAVE_BATCH_SIZE = 200;
+
+async function readAllRows<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: unknown[] | null; error: unknown }>,
+): Promise<{ rows: T[] } | { error: unknown }> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await page(from, from + PAGE_SIZE - 1);
+    if (error) return { error };
+    const got = (data ?? []) as T[];
+    rows.push(...got);
+    if (got.length < PAGE_SIZE) return { rows };
+  }
+}
+
+export const __test = { handleOpenWave, handleWaitlistAnalytics, OPEN_WAVE_BATCH_SIZE };
+
 async function handleOpenWave(supabase: SupabaseClient, req: VercelRequest, res: VercelResponse) {
   const { wave_number } = req.body || {};
   if (!wave_number || typeof wave_number !== 'number') {
@@ -399,13 +421,18 @@ async function handleOpenWave(supabase: SupabaseClient, req: VercelRequest, res:
   // Removed people are not moved into a wave (#26). A filtered UPDATE cannot
   // filter on waitlist_outreach, so read the eligible ids first (from the
   // not-Removed view, waitlist 32), then update exactly those.
-  const { data: waiting, error: waitingErr } = await supabase
-    .from(NOT_REMOVED_VIEW)
-    .select('id')
-    .eq('status', 'waiting_for_next_wave');
-  if (waitingErr) return res.status(500).json({ error: 'Failed to open wave' });
+  // Read page by page: one plain read stops at 1,000 rows (waitlist issue 56).
+  const waiting = await readAllRows<{ id: string }>((from, to) =>
+    supabase
+      .from(NOT_REMOVED_VIEW)
+      .select('id')
+      .eq('status', 'waiting_for_next_wave')
+      .order('id')
+      .range(from, to),
+  );
+  if ('error' in waiting) return res.status(500).json({ error: 'Failed to open wave' });
 
-  const waitingIds = (waiting ?? []).map((r: { id: string }) => r.id);
+  const waitingIds = waiting.rows.map((r) => r.id);
   if (waitingIds.length === 0) {
     return res.status(200).json({
       success: true, wave_number, users_moved: 0,
@@ -413,29 +440,50 @@ async function handleOpenWave(supabase: SupabaseClient, req: VercelRequest, res:
     });
   }
 
-  const { data, error } = await supabase
-    .from('waitlist')
-    .update({ wave_number, status: 'active' })
-    .in('id', waitingIds)
-    .eq('status', 'waiting_for_next_wave')
-    .select('*');
-
-  if (error) return res.status(500).json({ error: 'Failed to open wave' });
-
-  // Everyone here came OUT of the holding pool, so this is an assignment rather
-  // than a move: they had no wave to be moved from.
+  // Update in batches (waitlist issue 56): every id in one .in() made the request
+  // address too long past about 1,000 people. Each batch keeps the status guard,
+  // so it only touches people still waiting; a second tap after a partial failure
+  // opens the rest and never opens anyone twice. Each batch is told right after
+  // it is opened, so a later failure never leaves opened people unnotified.
+  const opened: WaitlistRow[] = [];
   const emails: NotifyOutcome[] = [];
-  for (const row of (data || []) as unknown as WaitlistRow[]) {
-    emails.push(await notifyStatusChange(row, 'wave_assigned', { WAVE: wave_number }));
+  const emailCounts = () => ({
+    emails_sent: emails.filter((e) => e.status === 'sent').length,
+    emails_skipped: emails.filter((e) => e.status === 'skipped').length,
+    emails_failed: emails.filter((e) => e.status === 'failed').length,
+  });
+  for (let i = 0; i < waitingIds.length; i += OPEN_WAVE_BATCH_SIZE) {
+    const { data, error } = await supabase
+      .from('waitlist')
+      .update({ wave_number, status: 'active' })
+      .in('id', waitingIds.slice(i, i + OPEN_WAVE_BATCH_SIZE))
+      .eq('status', 'waiting_for_next_wave')
+      .select('*');
+
+    if (error) {
+      return res.status(500).json({
+        error: `Opened ${opened.length} of ${waitingIds.length} waiting people, then a batch failed. Tap Open wave again to finish the rest.`,
+        wave_number,
+        users_moved: opened.length,
+        users_remaining: waitingIds.length - opened.length,
+        ...emailCounts(),
+        emails,
+      });
+    }
+
+    // Everyone here came OUT of the holding pool, so this is an assignment rather
+    // than a move: they had no wave to be moved from.
+    for (const row of (data || []) as unknown as WaitlistRow[]) {
+      opened.push(row);
+      emails.push(await notifyStatusChange(row, 'wave_assigned', { WAVE: wave_number }));
+    }
   }
 
   return res.status(200).json({
     success: true,
     wave_number,
-    users_moved: data?.length || 0,
-    emails_sent: emails.filter((e) => e.status === 'sent').length,
-    emails_skipped: emails.filter((e) => e.status === 'skipped').length,
-    emails_failed: emails.filter((e) => e.status === 'failed').length,
+    users_moved: opened.length,
+    ...emailCounts(),
     emails,
   });
 }
@@ -672,17 +720,25 @@ async function handleWaitlistAnalytics(supabase: SupabaseClient, res: VercelResp
     count(),
     count().eq('is_founding_member', true),
     count().eq('is_founding_member_creator', true),
-    supabase.from(NOT_REMOVED_VIEW).select('created_at').gte('created_at', thirtyDaysAgo.toISOString()),
-    supabase.from(NOT_REMOVED_VIEW).select('wave_number'),
-    supabase.from(NOT_REMOVED_VIEW).select('status'),
+    // Row reads go page by page: a plain read stops at 1,000 rows (waitlist issue 56).
+    readAllRows<{ created_at: string }>((from, to) =>
+      supabase.from(NOT_REMOVED_VIEW).select('created_at').gte('created_at', thirtyDaysAgo.toISOString())
+        .order('id').range(from, to)),
+    readAllRows<{ wave_number: number | null }>((from, to) =>
+      supabase.from(NOT_REMOVED_VIEW).select('wave_number').order('id').range(from, to)),
+    readAllRows<{ status: string | null }>((from, to) =>
+      supabase.from(NOT_REMOVED_VIEW).select('status').order('id').range(from, to)),
   ]);
-  if ([total, founding, foundingCreator, last30Days, waveDist, statusDist].some((r) => r.error)) {
+  if (
+    [total, founding, foundingCreator].some((r) => r.error) ||
+    'error' in last30Days || 'error' in waveDist || 'error' in statusDist
+  ) {
     return res.status(500).json({ error: 'Failed to read waitlist analytics' });
   }
 
   // Aggregate by day
   const dayCounts = new Map<string, number>();
-  (last30Days.data || []).forEach(row => {
+  last30Days.rows.forEach(row => {
     const day = row.created_at.split('T')[0];
     dayCounts.set(day, (dayCounts.get(day) || 0) + 1);
   });
@@ -692,7 +748,7 @@ async function handleWaitlistAnalytics(supabase: SupabaseClient, res: VercelResp
 
   // Aggregate by wave
   const waveCounts = new Map<number | null, number>();
-  (waveDist.data || []).forEach(row => {
+  waveDist.rows.forEach(row => {
     waveCounts.set(row.wave_number, (waveCounts.get(row.wave_number) || 0) + 1);
   });
   const wave_distribution = Array.from(waveCounts.entries())
@@ -701,7 +757,7 @@ async function handleWaitlistAnalytics(supabase: SupabaseClient, res: VercelResp
 
   // Aggregate by status
   const statusCounts = new Map<string, number>();
-  (statusDist.data || []).forEach(row => {
+  statusDist.rows.forEach(row => {
     statusCounts.set(row.status || 'unknown', (statusCounts.get(row.status || 'unknown') || 0) + 1);
   });
   const status_distribution = Array.from(statusCounts.entries())
